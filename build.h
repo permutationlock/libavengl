@@ -3,17 +3,6 @@
 
 AvenArg libavengl_build_arg_data[] = {
     {
-        .name = "-glfw-external",
-        .description = "Don't build GLFW, link system library",
-        .type = AVEN_ARG_TYPE_BOOL,
-#if defined(LIBAVENGL_DEFAULT_GLFW_EXTERNAL)
-        .value = {
-            .type = AVEN_ARG_TYPE_BOOL,
-            .data = { .arg_bool = LIBAVENGL_DEFAULT_GLFW_EXTERNAL },
-        },
-#endif
-    },
-    {
         .name = "-glfw-ccflags",
         .description = "C compiler flags for GLFW",
         .type = AVEN_ARG_TYPE_STRING,
@@ -46,7 +35,6 @@ static inline LibAvenGLBuildOpts libavengl_build_opts(
     AvenArena *arena
 ) {
     LibAvenGLBuildOpts opts = { 0 };
-    opts.glfw.external = aven_arg_get_bool(args, "-glfw-external");
     if (aven_arg_has_arg(args, "-glfw-ccflags")) {
         opts.glfw.ccflags.valid = true;
         opts.glfw.ccflags.value = aven_str_split(
@@ -63,13 +51,6 @@ static inline AvenStr libavengl_build_include_path(
     AvenArena *arena
 ) {
     return aven_path(arena, root_path.ptr, "include", NULL);
-}
-
-static inline AvenStr libavengl_build_include_libaven(
-    AvenStr root_path,
-    AvenArena *arena
-) {
-    return aven_path(arena, root_path.ptr, "deps", "libaven", "include", NULL);
 }
 
 static inline AvenStr libavengl_build_include_gles2(
@@ -91,20 +72,6 @@ static inline AvenStr libavengl_build_include_wayland(
     AvenArena *arena
 ) {
     return aven_path(arena, root_path.ptr, "deps", "wayland", "include", NULL);
-}
-
-static inline AvenStr libavengl_build_include_winpthreads(
-    AvenStr root_path,
-    AvenArena *arena
-) {
-    return aven_path(
-        arena,
-        root_path.ptr,
-        "deps",
-        "winpthreads",
-        "include",
-        NULL
-    );
 }
 
 static inline AvenStr libavengl_build_include_x11(
@@ -150,29 +117,6 @@ static inline AvenBuildStep libavengl_build_step_glfw(
         includes,
         (AvenStrSlice){ 0 },
         aven_path(arena, root_path.ptr, "deps", "glfw", "glfw.c", NULL),
-        out_dir_step,
-        arena
-    );
-}
-
-static inline AvenBuildStep libavengl_build_step_winpthreads(
-    AvenBuildCommonOpts *opts,
-    AvenStr root_path,
-    AvenBuildStep *out_dir_step,
-    AvenArena *arena
-) {
-    AvenStr include_paths[] = {
-        libavengl_build_include_winpthreads(root_path, arena),
-    };
-    AvenStrSlice includes = {
-        .ptr = include_paths,
-        .len = countof(include_paths),
-    };
-    return aven_build_common_step_cc_ex(
-        opts,
-        includes,
-        (AvenStrSlice){ 0 },
-        aven_path(arena, root_path.ptr, "winpthreads", "winpthreads.c", NULL),
         out_dir_step,
         arena
     );

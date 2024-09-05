@@ -6,14 +6,15 @@
 
 #define AVEN_IMPLEMENTATION
 
-#include "deps/libaven/include/aven.h"
-#include "deps/libaven/include/aven/arena.h"
-#include "deps/libaven/include/aven/arg.h"
-#include "deps/libaven/include/aven/build.h"
-#include "deps/libaven/include/aven/build/common.h"
-#include "deps/libaven/include/aven/path.h"
+#include "libaven/include/aven.h"
+#include "libaven/include/aven/arena.h"
+#include "libaven/include/aven/arg.h"
+#include "libaven/include/aven/build.h"
+#include "libaven/include/aven/build/common.h"
+#include "libaven/include/aven/path.h"
 
 #include "build.h"
+#include "libaven/build.h"
 
 AvenArg custom_arg_data[] = {
     {
@@ -107,8 +108,9 @@ int main(int argc, char **argv) {
         &arena
     );
 
-    AvenStr work_dir = aven_str("build_work");
     AvenStr root_dir = aven_str(".");
+    AvenStr libaven_dir = aven_str("libaven");
+    AvenStr work_dir = aven_str("build_work");
 
     AvenBuildStep work_dir_step = aven_build_step_mkdir(work_dir);
 
@@ -125,7 +127,7 @@ int main(int argc, char **argv) {
 
     AvenStr include_paths[] = {
         libavengl_build_include_path(root_dir, &arena),
-        libavengl_build_include_libaven(root_dir, &arena),
+        libaven_build_include_path(libaven_dir, &arena),
         libavengl_build_include_glfw(root_dir, &arena),
         libavengl_build_include_gles2(root_dir, &arena),
     };
