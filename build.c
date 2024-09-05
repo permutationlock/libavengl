@@ -37,7 +37,11 @@ AvenArg custom_arg_data[] = {
 #if defined(BUILD_DEFAULT_SYSLIBS)
             .data = { .arg_str = BUILD_DEFAULT_SYSLIBS },
 #elif defined(_WIN32)
-            .data = { .arg_str = "kernel32 gdi32" },
+    #if defined(_MSC_VER) and !defined(__clang__)
+            .data = { .arg_str = "kernel32.lib user32.lib gdi32.lib shell32.lib" },
+    #else
+            .data = { .arg_str = "kernel32 user32 gdi32 shell32" },
+    #endif
 #else
             .data = { .arg_str = "m dl" },
 #endif
@@ -83,6 +87,17 @@ int main(int argc, char **argv) {
         libavengl_build_args.len * sizeof(*libavengl_build_args.ptr)
     );
     args_end += libavengl_build_args.len;
+
+#if defined(_WIN32) and \
+    !defined(_MSC_VER) and \
+    defined(__GNUC__) and \
+    !defined(__clang__)
+    {
+        AvenStr ldflags = aven_str_cstr(aven_arg_get_str(args, "-ldflags"));
+        AvenStr newldflags = aven_str_concat(ldflags, aven_str(" -mwindows"), &arena);
+        aven_arg_set_str(args, "-ldflags", newldflags.ptr);
+    }
+#endif
 
     int error = aven_arg_parse(
         args,

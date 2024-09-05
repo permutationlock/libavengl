@@ -64,9 +64,9 @@ int main(void) {
         fail = true;
         printf("test failed: aven_gl_load glAttachShader\n");
     }
-    if (gl.BindAttributeLocation == NULL) {
+    if (gl.BindAttribLocation == NULL) {
         fail = true;
-        printf("test failed: aven_gl_load glBindAttributeLocation\n");
+        printf("test failed: aven_gl_load glBindAttribLocation\n");
     }
     if (gl.BindBuffer == NULL) {
         fail = true;
@@ -76,9 +76,9 @@ int main(void) {
         fail = true;
         printf("test failed: aven_gl_load glBindFramebuffer\n");
     }
-    if (gl.BindRenderBuffer == NULL) {
+    if (gl.BindRenderbuffer == NULL) {
         fail = true;
-        printf("test failed: aven_gl_load glBindRenderBuffer\n");
+        printf("test failed: aven_gl_load glBindRenderbuffer\n");
     }
     if (gl.BindTexture == NULL) {
         fail = true;
@@ -112,9 +112,9 @@ int main(void) {
         fail = true;
         printf("test failed: aven_gl_load glBufferSubData\n");
     }
-    if (gl.BufferStatus == NULL) {
+    if (gl.CheckFramebufferStatus == NULL) {
         fail = true;
-        printf("test failed: aven_gl_load glBufferStatus\n");
+        printf("test failed: aven_gl_load glCheckFramebufferStatus\n");
     }
     if (gl.Clear == NULL) {
         fail = true;
@@ -180,9 +180,9 @@ int main(void) {
         fail = true;
         printf("test failed: aven_gl_load glDeleteProgram\n");
     }
-    if (gl.DeleteRenderBuffers == NULL) {
+    if (gl.DeleteRenderbuffers == NULL) {
         fail = true;
-        printf("test failed: aven_gl_load glDeleteRenderBuffers\n");
+        printf("test failed: aven_gl_load glDeleteRenderbuffers\n");
     }
     if (gl.DeleteShader == NULL) {
         fail = true;
@@ -240,9 +240,9 @@ int main(void) {
         fail = true;
         printf("test failed: aven_gl_load glFlush\n");
     }
-    if (gl.FramebufferRenderBuffer == NULL) {
+    if (gl.FramebufferRenderbuffer == NULL) {
         fail = true;
-        printf("test failed: aven_gl_load glFramebufferRenderBuffer\n");
+        printf("test failed: aven_gl_load glFramebufferRenderbuffer\n");
     }
     if (gl.FramebufferTexture2D == NULL) {
         fail = true;
@@ -256,21 +256,21 @@ int main(void) {
         fail = true;
         printf("test failed: aven_gl_load glGenBuffers\n");
     }
-    if (gl.GenerateMipMap == NULL) {
+    if (gl.GenerateMipmap == NULL) {
         fail = true;
-        printf("test failed: aven_gl_load glGenerateMipMap\n");
+        printf("test failed: aven_gl_load glGenerateMipmap\n");
     }
     if (gl.GenFramebuffers == NULL) {
         fail = true;
         printf("test failed: aven_gl_load glGenFramebuffers\n");
     }
-    if (gl.GenRenderBuffers == NULL) {
+    if (gl.GenRenderbuffers == NULL) {
         fail = true;
-        printf("test failed: aven_gl_load glGenRenderBuffers\n");
+        printf("test failed: aven_gl_load glGenRenderbuffers\n");
     }
-    if (gl.GenTexutres == NULL) {
+    if (gl.GenTextures == NULL) {
         fail = true;
-        printf("test failed: aven_gl_load glGenTexutres\n");
+        printf("test failed: aven_gl_load glGenTextures\n");
     }
     if (gl.GetActiveAttrib == NULL) {
         fail = true;
@@ -288,9 +288,9 @@ int main(void) {
         fail = true;
         printf("test failed: aven_gl_load glGetAttribLocation\n");
     }
-    if (gl.GetBooleanv  == NULL) {
+    if (gl.GetBooleanv == NULL) {
         fail = true;
-        printf("test failed: aven_gl_load glGetBooleanv \n");
+        printf("test failed: aven_gl_load glGetBooleanv\n");
     }
     if (gl.GetBufferParameteriv == NULL) {
         fail = true;
@@ -322,9 +322,9 @@ int main(void) {
         fail = true;
         printf("test failed: aven_gl_load glGetProgramInfoLog\n");
     }
-    if (gl.GetRenderBufferParameteriv == NULL) {
+    if (gl.GetRenderbufferParameteriv == NULL) {
         fail = true;
-        printf("test failed: aven_gl_load glGetRenderBufferParameteriv\n");
+        printf("test failed: aven_gl_load glGetRenderbufferParameteriv\n");
     }
     if (gl.GetShaderiv == NULL) {
         fail = true;
@@ -338,9 +338,9 @@ int main(void) {
         fail = true;
         printf("test failed: aven_gl_load glGetShaderPrecisionFormat\n");
     }
-    if (gl.GetShaderSourceProc == NULL) {
+    if (gl.GetShaderSource == NULL) {
         fail = true;
-        printf("test failed: aven_gl_load glGetShaderSourceProc\n");
+        printf("test failed: aven_gl_load glGetShaderSource\n");
     }
     if (gl.GetString == NULL) {
         fail = true;
@@ -398,9 +398,9 @@ int main(void) {
         fail = true;
         printf("test failed: aven_gl_load glIsProgram\n");
     }
-    if (gl.IsRenderBuffer == NULL) {
+    if (gl.IsRenderbuffer == NULL) {
         fail = true;
-        printf("test failed: aven_gl_load glIsRenderBuffer\n");
+        printf("test failed: aven_gl_load glIsRenderbuffer\n");
     }
     if (gl.IsShader == NULL) {
         fail = true;
@@ -418,9 +418,9 @@ int main(void) {
         fail = true;
         printf("test failed: aven_gl_load glLinkProgram\n");
     }
-    if (gl.PexelStorei == NULL) {
+    if (gl.PixelStorei == NULL) {
         fail = true;
-        printf("test failed: aven_gl_load glPexelStorei\n");
+        printf("test failed: aven_gl_load glPixelStorei\n");
     }
     if (gl.PolygonOffset == NULL) {
         fail = true;
@@ -430,13 +430,13 @@ int main(void) {
         fail = true;
         printf("test failed: aven_gl_load glReadPixels\n");
     }
-    if (gl.ReleaseShaderCompile == NULL) {
+    if (gl.ReleaseShaderCompiler == NULL) {
         fail = true;
-        printf("test failed: aven_gl_load glReleaseShaderCompile\n");
+        printf("test failed: aven_gl_load glReleaseShaderCompiler\n");
     }
-    if (gl.RenderBufferStorage == NULL) {
+    if (gl.RenderbufferStorage == NULL) {
         fail = true;
-        printf("test failed: aven_gl_load glRenderBufferStorage\n");
+        printf("test failed: aven_gl_load glRenderbufferStorage\n");
     }
     if (gl.SampleCoverage == NULL) {
         fail = true;
@@ -482,13 +482,13 @@ int main(void) {
         fail = true;
         printf("test failed: aven_gl_load glTexImage2D\n");
     }
-    if (gl.TeParameterf == NULL) {
+    if (gl.TexParameterf == NULL) {
         fail = true;
-        printf("test failed: aven_gl_load glTeParameterf\n");
+        printf("test failed: aven_gl_load glTexParameterf\n");
     }
-    if (gl.TexParamterfv == NULL) {
+    if (gl.TexParameterfv == NULL) {
         fail = true;
-        printf("test failed: aven_gl_load glTexParamterfv\n");
+        printf("test failed: aven_gl_load glTexParameterfv\n");
     }
     if (gl.TexParameteri == NULL) {
         fail = true;

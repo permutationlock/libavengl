@@ -1,4 +1,8 @@
 #if defined(_WIN32)
+    #if defined(_MSC_VER) && defined(__clang__)
+        #pragma clang diagnostic push
+        #pragma clang diagnostic ignored "-Wdeprecated-declarations"
+    #endif
     #define _GLFW_WIN32
 #elif defined(__linux__)
     #define _GLFW_WAYLAND
@@ -27,6 +31,9 @@
 
     #include "src/egl_context.c"
     #include "src/osmesa_context.c"
+    #if defined(_MSC_VER) && defined(__clang__)
+        #pragma clang diagnostic pop
+    #endif
 #elif defined(__linux__) 
     #include "src/posix_poll.c"
     #include "src/posix_module.c"

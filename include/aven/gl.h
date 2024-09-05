@@ -6,10 +6,10 @@
 typedef struct {
     PFNGLACTIVETEXTUREPROC ActiveTexture;
     PFNGLATTACHSHADERPROC AttachShader;
-    PFNGLBINDATTRIBLOCATIONPROC BindAttributeLocation;
+    PFNGLBINDATTRIBLOCATIONPROC BindAttribLocation;
     PFNGLBINDBUFFERPROC BindBuffer;
     PFNGLBINDFRAMEBUFFERPROC BindFramebuffer;
-    PFNGLBINDRENDERBUFFERPROC BindRenderBuffer;
+    PFNGLBINDRENDERBUFFERPROC BindRenderbuffer;
     PFNGLBINDTEXTUREPROC BindTexture;
     PFNGLBLENDCOLORPROC BlendColor;
     PFNGLBLENDEQUATIONPROC BlendEquation;
@@ -18,7 +18,7 @@ typedef struct {
     PFNGLBLENDFUNCSEPARATEPROC BlendFuncSeparate;
     PFNGLBUFFERDATAPROC BufferData;
     PFNGLBUFFERSUBDATAPROC BufferSubData;
-    PFNGLCHECKFRAMEBUFFERSTATUSPROC BufferStatus;
+    PFNGLCHECKFRAMEBUFFERSTATUSPROC CheckFramebufferStatus;
     PFNGLCLEARPROC Clear;
     PFNGLCLEARCOLORPROC ClearColor;
     PFNGLCLEARDEPTHFPROC ClearDepth;
@@ -35,7 +35,7 @@ typedef struct {
     PFNGLDELETEBUFFERSPROC DeleteBuffers;
     PFNGLDELETEFRAMEBUFFERSPROC DeleteFramebuffers;
     PFNGLDELETEPROGRAMPROC DeleteProgram;
-    PFNGLDELETERENDERBUFFERSPROC DeleteRenderBuffers;
+    PFNGLDELETERENDERBUFFERSPROC DeleteRenderbuffers;
     PFNGLDELETESHADERPROC DeleteShader;
     PFNGLDELETETEXTURESPROC DeleteTextures;
     PFNGLDEPTHFUNCPROC DepthFunc;
@@ -50,19 +50,19 @@ typedef struct {
     PFNGLENABLEVERTEXATTRIBARRAYPROC EnableVertexAttribArray;
     PFNGLFINISHPROC Finish;
     PFNGLFLUSHPROC Flush;
-    PFNGLFRAMEBUFFERRENDERBUFFERPROC FramebufferRenderBuffer;
+    PFNGLFRAMEBUFFERRENDERBUFFERPROC FramebufferRenderbuffer;
     PFNGLFRAMEBUFFERTEXTURE2DPROC FramebufferTexture2D;
     PFNGLFRONTFACEPROC FrontFace;
     PFNGLGENBUFFERSPROC GenBuffers;
-    PFNGLGENERATEMIPMAPPROC GenerateMipMap;
+    PFNGLGENERATEMIPMAPPROC GenerateMipmap;
     PFNGLGENFRAMEBUFFERSPROC GenFramebuffers;
-    PFNGLGENRENDERBUFFERSPROC GenRenderBuffers;
-    PFNGLGENTEXTURESPROC GenTexutres;
+    PFNGLGENRENDERBUFFERSPROC GenRenderbuffers;
+    PFNGLGENTEXTURESPROC GenTextures;
     PFNGLGETACTIVEATTRIBPROC GetActiveAttrib;
     PFNGLGETACTIVEUNIFORMPROC GetActiveUniform;
     PFNGLGETATTACHEDSHADERSPROC GetAttachedShaders;
     PFNGLGETATTRIBLOCATIONPROC GetAttribLocation;
-    PFNGLGETBOOLEANVPROC GetBooleanv ;
+    PFNGLGETBOOLEANVPROC GetBooleanv;
     PFNGLGETBUFFERPARAMETERIVPROC GetBufferParameteriv;
     PFNGLGETERRORPROC GetError;
     PFNGLGETFLOATVPROC GetFloatv;
@@ -71,11 +71,11 @@ typedef struct {
     PFNGLGETINTEGERVPROC GetIntegerv;
     PFNGLGETPROGRAMIVPROC GetProgramiv;
     PFNGLGETPROGRAMINFOLOGPROC GetProgramInfoLog;
-    PFNGLGETRENDERBUFFERPARAMETERIVPROC GetRenderBufferParameteriv;
+    PFNGLGETRENDERBUFFERPARAMETERIVPROC GetRenderbufferParameteriv;
     PFNGLGETSHADERIVPROC GetShaderiv;
     PFNGLGETSHADERINFOLOGPROC GetShaderInfoLog;
     PFNGLGETSHADERPRECISIONFORMATPROC GetShaderPrecisionFormat;
-    PFNGLGETSHADERSOURCEPROC GetShaderSourceProc;
+    PFNGLGETSHADERSOURCEPROC GetShaderSource;
     PFNGLGETSTRINGPROC GetString;
     PFNGLGETTEXPARAMETERFVPROC GetTexParameterfv;
     PFNGLGETTEXPARAMETERIVPROC GetTexParameteriv;
@@ -90,16 +90,16 @@ typedef struct {
     PFNGLISENABLEDPROC IsEnabled;
     PFNGLISFRAMEBUFFERPROC IsFramebuffer;
     PFNGLISPROGRAMPROC IsProgram;
-    PFNGLISRENDERBUFFERPROC IsRenderBuffer;
+    PFNGLISRENDERBUFFERPROC IsRenderbuffer;
     PFNGLISSHADERPROC IsShader;
     PFNGLISTEXTUREPROC IsTexture;
     PFNGLLINEWIDTHPROC LineWidth;
     PFNGLLINKPROGRAMPROC LinkProgram;
-    PFNGLPIXELSTOREIPROC PexelStorei;
+    PFNGLPIXELSTOREIPROC PixelStorei;
     PFNGLPOLYGONOFFSETPROC PolygonOffset;
     PFNGLREADPIXELSPROC ReadPixels;
-    PFNGLRELEASESHADERCOMPILERPROC ReleaseShaderCompile;
-    PFNGLRENDERBUFFERSTORAGEPROC RenderBufferStorage;
+    PFNGLRELEASESHADERCOMPILERPROC ReleaseShaderCompiler;
+    PFNGLRENDERBUFFERSTORAGEPROC RenderbufferStorage;
     PFNGLSAMPLECOVERAGEPROC SampleCoverage;
     PFNGLSCISSORPROC Scissor;
     PFNGLSHADERBINARYPROC ShaderBinary;
@@ -111,8 +111,8 @@ typedef struct {
     PFNGLSTENCILOPPROC StencilOp;
     PFNGLSTENCILOPSEPARATEPROC StencilOpSeparate;
     PFNGLTEXIMAGE2DPROC TexImage2D;
-    PFNGLTEXPARAMETERFPROC TeParameterf;
-    PFNGLTEXPARAMETERFVPROC TexParamterfv;
+    PFNGLTEXPARAMETERFPROC TexParameterf;
+    PFNGLTEXPARAMETERFVPROC TexParameterfv;
     PFNGLTEXPARAMETERIPROC TexParameteri;
     PFNGLTEXPARAMETERIVPROC TexParameteriv;
     PFNGLTEXSUBIMAGE2DPROC TexSubImage2D;
@@ -161,8 +161,8 @@ static inline AvenGL aven_gl_load(AvenGLLoadFn load) {
     gl.AttachShader = (PFNGLATTACHSHADERPROC)load(
         "glAttachShader"
     );
-    gl.BindAttributeLocation = (PFNGLBINDATTRIBLOCATIONPROC)load(
-        "glBindAttributeLocation"
+    gl.BindAttribLocation = (PFNGLBINDATTRIBLOCATIONPROC)load(
+        "glBindAttribLocation"
     );
     gl.BindBuffer = (PFNGLBINDBUFFERPROC)load(
         "glBindBuffer"
@@ -170,8 +170,8 @@ static inline AvenGL aven_gl_load(AvenGLLoadFn load) {
     gl.BindFramebuffer = (PFNGLBINDFRAMEBUFFERPROC)load(
         "glBindFramebuffer"
     );
-    gl.BindRenderBuffer = (PFNGLBINDRENDERBUFFERPROC)load(
-        "glBindRenderBuffer"
+    gl.BindRenderbuffer = (PFNGLBINDRENDERBUFFERPROC)load(
+        "glBindRenderbuffer"
     );
     gl.BindTexture = (PFNGLBINDTEXTUREPROC)load(
         "glBindTexture"
@@ -197,7 +197,7 @@ static inline AvenGL aven_gl_load(AvenGLLoadFn load) {
     gl.BufferSubData = (PFNGLBUFFERSUBDATAPROC)load(
         "glBufferSubData"
     );
-    gl.BufferStatus = (PFNGLCHECKFRAMEBUFFERSTATUSPROC) load("glBufferStatus");
+    gl.CheckFramebufferStatus = (PFNGLCHECKFRAMEBUFFERSTATUSPROC) load("glCheckFramebufferStatus");
     gl.Clear = (PFNGLCLEARPROC)load(
         "glClear"
     );
@@ -246,8 +246,8 @@ static inline AvenGL aven_gl_load(AvenGLLoadFn load) {
     gl.DeleteProgram = (PFNGLDELETEPROGRAMPROC)load(
         "glDeleteProgram"
     );
-    gl.DeleteRenderBuffers = (PFNGLDELETERENDERBUFFERSPROC)load(
-        "glDeleteRenderBuffers"
+    gl.DeleteRenderbuffers = (PFNGLDELETERENDERBUFFERSPROC)load(
+        "glDeleteRenderbuffers"
     );
     gl.DeleteShader = (PFNGLDELETESHADERPROC)load(
         "glDeleteShader"
@@ -291,8 +291,8 @@ static inline AvenGL aven_gl_load(AvenGLLoadFn load) {
     gl.Flush = (PFNGLFLUSHPROC)load(
         "glFlush"
     );
-    gl.FramebufferRenderBuffer = (PFNGLFRAMEBUFFERRENDERBUFFERPROC)load(
-        "glFramebufferRenderBuffer"
+    gl.FramebufferRenderbuffer = (PFNGLFRAMEBUFFERRENDERBUFFERPROC)load(
+        "glFramebufferRenderbuffer"
     );
     gl.FramebufferTexture2D = (PFNGLFRAMEBUFFERTEXTURE2DPROC)load(
         "glFramebufferTexture2D"
@@ -303,17 +303,17 @@ static inline AvenGL aven_gl_load(AvenGLLoadFn load) {
     gl.GenBuffers = (PFNGLGENBUFFERSPROC)load(
         "glGenBuffers"
     );
-    gl.GenerateMipMap = (PFNGLGENERATEMIPMAPPROC)load(
-        "glGenerateMipMap"
+    gl.GenerateMipmap = (PFNGLGENERATEMIPMAPPROC)load(
+        "glGenerateMipmap"
     );
     gl.GenFramebuffers = (PFNGLGENFRAMEBUFFERSPROC)load(
         "glGenFramebuffers"
     );
-    gl.GenRenderBuffers = (PFNGLGENRENDERBUFFERSPROC)load(
-        "glGenRenderBuffers"
+    gl.GenRenderbuffers = (PFNGLGENRENDERBUFFERSPROC)load(
+        "glGenRenderbuffers"
     );
-    gl.GenTexutres = (PFNGLGENTEXTURESPROC)load(
-        "glGenTexutres"
+    gl.GenTextures = (PFNGLGENTEXTURESPROC)load(
+        "glGenTextures"
     );
     gl.GetActiveAttrib = (PFNGLGETACTIVEATTRIBPROC)load(
         "glGetActiveAttrib"
@@ -327,8 +327,8 @@ static inline AvenGL aven_gl_load(AvenGLLoadFn load) {
     gl.GetAttribLocation = (PFNGLGETATTRIBLOCATIONPROC)load(
         "glGetAttribLocation"
     );
-    gl.GetBooleanv  = (PFNGLGETBOOLEANVPROC)load(
-        "glGetBooleanv "
+    gl.GetBooleanv = (PFNGLGETBOOLEANVPROC)load(
+        "glGetBooleanv"
     );
     gl.GetBufferParameteriv = (PFNGLGETBUFFERPARAMETERIVPROC)load(
         "glGetBufferParameteriv"
@@ -352,8 +352,8 @@ static inline AvenGL aven_gl_load(AvenGLLoadFn load) {
     gl.GetProgramInfoLog = (PFNGLGETPROGRAMINFOLOGPROC)load(
         "glGetProgramInfoLog"
     );
-    gl.GetRenderBufferParameteriv = (PFNGLGETRENDERBUFFERPARAMETERIVPROC)load(
-        "glGetRenderBufferParameteriv"
+    gl.GetRenderbufferParameteriv = (PFNGLGETRENDERBUFFERPARAMETERIVPROC)load(
+        "glGetRenderbufferParameteriv"
     );
     gl.GetShaderiv = (PFNGLGETSHADERIVPROC)load(
         "glGetShaderiv"
@@ -364,8 +364,8 @@ static inline AvenGL aven_gl_load(AvenGLLoadFn load) {
     gl.GetShaderPrecisionFormat = (PFNGLGETSHADERPRECISIONFORMATPROC)load(
         "glGetShaderPrecisionFormat"
     );
-    gl.GetShaderSourceProc = (PFNGLGETSHADERSOURCEPROC)load(
-        "glGetShaderSourceProc"
+    gl.GetShaderSource = (PFNGLGETSHADERSOURCEPROC)load(
+        "glGetShaderSource"
     );
     gl.GetString = (PFNGLGETSTRINGPROC)load(
         "glGetString"
@@ -409,8 +409,8 @@ static inline AvenGL aven_gl_load(AvenGLLoadFn load) {
     gl.IsProgram = (PFNGLISPROGRAMPROC)load(
         "glIsProgram"
     );
-    gl.IsRenderBuffer = (PFNGLISRENDERBUFFERPROC)load(
-        "glIsRenderBuffer"
+    gl.IsRenderbuffer = (PFNGLISRENDERBUFFERPROC)load(
+        "glIsRenderbuffer"
     );
     gl.IsShader = (PFNGLISSHADERPROC)load(
         "glIsShader"
@@ -424,8 +424,8 @@ static inline AvenGL aven_gl_load(AvenGLLoadFn load) {
     gl.LinkProgram = (PFNGLLINKPROGRAMPROC)load(
         "glLinkProgram"
     );
-    gl.PexelStorei = (PFNGLPIXELSTOREIPROC)load(
-        "glPexelStorei"
+    gl.PixelStorei = (PFNGLPIXELSTOREIPROC)load(
+        "glPixelStorei"
     );
     gl.PolygonOffset = (PFNGLPOLYGONOFFSETPROC)load(
         "glPolygonOffset"
@@ -433,11 +433,11 @@ static inline AvenGL aven_gl_load(AvenGLLoadFn load) {
     gl.ReadPixels = (PFNGLREADPIXELSPROC)load(
         "glReadPixels"
     );
-    gl.ReleaseShaderCompile = (PFNGLRELEASESHADERCOMPILERPROC)load(
-        "glReleaseShaderCompile"
+    gl.ReleaseShaderCompiler = (PFNGLRELEASESHADERCOMPILERPROC)load(
+        "glReleaseShaderCompiler"
     );
-    gl.RenderBufferStorage = (PFNGLRENDERBUFFERSTORAGEPROC)load(
-        "glRenderBufferStorage"
+    gl.RenderbufferStorage = (PFNGLRENDERBUFFERSTORAGEPROC)load(
+        "glRenderbufferStorage"
     );
     gl.SampleCoverage = (PFNGLSAMPLECOVERAGEPROC)load(
         "glSampleCoverage"
@@ -472,11 +472,11 @@ static inline AvenGL aven_gl_load(AvenGLLoadFn load) {
     gl.TexImage2D = (PFNGLTEXIMAGE2DPROC)load(
         "glTexImage2D"
     );
-    gl.TeParameterf = (PFNGLTEXPARAMETERFPROC)load(
-        "glTeParameterf"
+    gl.TexParameterf = (PFNGLTEXPARAMETERFPROC)load(
+        "glTexParameterf"
     );
-    gl.TexParamterfv = (PFNGLTEXPARAMETERFVPROC)load(
-        "glTexParamterfv"
+    gl.TexParameterfv = (PFNGLTEXPARAMETERFVPROC)load(
+        "glTexParameterfv"
     );
     gl.TexParameteri = (PFNGLTEXPARAMETERIPROC)load(
         "glTexParameteri"
