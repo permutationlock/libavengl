@@ -104,7 +104,7 @@ int main(int argc, char **argv) {
     list_push(include_list) = libavengl_build_include_glfw(root_dir, &arena);
     AvenStrSlice includes = slice_list(include_list);
 
-    AvenBuildStep *obj_data[1];
+    AvenBuildStep *obj_data[2];
     List(AvenBuildStep *) obj_list = list_array(obj_data);
     if (winutf8_obj_step.valid) {
         list_push(obj_list) = &winutf8_obj_step.value;
