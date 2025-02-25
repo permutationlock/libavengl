@@ -147,13 +147,13 @@ typedef struct {
     PFNGLVERTEXATTRIB1FPROC VertexAttrib4fv;
     PFNGLVERTEXATTRIBPOINTERPROC VertexAttribPointer;
     PFNGLVIEWPORTPROC Viewport;
-} AvenGL;
+} AvenGl;
 
-typedef void (*AvenGLOpaqueFn)(void);
-typedef AvenGLOpaqueFn (*AvenGLLoadFn)(const char *);
+typedef void (*AvenGlProcFn)(void);
+typedef AvenGlProcFn (*AvenGlLoadProcFn)(const char *);
 
-static inline AvenGL aven_gl_load(AvenGLLoadFn load) {
-    AvenGL gl = { 0 };
+static inline AvenGl aven_gl_load(AvenGlLoadProcFn load) {
+    AvenGl gl = { 0 };
 
     gl.ActiveTexture = (PFNGLACTIVETEXTUREPROC)load(
         "glActiveTexture"
@@ -197,7 +197,9 @@ static inline AvenGL aven_gl_load(AvenGLLoadFn load) {
     gl.BufferSubData = (PFNGLBUFFERSUBDATAPROC)load(
         "glBufferSubData"
     );
-    gl.CheckFramebufferStatus = (PFNGLCHECKFRAMEBUFFERSTATUSPROC) load("glCheckFramebufferStatus");
+    gl.CheckFramebufferStatus = (PFNGLCHECKFRAMEBUFFERSTATUSPROC) load(
+        "glCheckFramebufferStatus"
+    );
     gl.Clear = (PFNGLCLEARPROC)load(
         "glClear"
     );
@@ -583,5 +585,11 @@ static inline AvenGL aven_gl_load(AvenGLLoadFn load) {
 
     return gl;
 }
+
+typedef enum {
+    AVEN_GL_BUFFER_USAGE_STATIC = GL_STATIC_DRAW,
+    AVEN_GL_BUFFER_USAGE_DYNAMIC = GL_DYNAMIC_DRAW,
+    AVEN_GL_BUFFER_USAGE_STREAM = GL_STREAM_DRAW,
+} AvenGlBufferUsage;
 
 #endif // AVEN_GL_H

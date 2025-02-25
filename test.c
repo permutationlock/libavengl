@@ -32,7 +32,7 @@ int main(void) {
     GLFWwindow *window = glfwCreateWindow(
         (int)width,
         (int)height,
-        "AvenGL Test",
+        "AvenGl Test",
         NULL,
         NULL
     );
@@ -41,7 +41,7 @@ int main(void) {
         window = glfwCreateWindow(
             (int)width,
             (int)height,
-            "AvenGL Test",
+            "AvenGl Test",
             NULL,
             NULL
         );
@@ -53,7 +53,7 @@ int main(void) {
 
     glfwMakeContextCurrent(window);
 
-    AvenGL gl = aven_gl_load(glfwGetProcAddress);
+    AvenGl gl = aven_gl_load(glfwGetProcAddress);
     bool fail = false;
 
     if (gl.ActiveTexture == NULL) {

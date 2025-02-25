@@ -26,6 +26,9 @@
 //
 //========================================================================
 
+// Modified by Aven Bross in February 2024 to remove duplicate symbols for a
+// single translation unit build
+
 #include "internal.h"
 
 #include <assert.h>
@@ -1181,10 +1184,9 @@ GLFWAPI void glfwWaitEventsTimeout(double timeout)
     _GLFW_REQUIRE_INIT();
     assert(timeout == timeout);
     assert(timeout >= 0.0);
-    assert(timeout <= 1.79769313486231570815e+308);
+    assert(timeout <= DBL_MAX);
 
-    if (timeout != timeout || timeout < 0.0 ||
-        timeout > 1.79769313486231570815e+308)
+    if (timeout != timeout || timeout < 0.0 || timeout > DBL_MAX)
     {
         _glfwInputError(GLFW_INVALID_VALUE, "Invalid time %f", timeout);
         return;
