@@ -88,9 +88,9 @@ static inline AvenGlTextFont aven_gl_text_font_init(
             (size_t)font.texture_height;
         texture_bytes.ptr = aven_arena_alloc(
             &temp_arena,
-            1,
-            1,
-            texture_bytes.len
+            texture_bytes.len,
+            AVEN_ARENA_BIGGEST_ALIGNMENT,
+            1
         );
 
         struct stbtt_pack_context ctx = { 0 };
