@@ -85,7 +85,7 @@ static inline LibAvenGlBuildOpts libavengl_build_opts(
 
     if (aven_arg_has_arg(args, "-glfw-ccflags")) {
         opts.glfw.ccflags.valid = true;
-        opts.glfw.ccflags.value = aven_str_splitz(
+        opts.glfw.ccflags.value = aven_str_split(
             aven_str_cstr(aven_arg_get_str(args, "-glfw-ccflags")),
             ' ',
             arena
@@ -94,14 +94,14 @@ static inline LibAvenGlBuildOpts libavengl_build_opts(
 
     if (aven_arg_has_arg(args, "-stb-ccflags")) {
         opts.stb.ccflags.valid = true;
-        opts.stb.ccflags.value = aven_str_splitz(
+        opts.stb.ccflags.value = aven_str_split(
             aven_str_cstr(aven_arg_get_str(args, "-stb-ccflags")),
             ' ',
             arena
         );
     }
 
-    opts.syslibs = aven_str_splitz(
+    opts.syslibs = aven_str_split(
         aven_str_cstr(aven_arg_get_str(args, "-syslibs")),
         ' ',
         arena
@@ -115,35 +115,59 @@ static inline AvenStr libavengl_build_include_path(
     AvenStr root_path,
     AvenArena *arena
 ) {
-    return aven_path(arena, root_path.ptr, "include", NULL);
+    return aven_path(arena, root_path, aven_str("include"));
 }
 
 static inline AvenStr libavengl_build_include_gles2(
     AvenStr root_path,
     AvenArena *arena
 ) {
-    return aven_path(arena, root_path.ptr, "deps", "gles2", "include", NULL);
+    return aven_path(
+        arena,
+        root_path,
+        aven_str("deps"),
+        aven_str("gles2"),
+        aven_str("include")
+    );
 }
 
 static inline AvenStr libavengl_build_include_glfw(
     AvenStr root_path,
     AvenArena *arena
 ) {
-    return aven_path(arena, root_path.ptr, "deps", "glfw", "include", NULL);
+    return aven_path(
+        arena,
+        root_path,
+        aven_str("deps"),
+        aven_str("glfw"),
+        aven_str("include")
+    );
 }
 
 static inline AvenStr libavengl_build_include_wayland(
     AvenStr root_path,
     AvenArena *arena
 ) {
-    return aven_path(arena, root_path.ptr, "deps", "wayland", "include", NULL);
+    return aven_path(
+        arena,
+        root_path,
+        aven_str("deps"),
+        aven_str("wayland"),
+        aven_str("include")
+    );
 }
 
 static inline AvenStr libavengl_build_include_x11(
     AvenStr root_path,
     AvenArena *arena
 ) {
-    return aven_path(arena, root_path.ptr, "deps", "X11", "include", NULL);
+    return aven_path(
+        arena,
+        root_path,
+        aven_str("deps"),
+        aven_str("X11"),
+        aven_str("include")
+    );
 }
 
 static inline AvenStr libavengl_build_include_xkbcommon(
@@ -152,11 +176,10 @@ static inline AvenStr libavengl_build_include_xkbcommon(
 ) {
     return aven_path(
         arena,
-        root_path.ptr,
-        "deps",
-        "xkbcommon",
-        "include",
-        NULL
+        root_path,
+        aven_str("deps"),
+        aven_str("xkbcommon"),
+        aven_str("include")
     );
 }
 
@@ -182,7 +205,13 @@ static inline AvenBuildStep libavengl_build_step_stb(
         &stb_opts,
         includes,
         (AvenStrSlice){ 0 },
-        aven_path(arena, root_path.ptr, "deps", "stb", "stb.c", NULL),
+        aven_path(
+            arena,
+            root_path,
+            aven_str("deps"),
+            aven_str("stb"),
+            aven_str("stb.c")
+        ),
         out_dir_step,
         arena
     );
@@ -214,7 +243,13 @@ static inline AvenBuildStep libavengl_build_step_glfw(
         &glfw_opts,
         includes,
         (AvenStrSlice){ 0 },
-        aven_path(arena, root_path.ptr, "deps", "glfw", "glfw.c", NULL),
+        aven_path(
+            arena,
+            root_path,
+            aven_str("deps"),
+            aven_str("glfw"),
+            aven_str("glfw.c")
+        ),
         out_dir_step,
         arena
     );

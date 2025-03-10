@@ -68,7 +68,11 @@ int main(int argc, char **argv) {
     LibAvenGlBuildOpts libavengl_opts = libavengl_build_opts(args, &arena);
 
     AvenStr root_dir = aven_str(".");
-    AvenStr libaven_dir = aven_path(&arena, "deps", "libaven", NULL);
+    AvenStr libaven_dir = aven_path(
+        &arena,
+        aven_str("deps"),
+        aven_str("libaven")
+    );
     AvenStr work_dir = aven_str("build_work");
 
     AvenBuildStep work_dir_step = aven_build_step_mkdir(work_dir);
@@ -131,7 +135,7 @@ int main(int argc, char **argv) {
     aven_build_step_add_dep(&root_step, &test_step, &arena);
 
     if (opts.clean) {
-        aven_build_step_clean(&root_step);
+        aven_build_step_clean(&root_step, arena);
     } else if (opts.test) {
         error = aven_build_step_run(&root_step, arena);
         if (error != 0) {
