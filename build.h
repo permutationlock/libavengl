@@ -85,7 +85,7 @@ static inline LibAvenGlBuildOpts libavengl_build_opts(
 
     if (aven_arg_has_arg(args, "-glfw-ccflags")) {
         opts.glfw.ccflags.valid = true;
-        opts.glfw.ccflags.value = aven_str_split(
+        opts.glfw.ccflags.value = aven_str_splitz(
             aven_str_cstr(aven_arg_get_str(args, "-glfw-ccflags")),
             ' ',
             arena
@@ -94,14 +94,14 @@ static inline LibAvenGlBuildOpts libavengl_build_opts(
 
     if (aven_arg_has_arg(args, "-stb-ccflags")) {
         opts.stb.ccflags.valid = true;
-        opts.stb.ccflags.value = aven_str_split(
+        opts.stb.ccflags.value = aven_str_splitz(
             aven_str_cstr(aven_arg_get_str(args, "-stb-ccflags")),
             ' ',
             arena
         );
     }
 
-    opts.syslibs = aven_str_split(
+    opts.syslibs = aven_str_splitz(
         aven_str_cstr(aven_arg_get_str(args, "-syslibs")),
         ' ',
         arena
