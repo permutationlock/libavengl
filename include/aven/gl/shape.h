@@ -532,7 +532,7 @@ static inline AvenGlShapeRoundedCtx aven_gl_shape_rounded_ctx_init(AvenGl *gl) {
         "void main() {\n"
         "    gl_Position = vec4((uTrans * vPos.xy) + uPos, 0.0, 1.0);\n"
         "    tPos = vInfo.xy;\n"
-        "    tOffset = vec2(uPx / vInfo.z, uPx / vInfo.w);\n"
+        "    tOffset = vec2(uPx * vInfo.z, uPx * vInfo.w);\n"
         "    fColor = vColor;\n"
         "}\n";
 
@@ -849,8 +849,8 @@ static inline void aven_gl_shape_rounded_geometry_push_sector(
     Vec2 width_vec;
     mat2_mul_vec2(width_vec, trans, (Vec2){ 1.0f, 0.0f });
 
-    float width = 2.0f * vec2_mag(width_vec);
-    float height = 2.0f * vec2_mag(height_vec);
+    float wscale = 1.0f / (2.0f * vec2_mag(width_vec));
+    float hscale = 1.0f / (2.0f * vec2_mag(height_vec));
 
     Vec2 midpoint;
     vec2_add(midpoint, tex_points[1], tex_points[2]);
@@ -880,7 +880,7 @@ static inline void aven_gl_shape_rounded_geometry_push_sector(
     for (size_t i = 0; i < countof(points); i += 1) {
         list_push(geometry->vertices) = (AvenGlShapeRoundedVertex){
             .pos = { points[i][0], points[i][1] },
-            .info = { tex_points[i][0], tex_points[i][1], width, height },
+            .info = { tex_points[i][0], tex_points[i][1], wscale, hscale },
             .color = { color[0], color[1], color[2], color[3] },
         };
     }
@@ -912,8 +912,8 @@ static inline void aven_gl_shape_rounded_geometry_push_triangle(
     Vec2 base;
     vec2_sub(base, p2, p3);
 
-    float width = vec2_mag(up);
-    float height = vec2_mag(base);
+    float wscale = 1.0f / vec2_mag(up);
+    float hscale = 1.0f / vec2_mag(base);
 
     // Roundness calculation done for equilateral triangle
     float rs = 1.0f + roundness;
@@ -923,17 +923,17 @@ static inline void aven_gl_shape_rounded_geometry_push_triangle(
 
     list_push(geometry->vertices) = (AvenGlShapeRoundedVertex){
         .pos = { p1[0], p1[1] },
-        .info = { 0.0f, rs * 1.0f, height, width },
+        .info = { 0.0f, rs * 1.0f, hscale, wscale },
         .color = { color[0], color[1], color[2], color[3] },
     };
     list_push(geometry->vertices) = (AvenGlShapeRoundedVertex){
         .pos = { p2[0], p2[1] },
-        .info = { rs * -sx, rs * -0.5f, height, width },
+        .info = { rs * -sx, rs * -0.5f, hscale, wscale },
         .color = { color[0], color[1], color[2], color[3] },
     };
     list_push(geometry->vertices) = (AvenGlShapeRoundedVertex){
         .pos = { p3[0], p3[1] },
-        .info = { rs * sx, rs * -0.5f, height, width },
+        .info = { rs * sx, rs * -0.5f, hscale, wscale },
         .color = { color[0], color[1], color[2], color[3] },
     };
 
@@ -1009,29 +1009,29 @@ static inline void aven_gl_shape_rounded_geometry_push_square(
     Vec2 p1p4;
     vec2_sub(p1p4, p4, p1);
 
-    float width = vec2_mag(p1p2);
-    float height = vec2_mag(p1p4);
+    float wscale = 1.0f / vec2_mag(p1p2);
+    float hscale = 1.0f / vec2_mag(p1p4);
 
     size_t start_index = geometry->vertices.len;
 
     list_push(geometry->vertices) = (AvenGlShapeRoundedVertex){
         .pos = { p1[0], p1[1] },
-        .info = { -1.0f * rs, -1.0f * rs, width, height },
+        .info = { -1.0f * rs, -1.0f * rs, wscale, hscale },
         .color = { color[0], color[1], color[2], color[3] },
     };
     list_push(geometry->vertices) = (AvenGlShapeRoundedVertex){
         .pos = { p2[0], p2[1] },
-        .info = { 1.0f * rs, -1.0f * rs, width, height },
+        .info = { 1.0f * rs, -1.0f * rs, wscale, hscale },
         .color = { color[0], color[1], color[2], color[3] },
     };
     list_push(geometry->vertices) = (AvenGlShapeRoundedVertex){
         .pos = { p3[0], p3[1] },
-        .info = { 1.0f * rs, 1.0f * rs, width, height },
+        .info = { 1.0f * rs, 1.0f * rs, wscale, hscale },
         .color = { color[0], color[1], color[2], color[3] },
     };
     list_push(geometry->vertices) = (AvenGlShapeRoundedVertex){
         .pos = { p4[0], p4[1] },
-        .info = { -1.0f * rs, 1.0f * rs, width, height },
+        .info = { -1.0f * rs, 1.0f * rs, wscale, hscale },
         .color = { color[0], color[1], color[2], color[3] },
     };
 
@@ -1065,8 +1065,8 @@ static inline void aven_gl_shape_rounded_geometry_push_square_half(
     Vec2 p1p4;
     vec2_sub(p1p4, p4, p1);
 
-    float width = vec2_mag(p1p2);
-    float height = 2.0f * vec2_mag(p1p4);
+    float wscale = 1.0f / vec2_mag(p1p2);
+    float hscale = 1.0f / (2.0f * vec2_mag(p1p4));
 
     float rs = (1.0f / AVEN_MATH_SQRT2_F) +
         roundness * (1.0f - (1.0f / AVEN_MATH_SQRT2_F));
@@ -1075,22 +1075,22 @@ static inline void aven_gl_shape_rounded_geometry_push_square_half(
 
     list_push(geometry->vertices) = (AvenGlShapeRoundedVertex){
         .pos = { p1[0], p1[1] },
-        .info = { -1.0f * rs, 0.0f, width, height },
+        .info = { -1.0f * rs, 0.0f, wscale, hscale },
         .color = { color[0], color[1], color[2], color[3] },
     };
     list_push(geometry->vertices) = (AvenGlShapeRoundedVertex){
         .pos = { p2[0], p2[1] },
-        .info = { 1.0f * rs, 0.0f, width, height },
+        .info = { 1.0f * rs, 0.0f, wscale, hscale },
         .color = { color[0], color[1], color[2], color[3] },
     };
     list_push(geometry->vertices) = (AvenGlShapeRoundedVertex){
         .pos = { p3[0], p3[1] },
-        .info = { 1.0f * rs, 1.0f * rs, width, height },
+        .info = { 1.0f * rs, 1.0f * rs, wscale, hscale },
         .color = { color[0], color[1], color[2], color[3] },
     };
     list_push(geometry->vertices) = (AvenGlShapeRoundedVertex){
         .pos = { p4[0], p4[1] },
-        .info = { -1.0f * rs, 1.0f * rs, width, height },
+        .info = { -1.0f * rs, 1.0f * rs, wscale, hscale },
         .color = { color[0], color[1], color[2], color[3] },
     };
 
