@@ -13,6 +13,7 @@
 #include "deps/libaven/include/aven/arg.h"
 #include "deps/libaven/include/aven/build.h"
 #include "deps/libaven/include/aven/build/common.h"
+#include "deps/libaven/include/aven/fs.h"
 #include "deps/libaven/include/aven/io.h"
 #include "deps/libaven/include/aven/path.h"
 
@@ -22,8 +23,12 @@
 #define ARENA_SIZE (4096 * 2000)
 
 int main(int argc, char **argv) {
+    aven_fs_utf8_mode();
+
     void *mem = malloc(ARENA_SIZE);
-    assert(mem != NULL);
+    if (mem == NULL) {
+        aven_panic("malloc failed");
+    }
 
     AvenArena arena = aven_arena_init(mem, ARENA_SIZE);
 
@@ -47,17 +52,17 @@ int main(int argc, char **argv) {
     }
     AvenArgSlice args = slice_list(arg_list);
 
-    int error = aven_arg_parse(
+    AvenArgError arg_error = aven_arg_parse(
         args,
         argv,
         argc,
         aven_build_common_overview(),
         aven_build_common_usage()
     );
-    if (error != 0) {
-        if (error != AVEN_ARG_ERROR_HELP) {
-            aven_io_perrf("ARG PARSE ERROR: {}\n", aven_fmt_int(error));
-            return error;
+    if (arg_error != 0) {
+        if (arg_error != AVEN_ARG_ERROR_HELP) {
+            aven_io_perrf("ARG PARSE ERROR: {}\n", aven_fmt_int(arg_error));
+            return 1;
         }
         return 0;
     }
@@ -136,10 +141,13 @@ int main(int argc, char **argv) {
     if (opts.clean) {
         aven_build_step_clean(&root_step, arena);
     } else if (opts.test) {
-        error = aven_build_step_run(&root_step, arena);
-        if (error != 0) {
-            aven_io_perrf("BUILD FAILED: {}\n", aven_fmt_int(error));
-            return error;
+        AvenBuildStepRunError run_error = aven_build_step_run(
+            &root_step,
+            arena
+        );
+        if (run_error != 0) {
+            aven_io_perrf("BUILD FAILED: {}\n", aven_fmt_int(run_error));
+            return 1;
         }
     }
 
