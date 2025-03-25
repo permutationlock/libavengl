@@ -13,6 +13,7 @@
 #include "deps/libaven/include/aven/arg.h"
 #include "deps/libaven/include/aven/build.h"
 #include "deps/libaven/include/aven/build/common.h"
+#include "deps/libaven/include/aven/io.h"
 #include "deps/libaven/include/aven/path.h"
 
 #include "build.h"
@@ -50,12 +51,12 @@ int main(int argc, char **argv) {
         args,
         argv,
         argc,
-        aven_build_common_overview().ptr,
-        aven_build_common_usage().ptr
+        aven_build_common_overview(),
+        aven_build_common_usage()
     );
     if (error != 0) {
         if (error != AVEN_ARG_ERROR_HELP) {
-            fprintf(stderr, "ARG PARSE ERROR: %d\n", error);
+            aven_io_perrf("ARG PARSE ERROR: {}\n", aven_fmt_int(error));
             return error;
         }
         return 0;
@@ -137,8 +138,8 @@ int main(int argc, char **argv) {
     } else if (opts.test) {
         error = aven_build_step_run(&root_step, arena);
         if (error != 0) {
-            fprintf(stderr, "BUILD FAILED: %d\n", error);
-            return 1;
+            aven_io_perrf("BUILD FAILED: {}\n", aven_fmt_int(error));
+            return error;
         }
     }
 

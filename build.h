@@ -3,54 +3,58 @@
 
 AvenArg libavengl_build_arg_data[] = {
     {
-        .name = "-glfw-ccflags",
-        .description = "C compiler flags for GLFW",
+        .name = aven_str_init("-glfw-ccflags"),
+        .description = aven_str_init("C compiler flags for GLFW"),
         .type = AVEN_ARG_TYPE_STRING,
 #if defined(LIBAVENGL_DEFAULT_GLFW_CCFLAGS)
         .value = {
             .type = AVEN_ARG_TYPE_STRING,
-            .data = { .arg_str = LIBAVENGL_DEFAULT_GLFW_CCFLAGS },
+            .data = {
+                .arg_str = aven_str_init(LIBAVENGL_DEFAULT_GLFW_CCFLAGS),
+            },
         },
 #else
         .optional = true,
 #endif
     },
     {
-        .name = "-stb-ccflags",
-        .description = "C compiler flags for STB",
+        .name = aven_str_init("-stb-ccflags"),
+        .description = aven_str_init("C compiler flags for STB"),
         .type = AVEN_ARG_TYPE_STRING,
 #if defined(LIBAVENGL_DEFAULT_STB_CCFLAGS)
         .value = {
             .type = AVEN_ARG_TYPE_STRING,
-            .data = { .arg_str = LIBAVENGL_DEFAULT_STB_CCFLAGS },
+            .data = { .arg_str = aven_str_init(LIBAVENGL_DEFAULT_STB_CCFLAGS) },
         },
 #else
         .optional = true,
 #endif
     },
     {
-        .name = "-no-glfw",
-        .description = "Don't build GLFW locally",
+        .name = aven_str_init("-no-glfw"),
+        .description = aven_str_init("Don't build GLFW locally"),
         .type = AVEN_ARG_TYPE_BOOL,
     },
     {
-        .name = "-syslibs",
-        .description = "System libraries to link",
+        .name = aven_str_init("-syslibs"),
+        .description = aven_str_init("System libraries to link"),
         .type = AVEN_ARG_TYPE_STRING,
         .value = {
             .type = AVEN_ARG_TYPE_STRING,
-#if defined(BUILD_DEFAULT_SYSLIBS)
-            .data = { .arg_str = BUILD_DEFAULT_SYSLIBS },
+#if defined(LIBAVENGL_DEFAULT_SYSLIBS)
+            .data = { .arg_str = aven_str_init(LIBAVENGL_DEFAULT_SYSLIBS) },
 #elif defined(_WIN32)
     #if defined(_MSC_VER) and !defined(__clang__)
             .data = {
-                .arg_str = "kernel32.lib user32.lib gdi32.lib shell32.lib"
+                .arg_str = aven_str_init(
+                    "kernel32.lib user32.lib gdi32.lib shell32.lib"
+                ),
             },
     #else
-            .data = { .arg_str = "kernel32 user32 gdi32 shell32" },
+            .data = { .arg_str = aven_str_init("kernel32 user32 gdi32 shell32") },
     #endif
 #else
-            .data = { .arg_str = "m dl" },
+            .data = { .arg_str = aven_str_init("m dl") },
 #endif
         },
     },
@@ -86,7 +90,7 @@ static inline LibAvenGlBuildOpts libavengl_build_opts(
     if (aven_arg_has_arg(args, "-glfw-ccflags")) {
         opts.glfw.ccflags.valid = true;
         opts.glfw.ccflags.value = aven_str_split(
-            aven_str_cstr(aven_arg_get_str(args, "-glfw-ccflags")),
+            aven_arg_get_str(args, "-glfw-ccflags"),
             ' ',
             arena
         );
@@ -95,14 +99,14 @@ static inline LibAvenGlBuildOpts libavengl_build_opts(
     if (aven_arg_has_arg(args, "-stb-ccflags")) {
         opts.stb.ccflags.valid = true;
         opts.stb.ccflags.value = aven_str_split(
-            aven_str_cstr(aven_arg_get_str(args, "-stb-ccflags")),
+            aven_arg_get_str(args, "-stb-ccflags"),
             ' ',
             arena
         );
     }
 
     opts.syslibs = aven_str_split(
-        aven_str_cstr(aven_arg_get_str(args, "-syslibs")),
+        aven_arg_get_str(args, "-syslibs"),
         ' ',
         arena
     );
