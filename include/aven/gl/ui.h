@@ -831,7 +831,7 @@ static inline void aven_gl_ui_push_triangle(
     Aff2 inner_trans;
     aff2_position(
         inner_trans,
-        (Vec2){ 0.0f, 0.0f },
+        (Vec2){ 0.0f, -0.05f },
         (Vec2){ 0.75f, 0.75f }
     );
     aff2_compose(inner_trans, trans, inner_trans);
