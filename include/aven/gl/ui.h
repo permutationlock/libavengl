@@ -822,7 +822,7 @@ static inline void aven_gl_ui_push_triangle(
     aven_gl_shape_rounded_geometry_push_triangle(
         &ctx->shape.geometry,
         trans,
-        (Vec2){ 0.0f, 0.66f },
+        (Vec2){ 0.0f, 0.75f },
         (Vec2){ 0.75f, -0.66f },
         (Vec2){ -0.75f, -0.66f },
         0.1f,
@@ -838,11 +838,11 @@ static inline void aven_gl_ui_push_triangle(
     aven_gl_shape_rounded_geometry_push_triangle(
         &ctx->shape.geometry,
         inner_trans,
-        (Vec2){ 0.0f, 0.66f },
+        (Vec2){ 0.0f, 0.75f },
         (Vec2){ 0.75f, -0.66f },
         (Vec2){ -0.75f, -0.66f },
         0.1f,
-        colors->primary
+        colors->background
     );
 }
 
