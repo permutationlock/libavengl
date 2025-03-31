@@ -61,7 +61,6 @@ typedef struct {
     AvenGlUiId active_id;
     AvenGlUiId hot_id;
     AvenGlUiId next_hot_id;
-    float pixel_size;
     bool empty_click;
 } AvenGlUi;
 
@@ -1471,8 +1470,8 @@ typedef struct {
     bool bot;
 } AvenGlUiBorder;
 
-static const AvenGlUiBorder aven_gl_ui_border_all = { true, true, true, true };
-static const AvenGlUiBorder aven_gl_ui_border_none = { 0 };
+#define AVEN_GL_UI_BORDER_ALL (AvenGlUiBorder){ true, true, true, true }
+#define AVEN_GL_UI_BORDER_NONE (AvenGlUiBorder){ 0 }
 
 static inline bool aven_gl_ui_window_internal(
     AvenGlUi *ctx,
