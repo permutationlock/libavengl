@@ -809,7 +809,39 @@ static inline void aven_gl_ui_push_play(
         (Vec2){ -0.6f, 0.75f },
         (Vec2){ 0.9f, 0.0f },
         (Vec2){ -0.6f, -0.75f },
-        0.25f,
+        0.1f,
+        colors->primary
+    );
+}
+
+static inline void aven_gl_ui_push_triangle(
+    AvenGlUi *ctx,
+    Aff2 trans,
+    AvenGlUiColors* colors
+) {
+    aven_gl_shape_rounded_geometry_push_triangle(
+        &ctx->shape.geometry,
+        trans,
+        (Vec2){ 0.0f, 0.66f },
+        (Vec2){ 0.75f, -0.66f },
+        (Vec2){ -0.75f, -0.66f },
+        0.1f,
+        colors->primary
+    );
+    Aff2 inner_trans;
+    aff2_position(
+        inner_trans,
+        (Vec2){ 0.0f, 0.0f },
+        (Vec2){ 0.75f, 0.75f }
+    );
+    aff2_compose(inner_trans, trans, inner_trans);
+    aven_gl_shape_rounded_geometry_push_triangle(
+        &ctx->shape.geometry,
+        inner_trans,
+        (Vec2){ 0.0f, 0.66f },
+        (Vec2){ 0.75f, -0.66f },
+        (Vec2){ -0.75f, -0.66f },
+        0.1f,
         colors->primary
     );
 }
@@ -1181,6 +1213,7 @@ typedef enum {
     AVEN_GL_UI_BUTTON_TYPE_CROSS,
     AVEN_GL_UI_BUTTON_TYPE_CHECK,
     AVEN_GL_UI_BUTTON_TYPE_DICE,
+    AVEN_GL_UI_BUTTON_TYPE_TRIANGLE,
     AVEN_GL_UI_BUTTON_TYPE_MAX,
 } AvenGlUiButtonType;
 
@@ -1340,6 +1373,10 @@ static inline void aven_gl_ui_push_button(
         }
         case AVEN_GL_UI_BUTTON_TYPE_DICE: {
             aven_gl_ui_push_dice(ctx, inner_trans, colors);
+            break;
+        }
+        case AVEN_GL_UI_BUTTON_TYPE_TRIANGLE: {
+            aven_gl_ui_push_triangle(ctx, inner_trans, colors);
             break;
         }
     }
