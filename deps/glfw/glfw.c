@@ -73,7 +73,6 @@
     #include "src/posix_thread.c"
     #include "src/posix_time.c"
     #include "src/posix_poll.c"
-    #include "src/null_joystick.c"
     #include "src/xkb_unicode.c"
 
     #include "src/x11_init.c"
