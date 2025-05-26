@@ -19,7 +19,7 @@
 
 #include "build.h"
 #include "deps/libaven/build.h"
- 
+
 #define ARENA_SIZE (4096 * 2000)
 
 int main(int argc, char **argv) {
@@ -122,7 +122,7 @@ int main(int argc, char **argv) {
     }
 
     AvenBuildStepPtrSlice objs = slice_list(obj_list);
-    
+
     AvenBuildStep test_step = aven_build_common_step_cc_ld_run_exe_ex(
         &opts,
         includes,
@@ -141,16 +141,19 @@ int main(int argc, char **argv) {
     if (opts.clean) {
         aven_build_step_clean(&root_step, arena);
     } else if (opts.test) {
-        AvenBuildStepRunError run_error = aven_build_step_run(
-            &root_step,
-            arena
-        );
-        if (run_error != 0) {
-            aven_io_perrf("BUILD FAILED: {}\n", aven_fmt_int(run_error));
-            return 1;
+        if (opts.dry_run) {
+            aven_build_step_dry_run(&root_step, arena);
+        } else {
+            AvenBuildStepRunError run_error = aven_build_step_run(
+                &root_step,
+                arena
+            );
+            if (run_error != 0) {
+                aven_io_perrf("BUILD FAILED: {}\n", aven_fmt_int(run_error));
+                return 1;
+            }
         }
     }
 
     return 0;
 }
-

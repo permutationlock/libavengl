@@ -324,7 +324,9 @@ int main(void) {
     }
     if (gl.GetRenderbufferParameteriv == NULL) {
         fail = true;
-        aven_io_print("test failed: aven_gl_load glGetRenderbufferParameteriv\n");
+        aven_io_print(
+            "test failed: aven_gl_load glGetRenderbufferParameteriv\n"
+        );
     }
     if (gl.GetShaderiv == NULL) {
         fail = true;
