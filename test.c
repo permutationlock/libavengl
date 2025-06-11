@@ -6,7 +6,6 @@
 #include <aven/fs.h>
 #include <aven/gl.h>
 #include <aven/gl/shape.h>
-#include <aven/gl/text.h>
 #include <aven/gl/texture.h>
 #include <aven/gl/ui.h>
 #include <aven/gl/window.h>
