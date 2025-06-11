@@ -197,6 +197,7 @@
         AvenStr libaven_include_path,
         AvenStr root_path,
         AvenBuildStep *out_dir_step,
+        bool pic,
         AvenArena *arena
     ) {
         AvenBuildCommonOpts stb_opts = *opts;
@@ -219,6 +220,7 @@
                 aven_str("stb.c")
             ),
             out_dir_step,
+            pic,
             arena
         );
     }
@@ -228,6 +230,7 @@
         LibAvenGlBuildOpts *libavengl_opts,
         AvenStr root_path,
         AvenBuildStep *out_dir_step,
+        bool pic,
         AvenArena *arena
     ) {
         AvenBuildCommonOpts glfw_opts = *opts;
@@ -257,6 +260,7 @@
                 aven_str("glfw.c")
             ),
             out_dir_step,
+            pic,
             arena
         );
     }

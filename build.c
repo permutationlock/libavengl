@@ -99,6 +99,7 @@ int main(int argc, char **argv) {
             &libavengl_opts,
             root_dir,
             &work_dir_step,
+            false,
             &arena
         );
         glfw_obj_step.valid = true;
