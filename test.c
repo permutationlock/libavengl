@@ -144,6 +144,59 @@ void test_aven_gl_shape_rounded(AvenGlWindow *win) {
     aven_gl_shape_rounded_ctx_deinit(gl, &ctx);
 }
 
+void test_aven_gl_texture(AvenGlWindow *win) {
+    uint32_t texture_data[] = { 0xffffffff, 0xff0000ff, 0xff0000ff, 0xffffffff };
+    Slice(uint32_t) texture = slice_array(texture_data);
+    AvenGl *gl = &win->gl;
+    AvenArena temp_arena = test_arena;
+    AvenGlTextureCtx ctx = aven_gl_texture_ctx_init(
+        gl,
+        2,
+        2,
+        (AvenGlTextureBytesOptional){
+            .valid = true,
+            .value = slice_as_bytes(texture),
+        }
+    );
+    AvenGlTextureGeometry geometry = aven_gl_texture_geometry_init(
+        1,
+        &temp_arena
+    );
+    AvenGlTextureBuffer buffer = aven_gl_texture_buffer_init(
+        gl,
+        &geometry,
+        AVEN_GL_BUFFER_USAGE_DYNAMIC
+    );
+    Aff2 trans;
+    aff2_identity(trans);
+    Aff2 camera;
+    aff2_camera_position(camera, (Vec2){ 0.0f, 0.0f }, (Vec2){ 1.25f, 1.25f });
+    AvenTimeInst start = aven_time_now();
+    while (aven_time_since(aven_time_now(), start) < 2 * AVEN_TIME_NSEC_PER_SEC) {
+        aven_gl_texture_geometry_clear(&geometry);
+        aven_gl_texture_geometry_push_square(&geometry, trans, trans);
+        aven_gl_texture_buffer_update(gl, &buffer, &geometry);
+
+        int width;
+        int height;
+        glfwGetFramebufferSize(win->window, &width, &height);
+        gl->Viewport(0, 0, width, height);
+        assert(gl->GetError() == 0);
+
+        gl->ClearColor(0.75f, 0.75f, 0.75f, 1.0f);
+        assert(gl->GetError() == 0);
+        gl->Clear(GL_COLOR_BUFFER_BIT);
+        assert(gl->GetError() == 0);
+        aven_gl_texture_draw(gl, &ctx, &buffer, camera);
+
+        glfwSwapBuffers(win->window);
+        glfwPollEvents();
+    }
+    aven_gl_texture_buffer_deinit(gl, &buffer);
+    aven_gl_texture_geometry_deinit(&geometry);
+    aven_gl_texture_ctx_deinit(gl, &ctx);
+}
+
 int main(void) {
     aven_fs_utf8_mode();
     void *mem = malloc(ARENA_SIZE);
@@ -734,6 +787,7 @@ int main(void) {
 
     test_aven_gl_shape(&win);
     test_aven_gl_shape_rounded(&win);
+    test_aven_gl_texture(&win);
 
     return (int)fail;
 }

@@ -236,6 +236,10 @@
         return geometry;
     }
 
+    static inline void aven_gl_texture_geometry_deinit(AvenGlTextureGeometry *geometry) {
+        *geometry = (AvenGlTextureGeometry){ 0 };
+    }
+
     static inline void aven_gl_texture_geometry_push_square(
         AvenGlTextureGeometry *geometry,
         Aff2 trans,
@@ -397,7 +401,7 @@
         assert(gl->GetError() == 0);
     }
 
-    static inline void aven_gl_texture_geometry_draw(
+    static inline void aven_gl_texture_draw(
         AvenGl *gl,
         AvenGlTextureCtx *ctx,
         AvenGlTextureBuffer *buffer,
