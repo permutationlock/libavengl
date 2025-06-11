@@ -5,15 +5,144 @@
 #include <aven/arena.h>
 #include <aven/fs.h>
 #include <aven/gl.h>
+#include <aven/gl/shape.h>
+#include <aven/gl/text.h>
+#include <aven/gl/texture.h>
+#include <aven/gl/ui.h>
+#include <aven/gl/window.h>
 #include <aven/io.h>
+#include <aven/time.h>
 
 #include <stdlib.h>
-
-#include <GLFW/glfw3.h>
 
 #define ARENA_SIZE (4096 * 16)
 
 AvenArena test_arena;
+
+void test_aven_gl_shape(AvenGlWindow *win) {
+    AvenGl *gl = &win->gl;
+    AvenArena temp_arena = test_arena;
+    AvenGlShapeCtx ctx = aven_gl_shape_ctx_init(gl);
+    AvenGlShapeGeometry geometry = aven_gl_shape_geometry_init(
+        16,
+        64,
+        &temp_arena
+    );
+    AvenGlShapeBuffer buffer = aven_gl_shape_buffer_init(
+        gl,
+        &geometry,
+        AVEN_GL_BUFFER_USAGE_DYNAMIC
+    );
+    Aff2 trans;
+    aff2_identity(trans);
+    Aff2 camera;
+    aff2_camera_position(camera, (Vec2){ 0.0f, 0.0f }, (Vec2){ 1.25f, 1.25f });
+    AvenTimeInst start = aven_time_now();
+    while (aven_time_since(aven_time_now(), start) < 2 * AVEN_TIME_NSEC_PER_SEC) {
+        aven_gl_shape_geometry_clear(&geometry);
+        aven_gl_shape_geometry_push_square(
+            &geometry,
+            trans,
+            (Vec4){ 1.0f, 0.0f, 0.0f, 1.0f }
+        );
+        aven_gl_shape_geometry_push_triangle_isoceles(
+            &geometry,
+            trans,
+            (Vec4){ 0.0f, 1.0f, 0.0f, 1.0f }
+        );
+        aven_gl_shape_geometry_push_triangle_right(
+            &geometry,
+            trans,
+            (Vec4){ 0.0f, 0.0f, 1.0f, 1.0f }
+        );
+        aven_gl_shape_buffer_update(gl, &buffer, &geometry);
+
+        int width;
+        int height;
+        glfwGetFramebufferSize(win->window, &width, &height);
+        gl->Viewport(0, 0, width, height);
+        assert(gl->GetError() == 0);
+
+        gl->ClearColor(0.75f, 0.75f, 0.75f, 1.0f);
+        assert(gl->GetError() == 0);
+        gl->Clear(GL_COLOR_BUFFER_BIT);
+        assert(gl->GetError() == 0);
+        aven_gl_shape_draw(gl, &ctx, &buffer, camera);
+
+        glfwSwapBuffers(win->window);
+        glfwPollEvents();
+    }
+    aven_gl_shape_buffer_deinit(gl, &buffer);
+    aven_gl_shape_geometry_deinit(&geometry);
+    aven_gl_shape_ctx_deinit(gl, &ctx);
+}
+
+void test_aven_gl_shape_rounded(AvenGlWindow *win) {
+    AvenGl *gl = &win->gl;
+    AvenArena temp_arena = test_arena;
+    AvenGlShapeRoundedCtx ctx = aven_gl_shape_rounded_ctx_init(gl);
+    AvenGlShapeRoundedGeometry geometry = aven_gl_shape_rounded_geometry_init(
+        16,
+        64,
+        &temp_arena
+    );
+    AvenGlShapeRoundedBuffer buffer = aven_gl_shape_rounded_buffer_init(
+        gl,
+        &geometry,
+        AVEN_GL_BUFFER_USAGE_DYNAMIC
+    );
+    Aff2 trans;
+    aff2_identity(trans);
+    Aff2 camera;
+    aff2_camera_position(camera, (Vec2){ 0.0f, 0.0f }, (Vec2){ 1.25f, 1.25f });
+    AvenTimeInst start = aven_time_now();
+    while (aven_time_since(aven_time_now(), start) < 2 * AVEN_TIME_NSEC_PER_SEC) {
+        aven_gl_shape_rounded_geometry_clear(&geometry);
+        aven_gl_shape_rounded_geometry_push_square(
+            &geometry,
+            trans,
+            0.25f,
+            (Vec4){ 1.0f, 0.0f, 0.0f, 1.0f }
+        );
+        aven_gl_shape_rounded_geometry_push_triangle_isoceles(
+            &geometry,
+            trans,
+            0.25f,
+            (Vec4){ 0.0f, 1.0f, 0.0f, 1.0f }
+        );
+        aven_gl_shape_rounded_geometry_push_triangle_right(
+            &geometry,
+            trans,
+            0.25f,
+            (Vec4){ 0.0f, 0.0f, 1.0f, 1.0f }
+        );
+        aven_gl_shape_rounded_buffer_update(gl, &buffer, &geometry);
+
+        int width;
+        int height;
+        glfwGetFramebufferSize(win->window, &width, &height);
+        gl->Viewport(0, 0, width, height);
+        assert(gl->GetError() == 0);
+
+        gl->ClearColor(0.75f, 0.75f, 0.75f, 1.0f);
+        assert(gl->GetError() == 0);
+        gl->Clear(GL_COLOR_BUFFER_BIT);
+        assert(gl->GetError() == 0);
+        aven_gl_shape_rounded_draw(
+            gl,
+            &ctx,
+            &buffer,
+            2.0f / (float)height,
+            camera
+        );
+
+        glfwSwapBuffers(win->window);
+        glfwPollEvents();
+    }
+    aven_gl_shape_rounded_buffer_deinit(gl, &buffer);
+    aven_gl_shape_rounded_geometry_deinit(&geometry);
+    aven_gl_shape_rounded_ctx_deinit(gl, &ctx);
+}
 
 int main(void) {
     aven_fs_utf8_mode();
@@ -23,616 +152,588 @@ int main(void) {
     int width = 480;
     int height = 480;
 
-    glfwInit();
-    glfwWindowHint(GLFW_CLIENT_API, GLFW_OPENGL_ES_API);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 2);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
-    glfwWindowHint(GLFW_CONTEXT_CREATION_API, GLFW_EGL_CONTEXT_API);
-
-    GLFWwindow *window = glfwCreateWindow(
-        (int)width,
-        (int)height,
-        "AvenGl Test",
-        NULL,
-        NULL
-    );
-    if (window == NULL) {
-        glfwWindowHint(GLFW_CONTEXT_CREATION_API, GLFW_NATIVE_CONTEXT_API);
-        window = glfwCreateWindow(
-            (int)width,
-            (int)height,
-            "AvenGl Test",
-            NULL,
-            NULL
-        );
-        if (window == NULL) {
-            aven_io_print("test failed: glfwCreateWindow\n");
-            return 1;
-        }
-    }
-
-    glfwMakeContextCurrent(window);
-
-    AvenGl gl = aven_gl_load(glfwGetProcAddress);
+    AvenGlWindow win = aven_gl_window(width, height, "AvenGL Test");
     bool fail = false;
 
-    if (gl.ActiveTexture == NULL) {
+    if (win.gl.ActiveTexture == NULL) {
         fail = true;
         aven_io_print("test failed: aven_gl_load glActiveTexture\n");
     }
-    if (gl.AttachShader == NULL) {
+    if (win.gl.AttachShader == NULL) {
         fail = true;
         aven_io_print("test failed: aven_gl_load glAttachShader\n");
     }
-    if (gl.BindAttribLocation == NULL) {
+    if (win.gl.BindAttribLocation == NULL) {
         fail = true;
         aven_io_print("test failed: aven_gl_load glBindAttribLocation\n");
     }
-    if (gl.BindBuffer == NULL) {
+    if (win.gl.BindBuffer == NULL) {
         fail = true;
         aven_io_print("test failed: aven_gl_load glBindBuffer\n");
     }
-    if (gl.BindFramebuffer == NULL) {
+    if (win.gl.BindFramebuffer == NULL) {
         fail = true;
         aven_io_print("test failed: aven_gl_load glBindFramebuffer\n");
     }
-    if (gl.BindRenderbuffer == NULL) {
+    if (win.gl.BindRenderbuffer == NULL) {
         fail = true;
         aven_io_print("test failed: aven_gl_load glBindRenderbuffer\n");
     }
-    if (gl.BindTexture == NULL) {
+    if (win.gl.BindTexture == NULL) {
         fail = true;
         aven_io_print("test failed: aven_gl_load glBindTexture\n");
     }
-    if (gl.BlendColor == NULL) {
+    if (win.gl.BlendColor == NULL) {
         fail = true;
         aven_io_print("test failed: aven_gl_load glBlendColor\n");
     }
-    if (gl.BlendEquation == NULL) {
+    if (win.gl.BlendEquation == NULL) {
         fail = true;
         aven_io_print("test failed: aven_gl_load glBlendEquation\n");
     }
-    if (gl.BlendEquationSeparate == NULL) {
+    if (win.gl.BlendEquationSeparate == NULL) {
         fail = true;
         aven_io_print("test failed: aven_gl_load glBlendEquationSeparate\n");
     }
-    if (gl.BlendFunc == NULL) {
+    if (win.gl.BlendFunc == NULL) {
         fail = true;
         aven_io_print("test failed: aven_gl_load glBlendFunc\n");
     }
-    if (gl.BlendFuncSeparate == NULL) {
+    if (win.gl.BlendFuncSeparate == NULL) {
         fail = true;
         aven_io_print("test failed: aven_gl_load glBlendFuncSeparate\n");
     }
-    if (gl.BufferData == NULL) {
+    if (win.gl.BufferData == NULL) {
         fail = true;
         aven_io_print("test failed: aven_gl_load glBufferData\n");
     }
-    if (gl.BufferSubData == NULL) {
+    if (win.gl.BufferSubData == NULL) {
         fail = true;
         aven_io_print("test failed: aven_gl_load glBufferSubData\n");
     }
-    if (gl.CheckFramebufferStatus == NULL) {
+    if (win.gl.CheckFramebufferStatus == NULL) {
         fail = true;
         aven_io_print("test failed: aven_gl_load glCheckFramebufferStatus\n");
     }
-    if (gl.Clear == NULL) {
+    if (win.gl.Clear == NULL) {
         fail = true;
         aven_io_print("test failed: aven_gl_load glClear\n");
     }
-    if (gl.ClearColor == NULL) {
+    if (win.gl.ClearColor == NULL) {
         fail = true;
         aven_io_print("test failed: aven_gl_load glClearColor\n");
     }
-    if (gl.ClearDepth == NULL) {
+    if (win.gl.ClearDepth == NULL) {
         fail = true;
         aven_io_print("test failed: aven_gl_load glClearDepth\n");
     }
-    if (gl.ClearStencil == NULL) {
+    if (win.gl.ClearStencil == NULL) {
         fail = true;
         aven_io_print("test failed: aven_gl_load glClearStencil\n");
     }
-    if (gl.ColorMask == NULL) {
+    if (win.gl.ColorMask == NULL) {
         fail = true;
         aven_io_print("test failed: aven_gl_load glColorMask\n");
     }
-    if (gl.CompileShader == NULL) {
+    if (win.gl.CompileShader == NULL) {
         fail = true;
         aven_io_print("test failed: aven_gl_load glCompileShader\n");
     }
-    if (gl.CompressedTexImage2D == NULL) {
+    if (win.gl.CompressedTexImage2D == NULL) {
         fail = true;
         aven_io_print("test failed: aven_gl_load glCompressedTexImage2D\n");
     }
-    if (gl.CompressedTexSubImage2D == NULL) {
+    if (win.gl.CompressedTexSubImage2D == NULL) {
         fail = true;
         aven_io_print("test failed: aven_gl_load glCompressedTexSubImage2D\n");
     }
-    if (gl.CopyTexImage2D == NULL) {
+    if (win.gl.CopyTexImage2D == NULL) {
         fail = true;
         aven_io_print("test failed: aven_gl_load glCopyTexImage2D\n");
     }
-    if (gl.CopyTexSubImage2D == NULL) {
+    if (win.gl.CopyTexSubImage2D == NULL) {
         fail = true;
         aven_io_print("test failed: aven_gl_load glCopyTexSubImage2D\n");
     }
-    if (gl.CreateProgram == NULL) {
+    if (win.gl.CreateProgram == NULL) {
         fail = true;
         aven_io_print("test failed: aven_gl_load glCreateProgram\n");
     }
-    if (gl.CreateShader == NULL) {
+    if (win.gl.CreateShader == NULL) {
         fail = true;
         aven_io_print("test failed: aven_gl_load glCreateShader\n");
     }
-    if (gl.CullFace == NULL) {
+    if (win.gl.CullFace == NULL) {
         fail = true;
         aven_io_print("test failed: aven_gl_load glCullFace\n");
     }
-    if (gl.DeleteBuffers == NULL) {
+    if (win.gl.DeleteBuffers == NULL) {
         fail = true;
         aven_io_print("test failed: aven_gl_load glDeleteBuffers\n");
     }
-    if (gl.DeleteFramebuffers == NULL) {
+    if (win.gl.DeleteFramebuffers == NULL) {
         fail = true;
         aven_io_print("test failed: aven_gl_load glDeleteFramebuffers\n");
     }
-    if (gl.DeleteProgram == NULL) {
+    if (win.gl.DeleteProgram == NULL) {
         fail = true;
         aven_io_print("test failed: aven_gl_load glDeleteProgram\n");
     }
-    if (gl.DeleteRenderbuffers == NULL) {
+    if (win.gl.DeleteRenderbuffers == NULL) {
         fail = true;
         aven_io_print("test failed: aven_gl_load glDeleteRenderbuffers\n");
     }
-    if (gl.DeleteShader == NULL) {
+    if (win.gl.DeleteShader == NULL) {
         fail = true;
         aven_io_print("test failed: aven_gl_load glDeleteShader\n");
     }
-    if (gl.DeleteTextures == NULL) {
+    if (win.gl.DeleteTextures == NULL) {
         fail = true;
         aven_io_print("test failed: aven_gl_load glDeleteTextures\n");
     }
-    if (gl.DepthFunc == NULL) {
+    if (win.gl.DepthFunc == NULL) {
         fail = true;
         aven_io_print("test failed: aven_gl_load glDepthFunc\n");
     }
-    if (gl.DepthMask == NULL) {
+    if (win.gl.DepthMask == NULL) {
         fail = true;
         aven_io_print("test failed: aven_gl_load glDepthMask\n");
     }
-    if (gl.DepthRangef == NULL) {
+    if (win.gl.DepthRangef == NULL) {
         fail = true;
         aven_io_print("test failed: aven_gl_load glDepthRangef\n");
     }
-    if (gl.DetachShader == NULL) {
+    if (win.gl.DetachShader == NULL) {
         fail = true;
         aven_io_print("test failed: aven_gl_load glDetachShader\n");
     }
-    if (gl.Disable == NULL) {
+    if (win.gl.Disable == NULL) {
         fail = true;
         aven_io_print("test failed: aven_gl_load glDisable\n");
     }
-    if (gl.DisableVertexAttribArray == NULL) {
+    if (win.gl.DisableVertexAttribArray == NULL) {
         fail = true;
         aven_io_print("test failed: aven_gl_load glDisableVertexAttribArray\n");
     }
-    if (gl.DrawArrays == NULL) {
+    if (win.gl.DrawArrays == NULL) {
         fail = true;
         aven_io_print("test failed: aven_gl_load glDrawArrays\n");
     }
-    if (gl.DrawElements == NULL) {
+    if (win.gl.DrawElements == NULL) {
         fail = true;
         aven_io_print("test failed: aven_gl_load glDrawElements\n");
     }
-    if (gl.Enable == NULL) {
+    if (win.gl.Enable == NULL) {
         fail = true;
         aven_io_print("test failed: aven_gl_load glEnable\n");
     }
-    if (gl.EnableVertexAttribArray == NULL) {
+    if (win.gl.EnableVertexAttribArray == NULL) {
         fail = true;
         aven_io_print("test failed: aven_gl_load glEnableVertexAttribArray\n");
     }
-    if (gl.Finish == NULL) {
+    if (win.gl.Finish == NULL) {
         fail = true;
         aven_io_print("test failed: aven_gl_load glFinish\n");
     }
-    if (gl.Flush == NULL) {
+    if (win.gl.Flush == NULL) {
         fail = true;
         aven_io_print("test failed: aven_gl_load glFlush\n");
     }
-    if (gl.FramebufferRenderbuffer == NULL) {
+    if (win.gl.FramebufferRenderbuffer == NULL) {
         fail = true;
         aven_io_print("test failed: aven_gl_load glFramebufferRenderbuffer\n");
     }
-    if (gl.FramebufferTexture2D == NULL) {
+    if (win.gl.FramebufferTexture2D == NULL) {
         fail = true;
         aven_io_print("test failed: aven_gl_load glFramebufferTexture2D\n");
     }
-    if (gl.FrontFace == NULL) {
+    if (win.gl.FrontFace == NULL) {
         fail = true;
         aven_io_print("test failed: aven_gl_load glFrontFace\n");
     }
-    if (gl.GenBuffers == NULL) {
+    if (win.gl.GenBuffers == NULL) {
         fail = true;
         aven_io_print("test failed: aven_gl_load glGenBuffers\n");
     }
-    if (gl.GenerateMipmap == NULL) {
+    if (win.gl.GenerateMipmap == NULL) {
         fail = true;
         aven_io_print("test failed: aven_gl_load glGenerateMipmap\n");
     }
-    if (gl.GenFramebuffers == NULL) {
+    if (win.gl.GenFramebuffers == NULL) {
         fail = true;
         aven_io_print("test failed: aven_gl_load glGenFramebuffers\n");
     }
-    if (gl.GenRenderbuffers == NULL) {
+    if (win.gl.GenRenderbuffers == NULL) {
         fail = true;
         aven_io_print("test failed: aven_gl_load glGenRenderbuffers\n");
     }
-    if (gl.GenTextures == NULL) {
+    if (win.gl.GenTextures == NULL) {
         fail = true;
         aven_io_print("test failed: aven_gl_load glGenTextures\n");
     }
-    if (gl.GetActiveAttrib == NULL) {
+    if (win.gl.GetActiveAttrib == NULL) {
         fail = true;
         aven_io_print("test failed: aven_gl_load glGetActiveAttrib\n");
     }
-    if (gl.GetActiveUniform == NULL) {
+    if (win.gl.GetActiveUniform == NULL) {
         fail = true;
         aven_io_print("test failed: aven_gl_load glGetActiveUniform\n");
     }
-    if (gl.GetAttachedShaders == NULL) {
+    if (win.gl.GetAttachedShaders == NULL) {
         fail = true;
         aven_io_print("test failed: aven_gl_load glGetAttachedShaders\n");
     }
-    if (gl.GetAttribLocation == NULL) {
+    if (win.gl.GetAttribLocation == NULL) {
         fail = true;
         aven_io_print("test failed: aven_gl_load glGetAttribLocation\n");
     }
-    if (gl.GetBooleanv == NULL) {
+    if (win.gl.GetBooleanv == NULL) {
         fail = true;
         aven_io_print("test failed: aven_gl_load glGetBooleanv\n");
     }
-    if (gl.GetBufferParameteriv == NULL) {
+    if (win.gl.GetBufferParameteriv == NULL) {
         fail = true;
         aven_io_print("test failed: aven_gl_load glGetBufferParameteriv\n");
     }
-    if (gl.GetError == NULL) {
+    if (win.gl.GetError == NULL) {
         fail = true;
         aven_io_print("test failed: aven_gl_load glGetError\n");
     }
-    if (gl.GetFloatv == NULL) {
+    if (win.gl.GetFloatv == NULL) {
         fail = true;
         aven_io_print("test failed: aven_gl_load glGetFloatv\n");
     }
-    if (gl.GetFramebufferAttachmentParameteriv == NULL) {
+    if (win.gl.GetFramebufferAttachmentParameteriv == NULL) {
         fail = true;
         aven_io_print(
             "test failed: aven_gl_load glGetFramebufferAttachmentParameteriv\n"
         );
     }
-    if (gl.GetIntegerv == NULL) {
+    if (win.gl.GetIntegerv == NULL) {
         fail = true;
         aven_io_print("test failed: aven_gl_load glGetIntegerv\n");
     }
-    if (gl.GetProgramiv == NULL) {
+    if (win.gl.GetProgramiv == NULL) {
         fail = true;
         aven_io_print("test failed: aven_gl_load glGetProgramiv\n");
     }
-    if (gl.GetProgramInfoLog == NULL) {
+    if (win.gl.GetProgramInfoLog == NULL) {
         fail = true;
         aven_io_print("test failed: aven_gl_load glGetProgramInfoLog\n");
     }
-    if (gl.GetRenderbufferParameteriv == NULL) {
+    if (win.gl.GetRenderbufferParameteriv == NULL) {
         fail = true;
         aven_io_print(
             "test failed: aven_gl_load glGetRenderbufferParameteriv\n"
         );
     }
-    if (gl.GetShaderiv == NULL) {
+    if (win.gl.GetShaderiv == NULL) {
         fail = true;
         aven_io_print("test failed: aven_gl_load glGetShaderiv\n");
     }
-    if (gl.GetShaderInfoLog == NULL) {
+    if (win.gl.GetShaderInfoLog == NULL) {
         fail = true;
         aven_io_print("test failed: aven_gl_load glGetShaderInfoLog\n");
     }
-    if (gl.GetShaderPrecisionFormat == NULL) {
+    if (win.gl.GetShaderPrecisionFormat == NULL) {
         fail = true;
         aven_io_print("test failed: aven_gl_load glGetShaderPrecisionFormat\n");
     }
-    if (gl.GetShaderSource == NULL) {
+    if (win.gl.GetShaderSource == NULL) {
         fail = true;
         aven_io_print("test failed: aven_gl_load glGetShaderSource\n");
     }
-    if (gl.GetString == NULL) {
+    if (win.gl.GetString == NULL) {
         fail = true;
         aven_io_print("test failed: aven_gl_load glGetString\n");
     }
-    if (gl.GetTexParameterfv == NULL) {
+    if (win.gl.GetTexParameterfv == NULL) {
         fail = true;
         aven_io_print("test failed: aven_gl_load glGetTexParameterfv\n");
     }
-    if (gl.GetTexParameteriv == NULL) {
+    if (win.gl.GetTexParameteriv == NULL) {
         fail = true;
         aven_io_print("test failed: aven_gl_load glGetTexParameteriv\n");
     }
-    if (gl.GetUniformfv == NULL) {
+    if (win.gl.GetUniformfv == NULL) {
         fail = true;
         aven_io_print("test failed: aven_gl_load glGetUniformfv\n");
     }
-    if (gl.GetUniformiv == NULL) {
+    if (win.gl.GetUniformiv == NULL) {
         fail = true;
         aven_io_print("test failed: aven_gl_load glGetUniformiv\n");
     }
-    if (gl.GetUniformLocation == NULL) {
+    if (win.gl.GetUniformLocation == NULL) {
         fail = true;
         aven_io_print("test failed: aven_gl_load glGetUniformLocation\n");
     }
-    if (gl.GetVertexAttribfv == NULL) {
+    if (win.gl.GetVertexAttribfv == NULL) {
         fail = true;
         aven_io_print("test failed: aven_gl_load glGetVertexAttribfv\n");
     }
-    if (gl.GetVertexAttribiv == NULL) {
+    if (win.gl.GetVertexAttribiv == NULL) {
         fail = true;
         aven_io_print("test failed: aven_gl_load glGetVertexAttribiv\n");
     }
-    if (gl.GetVertexAttribPointerv == NULL) {
+    if (win.gl.GetVertexAttribPointerv == NULL) {
         fail = true;
         aven_io_print("test failed: aven_gl_load glGetVertexAttribPointerv\n");
     }
-    if (gl.Hint == NULL) {
+    if (win.gl.Hint == NULL) {
         fail = true;
         aven_io_print("test failed: aven_gl_load glHint\n");
     }
-    if (gl.IsBuffer == NULL) {
+    if (win.gl.IsBuffer == NULL) {
         fail = true;
         aven_io_print("test failed: aven_gl_load glIsBuffer\n");
     }
-    if (gl.IsEnabled == NULL) {
+    if (win.gl.IsEnabled == NULL) {
         fail = true;
         aven_io_print("test failed: aven_gl_load glIsEnabled\n");
     }
-    if (gl.IsFramebuffer == NULL) {
+    if (win.gl.IsFramebuffer == NULL) {
         fail = true;
         aven_io_print("test failed: aven_gl_load glIsFramebuffer\n");
     }
-    if (gl.IsProgram == NULL) {
+    if (win.gl.IsProgram == NULL) {
         fail = true;
         aven_io_print("test failed: aven_gl_load glIsProgram\n");
     }
-    if (gl.IsRenderbuffer == NULL) {
+    if (win.gl.IsRenderbuffer == NULL) {
         fail = true;
         aven_io_print("test failed: aven_gl_load glIsRenderbuffer\n");
     }
-    if (gl.IsShader == NULL) {
+    if (win.gl.IsShader == NULL) {
         fail = true;
         aven_io_print("test failed: aven_gl_load glIsShader\n");
     }
-    if (gl.IsTexture == NULL) {
+    if (win.gl.IsTexture == NULL) {
         fail = true;
         aven_io_print("test failed: aven_gl_load glIsTexture\n");
     }
-    if (gl.LineWidth == NULL) {
+    if (win.gl.LineWidth == NULL) {
         fail = true;
         aven_io_print("test failed: aven_gl_load glLineWidth\n");
     }
-    if (gl.LinkProgram == NULL) {
+    if (win.gl.LinkProgram == NULL) {
         fail = true;
         aven_io_print("test failed: aven_gl_load glLinkProgram\n");
     }
-    if (gl.PixelStorei == NULL) {
+    if (win.gl.PixelStorei == NULL) {
         fail = true;
         aven_io_print("test failed: aven_gl_load glPixelStorei\n");
     }
-    if (gl.PolygonOffset == NULL) {
+    if (win.gl.PolygonOffset == NULL) {
         fail = true;
         aven_io_print("test failed: aven_gl_load glPolygonOffset\n");
     }
-    if (gl.ReadPixels == NULL) {
+    if (win.gl.ReadPixels == NULL) {
         fail = true;
         aven_io_print("test failed: aven_gl_load glReadPixels\n");
     }
-    if (gl.ReleaseShaderCompiler == NULL) {
+    if (win.gl.ReleaseShaderCompiler == NULL) {
         fail = true;
         aven_io_print("test failed: aven_gl_load glReleaseShaderCompiler\n");
     }
-    if (gl.RenderbufferStorage == NULL) {
+    if (win.gl.RenderbufferStorage == NULL) {
         fail = true;
         aven_io_print("test failed: aven_gl_load glRenderbufferStorage\n");
     }
-    if (gl.SampleCoverage == NULL) {
+    if (win.gl.SampleCoverage == NULL) {
         fail = true;
         aven_io_print("test failed: aven_gl_load glSampleCoverage\n");
     }
-    if (gl.Scissor == NULL) {
+    if (win.gl.Scissor == NULL) {
         fail = true;
         aven_io_print("test failed: aven_gl_load glScissor\n");
     }
-    if (gl.ShaderBinary == NULL) {
+    if (win.gl.ShaderBinary == NULL) {
         fail = true;
         aven_io_print("test failed: aven_gl_load glShaderBinary\n");
     }
-    if (gl.ShaderSource == NULL) {
+    if (win.gl.ShaderSource == NULL) {
         fail = true;
         aven_io_print("test failed: aven_gl_load glShaderSource\n");
     }
-    if (gl.StencilFunc == NULL) {
+    if (win.gl.StencilFunc == NULL) {
         fail = true;
         aven_io_print("test failed: aven_gl_load glStencilFunc\n");
     }
-    if (gl.StencilFuncSeparate == NULL) {
+    if (win.gl.StencilFuncSeparate == NULL) {
         fail = true;
         aven_io_print("test failed: aven_gl_load glStencilFuncSeparate\n");
     }
-    if (gl.StencilMask == NULL) {
+    if (win.gl.StencilMask == NULL) {
         fail = true;
         aven_io_print("test failed: aven_gl_load glStencilMask\n");
     }
-    if (gl.StencilMaskSeparate == NULL) {
+    if (win.gl.StencilMaskSeparate == NULL) {
         fail = true;
         aven_io_print("test failed: aven_gl_load glStencilMaskSeparate\n");
     }
-    if (gl.StencilOp == NULL) {
+    if (win.gl.StencilOp == NULL) {
         fail = true;
         aven_io_print("test failed: aven_gl_load glStencilOp\n");
     }
-    if (gl.StencilOpSeparate == NULL) {
+    if (win.gl.StencilOpSeparate == NULL) {
         fail = true;
         aven_io_print("test failed: aven_gl_load glStencilOpSeparate\n");
     }
-    if (gl.TexImage2D == NULL) {
+    if (win.gl.TexImage2D == NULL) {
         fail = true;
         aven_io_print("test failed: aven_gl_load glTexImage2D\n");
     }
-    if (gl.TexParameterf == NULL) {
+    if (win.gl.TexParameterf == NULL) {
         fail = true;
         aven_io_print("test failed: aven_gl_load glTexParameterf\n");
     }
-    if (gl.TexParameterfv == NULL) {
+    if (win.gl.TexParameterfv == NULL) {
         fail = true;
         aven_io_print("test failed: aven_gl_load glTexParameterfv\n");
     }
-    if (gl.TexParameteri == NULL) {
+    if (win.gl.TexParameteri == NULL) {
         fail = true;
         aven_io_print("test failed: aven_gl_load glTexParameteri\n");
     }
-    if (gl.TexParameteriv == NULL) {
+    if (win.gl.TexParameteriv == NULL) {
         fail = true;
         aven_io_print("test failed: aven_gl_load glTexParameteriv\n");
     }
-    if (gl.TexSubImage2D == NULL) {
+    if (win.gl.TexSubImage2D == NULL) {
         fail = true;
         aven_io_print("test failed: aven_gl_load glTexSubImage2D\n");
     }
-    if (gl.Uniform1f == NULL) {
+    if (win.gl.Uniform1f == NULL) {
         fail = true;
         aven_io_print("test failed: aven_gl_load glUniform1f\n");
     }
-    if (gl.Uniform1fv == NULL) {
+    if (win.gl.Uniform1fv == NULL) {
         fail = true;
         aven_io_print("test failed: aven_gl_load glUniform1fv\n");
     }
-    if (gl.Uniform1i == NULL) {
+    if (win.gl.Uniform1i == NULL) {
         fail = true;
         aven_io_print("test failed: aven_gl_load glUniform1i\n");
     }
-    if (gl.Uniform1iv == NULL) {
+    if (win.gl.Uniform1iv == NULL) {
         fail = true;
         aven_io_print("test failed: aven_gl_load glUniform1iv\n");
     }
-    if (gl.Uniform2f == NULL) {
+    if (win.gl.Uniform2f == NULL) {
         fail = true;
         aven_io_print("test failed: aven_gl_load glUniform2f\n");
     }
-    if (gl.Uniform2fv == NULL) {
+    if (win.gl.Uniform2fv == NULL) {
         fail = true;
         aven_io_print("test failed: aven_gl_load glUniform2fv\n");
     }
-    if (gl.Uniform2i == NULL) {
+    if (win.gl.Uniform2i == NULL) {
         fail = true;
         aven_io_print("test failed: aven_gl_load glUniform2i\n");
     }
-    if (gl.Uniform2iv == NULL) {
+    if (win.gl.Uniform2iv == NULL) {
         fail = true;
         aven_io_print("test failed: aven_gl_load glUniform2iv\n");
     }
-    if (gl.Uniform3f == NULL) {
+    if (win.gl.Uniform3f == NULL) {
         fail = true;
         aven_io_print("test failed: aven_gl_load glUniform3f\n");
     }
-    if (gl.Uniform3fv == NULL) {
+    if (win.gl.Uniform3fv == NULL) {
         fail = true;
         aven_io_print("test failed: aven_gl_load glUniform3fv\n");
     }
-    if (gl.Uniform3i == NULL) {
+    if (win.gl.Uniform3i == NULL) {
         fail = true;
         aven_io_print("test failed: aven_gl_load glUniform3i\n");
     }
-    if (gl.Uniform3iv == NULL) {
+    if (win.gl.Uniform3iv == NULL) {
         fail = true;
         aven_io_print("test failed: aven_gl_load glUniform3iv\n");
     }
-    if (gl.Uniform4f == NULL) {
+    if (win.gl.Uniform4f == NULL) {
         fail = true;
         aven_io_print("test failed: aven_gl_load glUniform4f\n");
     }
-    if (gl.Uniform4fv == NULL) {
+    if (win.gl.Uniform4fv == NULL) {
         fail = true;
         aven_io_print("test failed: aven_gl_load glUniform4fv\n");
     }
-    if (gl.Uniform4i == NULL) {
+    if (win.gl.Uniform4i == NULL) {
         fail = true;
         aven_io_print("test failed: aven_gl_load glUniform4i\n");
     }
-    if (gl.Uniform4iv == NULL) {
+    if (win.gl.Uniform4iv == NULL) {
         fail = true;
         aven_io_print("test failed: aven_gl_load glUniform4iv\n");
     }
-    if (gl.UniformMatrix2fv == NULL) {
+    if (win.gl.UniformMatrix2fv == NULL) {
         fail = true;
         aven_io_print("test failed: aven_gl_load glUniformMatrix2fv\n");
     }
-    if (gl.UniformMatrix3fv == NULL) {
+    if (win.gl.UniformMatrix3fv == NULL) {
         fail = true;
         aven_io_print("test failed: aven_gl_load glUniformMatrix3fv\n");
     }
-    if (gl.UniformMatrix4fv == NULL) {
+    if (win.gl.UniformMatrix4fv == NULL) {
         fail = true;
         aven_io_print("test failed: aven_gl_load glUniformMatrix4fv\n");
     }
-    if (gl.UseProgram == NULL) {
+    if (win.gl.UseProgram == NULL) {
         fail = true;
         aven_io_print("test failed: aven_gl_load glUseProgram\n");
     }
-    if (gl.ValidateProgram == NULL) {
+    if (win.gl.ValidateProgram == NULL) {
         fail = true;
         aven_io_print("test failed: aven_gl_load glValidateProgram\n");
     }
-    if (gl.VertexAttrib1f == NULL) {
+    if (win.gl.VertexAttrib1f == NULL) {
         fail = true;
         aven_io_print("test failed: aven_gl_load glVertexAttrib1f\n");
     }
-    if (gl.VertexAttrib1fv == NULL) {
+    if (win.gl.VertexAttrib1fv == NULL) {
         fail = true;
         aven_io_print("test failed: aven_gl_load glVertexAttrib1fv\n");
     }
-    if (gl.VertexAttrib2f == NULL) {
+    if (win.gl.VertexAttrib2f == NULL) {
         fail = true;
         aven_io_print("test failed: aven_gl_load glVertexAttrib2f\n");
     }
-    if (gl.VertexAttrib2fv == NULL) {
+    if (win.gl.VertexAttrib2fv == NULL) {
         fail = true;
         aven_io_print("test failed: aven_gl_load glVertexAttrib2fv\n");
     }
-    if (gl.VertexAttrib3f == NULL) {
+    if (win.gl.VertexAttrib3f == NULL) {
         fail = true;
         aven_io_print("test failed: aven_gl_load glVertexAttrib3f\n");
     }
-    if (gl.VertexAttrib3fv == NULL) {
+    if (win.gl.VertexAttrib3fv == NULL) {
         fail = true;
         aven_io_print("test failed: aven_gl_load glVertexAttrib3fv\n");
     }
-    if (gl.VertexAttrib4f == NULL) {
+    if (win.gl.VertexAttrib4f == NULL) {
         fail = true;
         aven_io_print("test failed: aven_gl_load glVertexAttrib4f\n");
     }
-    if (gl.VertexAttrib4fv == NULL) {
+    if (win.gl.VertexAttrib4fv == NULL) {
         fail = true;
         aven_io_print("test failed: aven_gl_load glVertexAttrib4fv\n");
     }
-    if (gl.VertexAttribPointer == NULL) {
+    if (win.gl.VertexAttribPointer == NULL) {
         fail = true;
         aven_io_print("test failed: aven_gl_load glVertexAttribPointer\n");
     }
-    if (gl.Viewport == NULL) {
+    if (win.gl.Viewport == NULL) {
         fail = true;
         aven_io_print("test failed: aven_gl_load glViewport\n");
     }
 
     if (!fail) {
-        aven_io_print("all tests passed\n");
-        return 0;
+        aven_io_print("all gl functions loaded\n");
     }
 
-    return 1;
+    test_aven_gl_shape(&win);
+    test_aven_gl_shape_rounded(&win);
+
+    return (int)fail;
 }

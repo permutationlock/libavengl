@@ -147,13 +147,14 @@
         PFNGLVERTEXATTRIB1FPROC VertexAttrib4fv;
         PFNGLVERTEXATTRIBPOINTERPROC VertexAttribPointer;
         PFNGLVIEWPORTPROC Viewport;
+        bool es;
     } AvenGl;
 
     typedef void (*AvenGlProcFn)(void);
     typedef AvenGlProcFn (*AvenGlLoadProcFn)(const char *);
 
-    static inline AvenGl aven_gl_load(AvenGlLoadProcFn load) {
-        AvenGl gl = { 0 };
+    static inline AvenGl aven_gl_load(AvenGlLoadProcFn load, bool es) {
+        AvenGl gl = { .es = es };
 
         gl.ActiveTexture = (PFNGLACTIVETEXTUREPROC)load("glActiveTexture");
         gl.AttachShader = (PFNGLATTACHSHADERPROC)load("glAttachShader");
@@ -377,6 +378,12 @@
 
         return gl;
     }
+
+    #define aven_gl_shader(gl, str) ( \
+            gl->es ? \
+                "#version 100\n" "precision mediump float;\n" str : \
+                "#version 120\n" str \
+        )
 
     typedef enum {
         AVEN_GL_BUFFER_USAGE_STATIC = GL_STATIC_DRAW,

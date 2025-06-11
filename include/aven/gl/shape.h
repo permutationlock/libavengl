@@ -77,8 +77,8 @@
     static inline AvenGlShapeCtx aven_gl_shape_ctx_init(AvenGl *gl) {
         AvenGlShapeCtx ctx = { 0 };
 
-        static const char *vertex_shader_text = "#version 100\n"
-            "precision mediump float;\n"
+        const char *vertex_shader_text = aven_gl_shader(
+            gl,
             "uniform mat2 uTrans;\n"
             "uniform vec2 uPos;\n"
             "attribute vec2 vPos;\n"
@@ -87,14 +87,16 @@
             "void main() {\n"
             "    gl_Position = vec4((uTrans * vPos.xy) + uPos, 0.0, 1.0);\n"
             "    fColor = vColor;\n"
-            "}\n";
+            "}\n"
+        );
 
-        static const char *fragment_shader_text = "#version 100\n"
-            "precision mediump float;\n"
+        const char *fragment_shader_text = aven_gl_shader(
+            gl,
             "varying vec4 fColor;\n"
             "void main() {\n"
             "    gl_FragColor = fColor;\n"
-            "}\n";
+            "}\n"
+        );
 
         ctx.vertex_shader = gl->CreateShader(GL_VERTEX_SHADER);
         assert(gl->GetError() == 0);
@@ -497,8 +499,8 @@
     ) {
         AvenGlShapeRoundedCtx ctx = { 0 };
 
-        static const char *vertex_shader_text = "#version 100\n"
-            "precision mediump float;\n"
+        const char *vertex_shader_text = aven_gl_shader(
+            gl,
             "uniform mat2 uTrans;\n"
             "uniform vec2 uPos;\n"
             "uniform float uPx;\n"
@@ -513,10 +515,11 @@
             "    tPos = vInfo.xy;\n"
             "    tOffset = vec2(uPx * vInfo.z, uPx * vInfo.w);\n"
             "    fColor = vColor;\n"
-            "}\n";
+            "}\n"
+        );
 
-        static const char *fragment_shader_text = "#version 100\n"
-            "precision mediump float;\n"
+        const char *fragment_shader_text = aven_gl_shader(
+            gl,
             "varying vec2 tPos;\n"
             "varying vec2 tOffset;\n"
             "varying vec4 fColor;\n"
@@ -539,7 +542,8 @@
             "    magnitude += sample(tPos + vec2(tOffset.x, tOffset.y));\n"
             "    magnitude /= 9.0;\n"
             "    gl_FragColor = vec4(fColor.xyz, fColor.w * magnitude);\n"
-            "}\n";
+            "}\n"
+        );
 
         ctx.vertex_shader = gl->CreateShader(GL_VERTEX_SHADER);
         assert(gl->GetError() == 0);
@@ -1064,5 +1068,4 @@
         list_push(geometry->indices) = (GLushort)start_index + 2;
         list_push(geometry->indices) = (GLushort)start_index + 3;
     }
-
 #endif // AVEN_GL_SHAPE_H

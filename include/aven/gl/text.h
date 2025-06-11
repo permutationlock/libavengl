@@ -224,8 +224,8 @@
     static inline AvenGlTextCtx aven_gl_text_ctx_init(AvenGl *gl) {
         AvenGlTextCtx ctx = { 0 };
 
-        static const char *vertex_shader_text = "#version 100\n"
-            "precision mediump float;\n"
+        const char *vertex_shader_text = aven_gl_shader(
+            gl,
             "uniform mat2 uTrans;\n"
             "uniform vec2 uPos;\n"
             "attribute vec2 vTex;\n"
@@ -237,10 +237,11 @@
             "    gl_Position = vec4((uTrans * vPos.xy) + uPos, 0.0, 1.0);\n"
             "    tCoord = vTex;\n"
             "    fColor = vColor;\n"
-            "}\n";
+            "}\n"
+        );
 
-        static const char *fragment_shader_text = "#version 100\n"
-            "precision mediump float;\n"
+        const char *fragment_shader_text = aven_gl_shader(
+            gl,
             "uniform sampler2D texSampler;\n"
             "varying vec4 fColor;\n"
             "varying vec2 tCoord;\n"
@@ -248,7 +249,8 @@
             "    vec4 tColor = texture2D(texSampler, tCoord);\n"
             "    float alpha = tColor.w * fColor.w;\n"
             "    gl_FragColor = vec4(fColor.xyz, alpha);\n"
-            "}\n";
+            "}\n"
+        );
 
         ctx.vertex_shader = gl->CreateShader(GL_VERTEX_SHADER);
         assert(gl->GetError() == 0);
