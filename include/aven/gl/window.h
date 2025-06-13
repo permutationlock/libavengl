@@ -9,7 +9,6 @@
     typedef struct {
         AvenGl gl;
         GLFWwindow *window;
-        bool es;
     } AvenGlWindow;
 
     static inline AvenGlWindow aven_gl_window(
@@ -17,7 +16,8 @@
         int height,
         const char *title
     ) {
-        AvenGlWindow win = { .es = true };
+        AvenGlWindow win = { 0 };
+        bool es = true;
         glfwInit();
         glfwWindowHint(GLFW_SAMPLES, 16);
         glfwWindowHint(GLFW_CLIENT_API, GLFW_OPENGL_ES_API);
@@ -42,7 +42,7 @@
             );
         }
         if (win.window == NULL) {
-            win.es = false;
+            es = false;
             glfwWindowHint(GLFW_CLIENT_API, GLFW_OPENGL_API);
             glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 2);
             glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 1);
@@ -72,7 +72,7 @@
             aven_panic("failed to open window");
         }
         glfwMakeContextCurrent(win.window);
-        win.gl = aven_gl_load(glfwGetProcAddress, win.es);
+        win.gl = aven_gl_load(glfwGetProcAddress, es);
         return win;
     }
 #endif // AVEN_GL_WINDOW_H 
