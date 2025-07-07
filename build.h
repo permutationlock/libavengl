@@ -38,6 +38,13 @@
             .type = AVEN_ARG_TYPE_BOOL,
         },
         {
+            .name = aven_str_init("--android-so"),
+            .description = aven_str_init(
+                "Build a shared object for the Adroid NDK"
+            ),
+            .type = AVEN_ARG_TYPE_BOOL,
+        },
+        {
             .name = aven_str_init("--syslibs"),
             .description = aven_str_init("System libraries to link"),
             .type = AVEN_ARG_TYPE_STRING,
@@ -83,6 +90,7 @@
         LibAvenGlBuildSTBOpts stb;
         AvenStrSlice syslibs;
         bool no_glfw;
+        bool android_so;
     } LibAvenGlBuildOpts;
 
     static inline LibAvenGlBuildOpts libavengl_build_opts(
@@ -115,6 +123,7 @@
             arena
         );
         opts.no_glfw = aven_arg_get_bool(args, "--no-glfw");
+        opts.android_so = aven_arg_get_bool(args, "--android-so");
 
         return opts;
     }
@@ -191,6 +200,19 @@
         );
     }
 
+    static inline AvenStr libavengl_build_include_android(
+        AvenStr root_path,
+        AvenArena *arena
+    ) {
+        return aven_path(
+            arena,
+            root_path,
+            aven_str("deps"),
+            aven_str("android"),
+            aven_str("include")
+        );
+    }
+
     static inline AvenBuildStep libavengl_build_step_stb(
         AvenBuildCommonOpts *opts,
         LibAvenGlBuildOpts *libavengl_opts,
@@ -238,15 +260,30 @@
             glfw_opts.cc.flags = libavengl_opts->glfw.ccflags.value;
         }
 
-        AvenStr include_paths[] = {
-            libavengl_build_include_gles2(root_path, arena),
-            libavengl_build_include_glfw(root_path, arena),
-            libavengl_build_include_wayland(root_path, arena),
-            libavengl_build_include_x11(root_path, arena),
-            libavengl_build_include_xkbcommon(root_path, arena),
-        };
+        AvenStr include_paths[6];
+        List(AvenStr) include_list = list_array(include_paths);
+        list_push(include_list) = libavengl_build_include_gles2(
+            root_path,
+            arena
+        );
+        list_push(include_list) = libavengl_build_include_glfw(root_path, arena);
+        list_push(include_list) = libavengl_build_include_wayland(
+            root_path,
+            arena
+        );
+        list_push(include_list) = libavengl_build_include_x11(root_path, arena);
+        list_push(include_list) = libavengl_build_include_xkbcommon(
+            root_path,
+            arena
+        );
+        if (libavengl_opts->android_so) {
+            list_push(include_list) = libavengl_build_include_android(
+                root_path,
+                arena
+            );
+        }
 
-        AvenStrSlice includes = slice_array(include_paths);
+        AvenStrSlice includes = slice_list(include_list);
 
         return aven_build_common_step_cc_ex(
             &glfw_opts,
@@ -261,6 +298,202 @@
             ),
             out_dir_step,
             pic,
+            arena
+        );
+    }
+
+    static inline AvenBuildStep libavengl_build_step_android(
+        AvenBuildCommonOpts *opts,
+        LibAvenGlBuildOpts *libavengl_opts,
+        AvenStr root_path,
+        AvenBuildStep *out_dir_step,
+        bool pic,
+        AvenArena *arena
+    ) {
+        AvenBuildCommonOpts glfw_opts = *opts;
+        if (libavengl_opts->glfw.ccflags.valid) {
+            glfw_opts.cc.flags = libavengl_opts->glfw.ccflags.value;
+        }
+
+        AvenStr include_paths[] = {
+            libavengl_build_include_android(root_path, arena),
+        };
+
+        AvenStrSlice includes = slice_array(include_paths);
+
+        return aven_build_common_step_cc_ex(
+            &glfw_opts,
+            includes,
+            (AvenStrSlice){ 0 },
+            aven_path(
+                arena,
+                root_path,
+                aven_str("deps"),
+                aven_str("android"),
+                aven_str("android.c")
+            ),
+            out_dir_step,
+            pic,
+            arena
+        );
+    }
+
+    static inline AvenBuildStep libavengl_build_step(
+        AvenBuildCommonOpts *opts,
+        LibAvenGlBuildOpts *libavengl_opts,
+        AvenStr libaven_include_path,
+        AvenStr root_path,
+        AvenBuildStep *work_dir_step,
+        AvenBuildStep *out_dir_step,
+        bool pic,
+        AvenArena *arena
+    ) {
+        AvenBuildStep *obj_steps[3];
+        List(AvenBuildStep *) obj_list = list_array(obj_steps);
+
+        AvenBuildStep *stb_step = aven_arena_create(AvenBuildStep, arena);
+        *stb_step = libavengl_build_step_stb(
+            opts,
+            libavengl_opts,
+            libaven_include_path,
+            root_path,
+            work_dir_step,
+            pic,
+            arena
+        );
+        list_push(obj_list) = stb_step;
+
+        if (!libavengl_opts->no_glfw) {
+            AvenBuildStep *glfw_step = aven_arena_create(AvenBuildStep, arena);
+            *glfw_step = libavengl_build_step_glfw(
+                opts,
+                libavengl_opts,
+                root_path,
+                work_dir_step,
+                pic,
+                arena
+            );
+            list_push(obj_list) = glfw_step;
+        }
+
+        if (libavengl_opts->android_so) {
+            AvenBuildStep *android_step = aven_arena_create(
+                AvenBuildStep,
+                arena
+            );
+            *android_step = libavengl_build_step_android(
+                opts,
+                libavengl_opts,
+                root_path,
+                work_dir_step,
+                pic,
+                arena
+            );
+            list_push(obj_list) = android_step;
+        }
+
+        AvenBuildStepPtrSlice obj_slice = slice_list(obj_list);
+        return aven_build_common_step_ar(
+            opts,
+            obj_slice,
+            out_dir_step,
+            aven_str("libavengl"),
+            arena
+        );
+    }
+
+    static inline AvenBuildStep libavengl_build_step_ld(
+        AvenBuildCommonOpts *opts,
+        LibAvenGlBuildOpts *libavengl_opts,
+        AvenStr libaven_include_path,
+        AvenStr root_path,
+        AvenBuildStepPtrSlice obj_steps,
+        AvenBuildStep *work_dir_step,
+        AvenBuildStep *out_dir_step,
+        AvenStr out_fname,
+        AvenArena *arena
+    ) {
+        AvenBuildStep *lib_step = aven_arena_create(AvenBuildStep, arena);
+        *lib_step = libavengl_build_step(
+            opts,
+            libavengl_opts,
+            libaven_include_path,
+            root_path,
+            work_dir_step,
+            work_dir_step,
+            libavengl_opts->android_so,
+            arena
+        );
+
+        AvenBuildStepPtrSlice objs = aven_arena_create_slice(
+            AvenBuildStep *,
+            arena,
+            obj_steps.len + 1
+        );
+        {
+            size_t i = 0;
+            for (; i < obj_steps.len; i += 1) {
+                get(objs, i) = get(obj_steps, i);
+            }
+            get(objs, i) = lib_step;
+            i += 1;
+        }
+
+        if (!libavengl_opts->android_so) {
+            return aven_build_common_step_ld_exe_ex(
+                opts,
+                libavengl_opts->syslibs,
+                objs,
+                out_dir_step,
+                out_fname,
+                true,
+                arena
+            );
+        }
+
+        AvenStrSlice ldflags = aven_arena_create_slice(
+            AvenStr,
+            arena,
+            opts->ld.flags.len + 1
+        );
+        {
+            size_t i = 0;
+            for (; i < opts->ld.flags.len; i += 1) {
+                get(ldflags, i) = get(opts->ld.flags, i);
+            }
+            get(ldflags, i) = aven_str("-uANativeActivity_onCreate");
+            i += 1;
+        }
+
+        AvenBuildCommonOpts opts_cpy = *opts;
+        opts_cpy.ld.flags = ldflags;
+
+        AvenStrSlice syslibs = aven_arena_create_slice(
+            AvenStr,
+            arena,
+            libavengl_opts->syslibs.len + 4
+        );
+        {
+            size_t i = 0;
+            for (; i < libavengl_opts->syslibs.len; i += 1) {
+                get(syslibs, i) = get(libavengl_opts->syslibs, i);
+            }
+            get(syslibs, i) = aven_str("m");
+            i += 1;
+            get(syslibs, i) = aven_str("dl");
+            i += 1;
+            get(syslibs, i) = aven_str("android");
+            i += 1;
+            get(syslibs, i) = aven_str("log");
+            i += 1;
+        }
+
+        return aven_build_common_step_ld_so_ex(
+            &opts_cpy,
+            syslibs,
+            objs,
+            out_dir_step,
+            out_fname,
             arena
         );
     }

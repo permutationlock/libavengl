@@ -35,11 +35,15 @@ int main(int argc, char **argv) {
     AvenArgSlice common_args = aven_build_common_args();
     AvenArgSlice libaven_args = libaven_build_args();
     AvenArgSlice libavengl_args = libavengl_build_args();
+    AvenArgSlice libavengl_android_args = libavengl_build_android_args();
 
     List(AvenArg) arg_list = aven_arena_create_list(
         AvenArg,
         &arena,
-        common_args.len + libaven_args.len + libavengl_args.len
+        common_args.len +
+        libaven_args.len +
+        libavengl_args.len +
+        libavengl_android_args.len
     );
     for (size_t i = 0; i < common_args.len; i += 1) {
         list_push(arg_list) = get(common_args, i);
@@ -50,10 +54,18 @@ int main(int argc, char **argv) {
     for (size_t i = 0; i < libavengl_args.len; i += 1) {
         list_push(arg_list) = get(libavengl_args, i);
     }
-    AvenArgSlice args = slice_list(arg_list);
+
+    AvenArgSlice args_base = slice_list(arg_list);
+
+    for (size_t i = 0; i < libavengl_android_args.len; i += 1) {
+        list_push(arg_list) = get(libavengl_android_args, i);
+    }
+
+    AvenArgSlice args_all = slice_list(arg_list);
+    AvenArgSlice args_android = slice_tail(args_all, args_base.len);
 
     AvenArgError arg_error = aven_arg_parse(
-        args,
+        args_base,
         argv,
         argc,
         aven_build_common_overview(),
@@ -67,9 +79,29 @@ int main(int argc, char **argv) {
         return 0;
     }
 
-    AvenBuildCommonOpts opts = aven_build_common_opts(args, &arena);
-    LibAvenBuildOpts libaven_opts = libaven_build_opts(args, &arena);
-    LibAvenGlBuildOpts libavengl_opts = libavengl_build_opts(args, &arena);
+    AvenBuildCommonOpts opts = aven_build_common_opts(args_base, &arena);
+    LibAvenBuildOpts libaven_opts = libaven_build_opts(args_base, &arena);
+    LibAvenGlBuildOpts libavengl_opts = libavengl_build_opts(args_base, &arena);
+    LibAvenGlBuildAndroidOpts libavengl_android_opts = { 0 };
+
+    if (libavengl_opts.android_apk) {
+        arg_error = aven_arg_parse(
+            args_all,
+            argv,
+            argc,
+            aven_build_common_overview(),
+            aven_build_common_usage()
+        );
+        if (arg_error != 0) {
+            if (arg_error != AVEN_ARG_ERROR_HELP) {
+                aven_io_perrf("ARG PARSE ERROR: {}\n", aven_fmt_int(arg_error));
+                return 1;
+            }
+            return 0;
+        }
+
+        libavengl_android_opts = libavengl_build_android_opts(args_android);
+    }
 
     AvenStr root_dir = aven_str(".");
     AvenStr libaven_dir = aven_path(
@@ -78,6 +110,11 @@ int main(int argc, char **argv) {
         aven_str("libaven")
     );
     AvenStr work_dir = aven_str("build_work");
+
+    AvenStr libaven_include_path = libaven_build_include_path(
+        libaven_dir,
+        &arena
+    );
 
     AvenBuildStep work_dir_step = aven_build_step_mkdir(work_dir);
 
@@ -92,52 +129,57 @@ int main(int argc, char **argv) {
         winutf8_obj_step.valid = true;
     }
 
-    Optional(AvenBuildStep) glfw_obj_step = { 0 };
-    if (!libavengl_opts.no_glfw) {
-        glfw_obj_step.value = libavengl_build_step_glfw(
-            &opts,
-            &libavengl_opts,
-            root_dir,
-            &work_dir_step,
-            false,
-            &arena
-        );
-        glfw_obj_step.valid = true;
-    }
-
     AvenStr include_data[4];
     List(AvenStr) include_list = list_array(include_data);
-    list_push(include_list) = libaven_build_include_path(libaven_dir, &arena);
+    list_push(include_list) = libaven_include_path;
     list_push(include_list) = libavengl_build_include_path(root_dir, &arena);
     list_push(include_list) = libavengl_build_include_gles2(root_dir, &arena);
     list_push(include_list) = libavengl_build_include_glfw(root_dir, &arena);
     AvenStrSlice includes = slice_list(include_list);
+
+    AvenBuildStep test_obj_step = aven_build_common_step_cc_ex(
+        &opts,
+        includes,
+        (AvenStrSlice){ 0 },
+        aven_str("test.c"),
+        &work_dir_step,
+        libavengl_opts.android_so,
+        &arena
+    );
 
     AvenBuildStep *obj_data[2];
     List(AvenBuildStep *) obj_list = list_array(obj_data);
     if (winutf8_obj_step.valid) {
         list_push(obj_list) = &winutf8_obj_step.value;
     }
-    if (glfw_obj_step.valid) {
-        list_push(obj_list) = &glfw_obj_step.value;
-    }
+    list_push(obj_list) = &test_obj_step;
 
     AvenBuildStepPtrSlice objs = slice_list(obj_list);
 
-    AvenBuildStep test_step = aven_build_common_step_cc_ld_run_exe_ex(
+    AvenBuildStep build_step = libavengl_build_step_ld(
         &opts,
-        includes,
-        (AvenStrSlice){ 0 },
-        libavengl_opts.syslibs,
+        &libavengl_opts,
+        libaven_include_path,
+        root_dir,
         objs,
-        aven_str("test.c"),
         &work_dir_step,
-        false,
+        &work_dir_step,
+        aven_str("test"),
+        &arena
+    );
+
+    AvenBuildStep run_step = aven_build_common_step_run_exe(
+        &build_step,
         (AvenStrSlice){ 0 },
         &arena
     );
+
     AvenBuildStep root_step = aven_build_step_root();
-    aven_build_step_add_dep(&root_step, &test_step, &arena);
+    if (libavengl_opts.android_so) {
+        aven_build_step_add_dep(&root_step, &build_step, &arena);
+    } else {
+        aven_build_step_add_dep(&root_step, &run_step, &arena);
+    }
 
     if (opts.clean) {
         aven_build_step_clean(&root_step, arena);

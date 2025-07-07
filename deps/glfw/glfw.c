@@ -4,14 +4,15 @@
         #pragma clang diagnostic ignored "-Wdeprecated-declarations"
     #endif
     #define _GLFW_WIN32
+#elif defined(__ANDROID__)
+    #define _GLFW_ANDROID
 #elif defined(__linux__)
     #define _GLFW_WAYLAND
     #define _GLFW_X11
 #elif defined(__FreeBSD__) || \
-    defined(__OpenBSD__) || \
-    defined(__NetBSD__) || \
-    defined(__DragonFly__)
-
+        defined(__OpenBSD__) || \
+        defined(__NetBSD__) || \
+        defined(__DragonFly__)
     #define _GLFW_X11
 #endif
 
@@ -45,6 +46,20 @@
     #if defined(_MSC_VER) && defined(__clang__)
         #pragma clang diagnostic pop
     #endif
+#elif defined(__ANDROID__)
+    #include "src/posix_poll.c"
+    #include "src/posix_module.c"
+    #include "src/posix_thread.c"
+    #include "src/posix_time.c"
+    #include "src/xkb_unicode.c"
+
+    #include "src/egl_context.c"
+    #include "src/osmesa_context.c"
+
+    #include "src/android_init.c"
+    #include "src/android_window.c"
+    #include "src/android_monitor.c"
+    #include "src/android_joystick.c"
 #elif defined(__linux__)
     #include "src/posix_poll.c"
     #include "src/posix_module.c"
@@ -65,9 +80,9 @@
     #include "src/x11_window.c"
     #include "src/glx_context.c"
 #elif defined(__FreeBSD__) || \
-    defined(__OpenBSD__) || \
-    defined( __NetBSD__) || \
-    defined(__DragonFly__)
+        defined(__OpenBSD__) || \
+        defined(__NetBSD__) || \
+        defined(__DragonFly__)
 
     #include "src/posix_module.c"
     #include "src/posix_thread.c"
