@@ -33,12 +33,27 @@
     #endif
         },
         {
-            .name = aven_str_init("--no-glfw"),
+            .name = aven_str_init("--android-ccflags"),
+            .description = aven_str_init("C compiler flags for Android glue"),
+            .type = AVEN_ARG_TYPE_STRING,
+    #if defined(LIBAVENGL_DEFAULT_ANDROID_CCFLAGS)
+            .value = {
+                .type = AVEN_ARG_TYPE_STRING,
+                .data = {
+                    .arg_str = aven_str_init(LIBAVENGL_DEFAULT_ANDROID_CCFLAGS),
+                },
+            },
+    #else
+            .optional = true,
+    #endif
+        },
+        {
+            .name = aven_str_init("--glfw-external"),
             .description = aven_str_init("Don't build GLFW locally"),
             .type = AVEN_ARG_TYPE_BOOL,
         },
         {
-            .name = aven_str_init("--android-so"),
+            .name = aven_str_init("--android"),
             .description = aven_str_init(
                 "Build a shared object for the Adroid NDK"
             ),
@@ -86,11 +101,15 @@
     } LibAvenGlBuildSTBOpts;
 
     typedef struct {
+        Optional(AvenStrSlice) ccflags;
+        bool enabled;
+    } LibAvenGlBuildAndroidOpts;
+
+    typedef struct {
         LibAvenGlBuildGLFWOpts glfw;
         LibAvenGlBuildSTBOpts stb;
+        LibAvenGlBuildAndroidOpts android;
         AvenStrSlice syslibs;
-        bool no_glfw;
-        bool android_so;
     } LibAvenGlBuildOpts;
 
     static inline LibAvenGlBuildOpts libavengl_build_opts(
@@ -117,13 +136,22 @@
             );
         }
 
+        if (aven_arg_has_arg(args, "--android-ccflags")) {
+            opts.android.ccflags.valid = true;
+            opts.android.ccflags.value = aven_str_split(
+                aven_arg_get_str(args, "--android-ccflags"),
+                ' ',
+                arena
+            );
+        }
+
         opts.syslibs = aven_str_split(
             aven_arg_get_str(args, "--syslibs"),
             ' ',
             arena
         );
-        opts.no_glfw = aven_arg_get_bool(args, "--no-glfw");
-        opts.android_so = aven_arg_get_bool(args, "--android-so");
+        opts.glfw.external = aven_arg_get_bool(args, "--glfw-external");
+        opts.android.enabled = aven_arg_get_bool(args, "--android");
 
         return opts;
     }
@@ -276,7 +304,7 @@
             root_path,
             arena
         );
-        if (libavengl_opts->android_so) {
+        if (libavengl_opts->android.enabled) {
             list_push(include_list) = libavengl_build_include_android(
                 root_path,
                 arena
@@ -363,7 +391,7 @@
         );
         list_push(obj_list) = stb_step;
 
-        if (!libavengl_opts->no_glfw) {
+        if (!libavengl_opts->glfw.external) {
             AvenBuildStep *glfw_step = aven_arena_create(AvenBuildStep, arena);
             *glfw_step = libavengl_build_step_glfw(
                 opts,
@@ -376,7 +404,7 @@
             list_push(obj_list) = glfw_step;
         }
 
-        if (libavengl_opts->android_so) {
+        if (libavengl_opts->android.enabled) {
             AvenBuildStep *android_step = aven_arena_create(
                 AvenBuildStep,
                 arena
@@ -421,7 +449,7 @@
             root_path,
             work_dir_step,
             work_dir_step,
-            libavengl_opts->android_so,
+            libavengl_opts->android.enabled,
             arena
         );
 
@@ -439,7 +467,7 @@
             i += 1;
         }
 
-        if (!libavengl_opts->android_so) {
+        if (!libavengl_opts->android.enabled) {
             return aven_build_common_step_ld_exe_ex(
                 opts,
                 libavengl_opts->syslibs,
