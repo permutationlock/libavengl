@@ -60,6 +60,26 @@
             .type = AVEN_ARG_TYPE_BOOL,
         },
         {
+            .name = aven_str_init("--android-lduflag"),
+            .description = aven_str_init(
+                "Android linker flag to force undefined symbol"
+            ),
+            .type = AVEN_ARG_TYPE_STRING,
+    #if defined(LIBAVENGL_DEFAULT_ANDROID_LDUFLAG)
+            .value = {
+                .type = AVEN_ARG_TYPE_STRING,
+                .data = {
+                    .arg_str = aven_str_init(LIBAVENGL_DEFAULT_ANDROID_LDUFLAG),
+                },
+            },
+    #else
+            .value = {
+                .type = AVEN_ARG_TYPE_STRING,
+                .data = { .arg_str = aven_str_init("-u") },
+            },
+    #endif
+        },
+        {
             .name = aven_str_init("--syslibs"),
             .description = aven_str_init("System libraries to link"),
             .type = AVEN_ARG_TYPE_STRING,
@@ -102,6 +122,7 @@
 
     typedef struct {
         Optional(AvenStrSlice) ccflags;
+        AvenStr lduflag;
         bool enabled;
     } LibAvenGlBuildAndroidOpts;
 
@@ -152,6 +173,7 @@
         );
         opts.glfw.external = aven_arg_get_bool(args, "--glfw-external");
         opts.android.enabled = aven_arg_get_bool(args, "--android");
+        opts.android.lduflag = aven_arg_get_str(args, "--android-lduflag");
 
         return opts;
     }
@@ -489,7 +511,16 @@
             for (; i < opts->ld.flags.len; i += 1) {
                 get(ldflags, i) = get(opts->ld.flags, i);
             }
-            get(ldflags, i) = aven_str("-uANativeActivity_onCreate");
+            AvenStr uarg_data[] = {
+                libavengl_opts->android.lduflag,
+                aven_str("ANativeActivity_onCreate"),
+            };
+            AvenStrSlice uarg_parts = slice_array(uarg_data);
+            get(ldflags, i) = aven_str_concat(
+                get(uarg_parts, 0),
+                get(uarg_parts, 1),
+                arena
+            );
             i += 1;
         }
 

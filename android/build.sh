@@ -21,40 +21,38 @@ envsubst '$$ANDROID_VERSION $$APP_NAME $$ORG_NAME' < template/AndroidManifest.xm
 # build so for arm64
 cd ..
 ./build clean --android
-./build test --android --cc $ANDROID_NDK_TOOLCHAIN/bin/aarch64-linux-android$ANDROID_VERSION-clang --ldflags "$LDFLAGS" --ccflags "-m64 $CFLAGS" --glfw-ccflags "-m64 $CFLAGS" --stb-ccflags "-m64 $CFLAGS" --android-ccflags "-m64 $CFLAGS"
+./build test --android --cc $ANDROID_NDK_TOOLCHAIN/bin/aarch64-linux-android$ANDROID_VERSION-clang --ldflags "-m64 $LDFLAGS" --ccflags "-m64 $CFLAGS" --glfw-ccflags "-m64 $CFLAGS" --stb-ccflags "-m64 $CFLAGS" --android-ccflags "-m64 $CFLAGS"
 cd android
 
 mkdir -p build_android/apk/lib/arm64-v8a
 cp ../build_work/test.so build_android/apk/lib/arm64-v8a/lib$APP_NAME.so
 
-# TODO: Fix multi-arch builds
-
 # build so for arm32
-# cd ..
-# ./build clean --android
-# ./build test --android --cc $ANDROID_NDK_TOOLCHAIN/bin/armv7a-linux-androideabi$ANDROID_VERSION-clang --ldflags "$LDFLAGS" --ccflags "-mfloat-abi=softfp -m32 $CFLAGS" --glfw-ccflags "-mfloat-abi=softfp -m32 $CFLAGS" --stb-ccflags "-mfloat-abi=softfp -m32 $CFLAGS" --android-ccflags "-mfloat-abi=softfp -m32 $CFLAGS"
-# cd android
+cd ..
+./build clean --android
+./build test --android --cc $ANDROID_NDK_TOOLCHAIN/bin/armv7a-linux-androideabi$ANDROID_VERSION-clang --ldflags "-mfloat-abi=softfp -m32 $LDFLAGS" --ccflags "-mfloat-abi=softfp -m32 $CFLAGS" --glfw-ccflags "-mfloat-abi=softfp -m32 $CFLAGS" --stb-ccflags "-mfloat-abi=softfp -m32 $CFLAGS" --android-ccflags "-mfloat-abi=softfp -m32 $CFLAGS"
+cd android
 
-# mkdir -p build_android/apk/lib/armeabi-v7a
-# cp ../build_work/test.so build_android/apk/lib/armeabi-v7a/lib$APP_NAME.so
+mkdir -p build_android/apk/lib/armeabi-v7a
+cp ../build_work/test.so build_android/apk/lib/armeabi-v7a/lib$APP_NAME.so
 
-# # build so for x86
-# cd ..
-# ./build clean --android
-# ./build test --android --cc $ANDROID_NDK_TOOLCHAIN/bin/i686-linux-android$ANDROID_VERSION-clang --ldflags "$LDFLAGS" --ccflags "-march=i686 -mssse3 -mfpmath=sse -m32 $CFLAGS" --glfw-ccflags "-march=i686 -mssse3 -mfpmath=sse -m32 $CFLAGS" --stb-ccflags "-march=i686 -mssse3 -mfpmath=sse -m32 $CFLAGS" --android-ccflags "-march=i686 -mssse3 -mfpmath=sse -m32 $CFLAGS"
-# cd android
+# build so for x86
+cd ..
+./build clean --android
+./build test --android --cc $ANDROID_NDK_TOOLCHAIN/bin/i686-linux-android$ANDROID_VERSION-clang --ldflags "-march=i686 -mssse3 -mfpmath=sse -m32 $LDFLAGS" --ccflags "-march=i686 -mssse3 -mfpmath=sse -m32 $CFLAGS" --glfw-ccflags "-march=i686 -mssse3 -mfpmath=sse -m32 $CFLAGS" --stb-ccflags "-march=i686 -mssse3 -mfpmath=sse -m32 $CFLAGS" --android-ccflags "-march=i686 -mssse3 -mfpmath=sse -m32 $CFLAGS"
+cd android
 
-# mkdir -p build_android/apk/lib/x86
-# cp ../build_work/test.so build_android/apk/lib/x86/lib$APP_NAME.so
+mkdir -p build_android/apk/lib/x86
+cp ../build_work/test.so build_android/apk/lib/x86/lib$APP_NAME.so
 
-# # build for x86_64
-# cd ..
-# ./build clean --android
-# ./build test --android --cc $ANDROID_NDK_TOOLCHAIN/bin/x86_64-linux-android$ANDROID_VERSION-clang --ldflags "$LDFLAGS" --ccflags "-march=x86-64 -msse4.2 -mpopcnt -m64 $CFLAGS" --glfw-ccflags "-march=x86-64 -msse4.2 -mpopcnt -m64 $CFLAGS" --stb-ccflags "-march=x86-64 -msse4.2 -mpopcnt -m64 $CFLAGS" --android-ccflags "-march=x86-64 -msse4.2 -mpopcnt -m64 $CFLAGS"
-# cd android
+# build for x86_64
+cd ..
+./build clean --android
+./build test --android --cc $ANDROID_NDK_TOOLCHAIN/bin/i686-linux-android$ANDROID_VERSION-clang --ldflags "-march=x86-64 -msse4.2 -mpopcnt -m64 $LDFLAGS" --ccflags "-march=x86-64 -msse4.2 -mpopcnt -m64 $CFLAGS" --glfw-ccflags "-march=x86-64 -msse4.2 -mpopcnt -m64 $CFLAGS" --stb-ccflags "-march=x86-64 -msse4.2 -mpopcnt -m64 $CFLAGS" --android-ccflags "-march=x86-64 -msse4.2 -mpopcnt -m64 $CFLAGS"
+cd android
 
-# mkdir -p build_android/apk/lib/x86_64
-# cp ../build_work/test.so build_android/apk/lib/x86_64/lib$APP_NAME.so
+mkdir -p build_android/apk/lib/x86_64
+cp ../build_work/test.so build_android/apk/lib/x86_64/lib$APP_NAME.so
 
 # build temporary apk and unzip back to directory
 $ANDROID_SDK_BUILD_TOOLS/aapt package -f -F build_android/temp.apk -I $ANDROID_JAR -M build_android/AndroidManifest.xml -S build_android/apk/res -v --target-sdk-version $ANDROID_VERSION
