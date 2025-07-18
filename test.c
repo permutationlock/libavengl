@@ -14,22 +14,143 @@
 
 #include <stdlib.h>
 
+#define INIT_WIDTH 480
+#define INIT_HEIGHT 480
 #define ARENA_SIZE (4096 * 16)
 
-AvenArena test_arena;
+static AvenArena test_arena;
 
-void test_aven_gl_shape(AvenGlWindow *win) {
-    AvenGl *gl = &win->gl;
+typedef enum {
+    TEST_AVEN_GL_SHAPE = 0,
+    TEST_AVEN_GL_ROUNDED,
+    TEST_AVEN_GL_TEXTURE,
+} TestAvenGlState;
+
+typedef union {
+    struct {
+        AvenGlShapeCtx ctx;
+        AvenGlShapeGeometry geometry;
+        AvenGlShapeBuffer buffer;
+    } shape;
+    struct {
+        AvenGlShapeRoundedCtx ctx;
+        AvenGlShapeRoundedGeometry geometry;
+        AvenGlShapeRoundedBuffer buffer;
+    } rounded;
+    struct {
+        AvenGlTextureCtx ctx;
+        AvenGlTextureGeometry geometry;
+        AvenGlTextureBuffer buffer;
+    } texture;
+} TestAvenGlData;
+
+typedef struct {
+    TestAvenGlState state;
+    TestAvenGlData data;
+} TestAvenGl;
+
+static AvenGlWindow win;
+static TestAvenGl app;
+
+#define NVERTICES 16
+#define NINDICES 64
+#define TSIZE 2
+
+static uint32_t texture_data[TSIZE * TSIZE] = {
+    0xffffffff,
+    0xff0000ff,
+    0xff0000ff,
+    0xffffffff,
+};
+static Slice(uint32_t) texture = slice_array(texture_data);
+
+#ifdef __ANDROID__
+    #include <android/log.h>
+    static bool minimized;
+
+    void on_android_pause_resume(GLFWwindow *window, int iconified) {
+        if (iconified) {
+            switch (app.state) {
+                case TEST_AVEN_GL_SHAPE:
+                    aven_gl_shape_buffer_deinit(&win.gl, &app.data.shape.buffer);
+                    aven_gl_shape_ctx_deinit(&win.gl, &app.data.shape.ctx);
+                    break;
+                case TEST_AVEN_GL_ROUNDED:
+                    aven_gl_shape_rounded_buffer_deinit(
+                        &win.gl,
+                        &app.data.rounded.buffer
+                    );
+                    aven_gl_shape_rounded_ctx_deinit(
+                        &win.gl,
+                        &app.data.rounded.ctx
+                    );
+                    break;
+                case TEST_AVEN_GL_TEXTURE:
+                    aven_gl_texture_buffer_deinit(
+                        &win.gl,
+                        &app.data.texture.buffer
+                    );
+                    aven_gl_texture_ctx_deinit(&win.gl, &app.data.texture.ctx);
+                    break;
+            }
+            // win = (AvenGlWindow){ 0 };
+            minimized = true;
+        } else {
+            win.window = window;
+            win.gl = aven_gl_load(glfwGetProcAddress, win.gl.es);
+            switch (app.state) {
+                case TEST_AVEN_GL_SHAPE:
+                    app.data.shape.ctx = aven_gl_shape_ctx_init(&win.gl);
+                    app.data.shape.buffer = aven_gl_shape_buffer_init(
+                        &win.gl,
+                        &app.data.shape.geometry,
+                        AVEN_GL_BUFFER_USAGE_DYNAMIC
+                    );
+                    break;
+                case TEST_AVEN_GL_ROUNDED:
+                    app.data.rounded.ctx = aven_gl_shape_rounded_ctx_init(
+                        &win.gl
+                    );
+                    app.data.rounded.buffer = aven_gl_shape_rounded_buffer_init(
+                        &win.gl,
+                        &app.data.rounded.geometry,
+                        AVEN_GL_BUFFER_USAGE_DYNAMIC
+                    );
+                    break;
+                case TEST_AVEN_GL_TEXTURE:
+                    app.data.texture.ctx = aven_gl_texture_ctx_init(
+                        &win.gl,
+                        TSIZE,
+                        TSIZE,
+                        (AvenGlTextureBytesOptional){
+                            .valid = true,
+                            .value = slice_as_bytes(texture),
+                        }
+                    );
+                    app.data.texture.buffer = aven_gl_texture_buffer_init(
+                        &win.gl,
+                        &app.data.texture.geometry,
+                        AVEN_GL_BUFFER_USAGE_DYNAMIC
+                    );
+                    break;
+            }
+            minimized = false;
+        }
+    }
+#endif
+
+void test_aven_gl_shape(void) {
     AvenArena temp_arena = test_arena;
-    AvenGlShapeCtx ctx = aven_gl_shape_ctx_init(gl);
-    AvenGlShapeGeometry geometry = aven_gl_shape_geometry_init(
-        16,
-        64,
+    app.state = TEST_AVEN_GL_SHAPE;
+    app.data.shape.ctx = aven_gl_shape_ctx_init(&win.gl);
+    app.data.shape.geometry = aven_gl_shape_geometry_init(
+        NVERTICES,
+        NINDICES,
         &temp_arena
     );
-    AvenGlShapeBuffer buffer = aven_gl_shape_buffer_init(
-        gl,
-        &geometry,
+    app.data.shape.buffer = aven_gl_shape_buffer_init(
+        &win.gl,
+        &app.data.shape.geometry,
         AVEN_GL_BUFFER_USAGE_DYNAMIC
     );
     Aff2 trans;
@@ -37,57 +158,74 @@ void test_aven_gl_shape(AvenGlWindow *win) {
     Aff2 camera;
     aff2_camera_position(camera, (Vec2){ 0.0f, 0.0f }, (Vec2){ 1.25f, 1.25f });
     AvenTimeInst start = aven_time_now();
-    while (aven_time_since(aven_time_now(), start) < 2 * AVEN_TIME_NSEC_PER_SEC) {
-        aven_gl_shape_geometry_clear(&geometry);
+    while (aven_time_since(aven_time_now(), start) / 2 < AVEN_TIME_NSEC_PER_SEC) {
+        if (glfwWindowShouldClose(win.window)) {
+            break;
+        }
+        aven_gl_shape_geometry_clear(&app.data.shape.geometry);
         aven_gl_shape_geometry_push_square(
-            &geometry,
+            &app.data.shape.geometry,
             trans,
             (Vec4){ 1.0f, 0.0f, 0.0f, 1.0f }
         );
         aven_gl_shape_geometry_push_triangle_isoceles(
-            &geometry,
+            &app.data.shape.geometry,
             trans,
             (Vec4){ 0.0f, 1.0f, 0.0f, 1.0f }
         );
         aven_gl_shape_geometry_push_triangle_right(
-            &geometry,
+            &app.data.shape.geometry,
             trans,
             (Vec4){ 0.0f, 0.0f, 1.0f, 1.0f }
         );
-        aven_gl_shape_buffer_update(gl, &buffer, &geometry);
+        aven_gl_shape_buffer_update(
+            &win.gl,
+            &app.data.shape.buffer,
+            &app.data.shape.geometry
+        );
 
         int width;
         int height;
-        glfwGetFramebufferSize(win->window, &width, &height);
-        gl->Viewport(0, 0, width, height);
-        assert(gl->GetError() == 0);
+        glfwGetFramebufferSize(win.window, &width, &height);
+        win.gl.Viewport(0, 0, width, height);
+        assert(win.gl.GetError() == 0);
 
-        gl->ClearColor(0.75f, 0.75f, 0.75f, 1.0f);
-        assert(gl->GetError() == 0);
-        gl->Clear(GL_COLOR_BUFFER_BIT);
-        assert(gl->GetError() == 0);
-        aven_gl_shape_draw(gl, &ctx, &buffer, camera);
+        win.gl.ClearColor(0.75f, 0.75f, 0.75f, 1.0f);
+        assert(win.gl.GetError() == 0);
+        win.gl.Clear(GL_COLOR_BUFFER_BIT);
+        assert(win.gl.GetError() == 0);
+        aven_gl_shape_draw(
+            &win.gl,
+            &app.data.shape.ctx,
+            &app.data.shape.buffer,
+            camera
+        );
 
-        glfwSwapBuffers(win->window);
+        glfwSwapBuffers(win.window);
         glfwPollEvents();
+#ifdef __ANDROID__
+        while (minimized) {
+            glfwWaitEvents();
+        }
+#endif
     }
-    aven_gl_shape_buffer_deinit(gl, &buffer);
-    aven_gl_shape_geometry_deinit(&geometry);
-    aven_gl_shape_ctx_deinit(gl, &ctx);
+    aven_gl_shape_buffer_deinit(&win.gl, &app.data.shape.buffer);
+    aven_gl_shape_geometry_deinit(&app.data.shape.geometry);
+    aven_gl_shape_ctx_deinit(&win.gl, &app.data.shape.ctx);
 }
 
-void test_aven_gl_shape_rounded(AvenGlWindow *win) {
-    AvenGl *gl = &win->gl;
+void test_aven_gl_shape_rounded(void) {
     AvenArena temp_arena = test_arena;
-    AvenGlShapeRoundedCtx ctx = aven_gl_shape_rounded_ctx_init(gl);
-    AvenGlShapeRoundedGeometry geometry = aven_gl_shape_rounded_geometry_init(
-        16,
-        64,
+    app.state = TEST_AVEN_GL_ROUNDED;
+    app.data.rounded.ctx = aven_gl_shape_rounded_ctx_init(&win.gl);
+    app.data.rounded.geometry = aven_gl_shape_rounded_geometry_init(
+        NVERTICES,
+        NINDICES,
         &temp_arena
     );
-    AvenGlShapeRoundedBuffer buffer = aven_gl_shape_rounded_buffer_init(
-        gl,
-        &geometry,
+    app.data.rounded.buffer = aven_gl_shape_rounded_buffer_init(
+        &win.gl,
+        &app.data.rounded.geometry,
         AVEN_GL_BUFFER_USAGE_DYNAMIC
     );
     Aff2 trans;
@@ -95,75 +233,82 @@ void test_aven_gl_shape_rounded(AvenGlWindow *win) {
     Aff2 camera;
     aff2_camera_position(camera, (Vec2){ 0.0f, 0.0f }, (Vec2){ 1.25f, 1.25f });
     AvenTimeInst start = aven_time_now();
-    while (aven_time_since(aven_time_now(), start) < 2 * AVEN_TIME_NSEC_PER_SEC) {
-        aven_gl_shape_rounded_geometry_clear(&geometry);
+    while (aven_time_since(aven_time_now(), start) / 2 < AVEN_TIME_NSEC_PER_SEC) {
+        if (glfwWindowShouldClose(win.window)) {
+            break;
+        }
+        aven_gl_shape_rounded_geometry_clear(&app.data.rounded.geometry);
         aven_gl_shape_rounded_geometry_push_square(
-            &geometry,
+            &app.data.rounded.geometry,
             trans,
             0.25f,
             (Vec4){ 1.0f, 0.0f, 0.0f, 1.0f }
         );
         aven_gl_shape_rounded_geometry_push_triangle_isoceles(
-            &geometry,
+            &app.data.rounded.geometry,
             trans,
             0.25f,
             (Vec4){ 0.0f, 1.0f, 0.0f, 1.0f }
         );
         aven_gl_shape_rounded_geometry_push_triangle_right(
-            &geometry,
+            &app.data.rounded.geometry,
             trans,
             0.25f,
             (Vec4){ 0.0f, 0.0f, 1.0f, 1.0f }
         );
-        aven_gl_shape_rounded_buffer_update(gl, &buffer, &geometry);
+        aven_gl_shape_rounded_buffer_update(
+            &win.gl,
+            &app.data.rounded.buffer,
+            &app.data.rounded.geometry
+        );
 
         int width;
         int height;
-        glfwGetFramebufferSize(win->window, &width, &height);
-        gl->Viewport(0, 0, width, height);
-        assert(gl->GetError() == 0);
+        glfwGetFramebufferSize(win.window, &width, &height);
+        win.gl.Viewport(0, 0, width, height);
+        assert(win.gl.GetError() == 0);
 
-        gl->ClearColor(0.75f, 0.75f, 0.75f, 1.0f);
-        assert(gl->GetError() == 0);
-        gl->Clear(GL_COLOR_BUFFER_BIT);
-        assert(gl->GetError() == 0);
+        win.gl.ClearColor(0.75f, 0.75f, 0.75f, 1.0f);
+        assert(win.gl.GetError() == 0);
+        win.gl.Clear(GL_COLOR_BUFFER_BIT);
+        assert(win.gl.GetError() == 0);
         aven_gl_shape_rounded_draw(
-            gl,
-            &ctx,
-            &buffer,
+            &win.gl,
+            &app.data.rounded.ctx,
+            &app.data.rounded.buffer,
             2.0f / (float)height,
             camera
         );
 
-        glfwSwapBuffers(win->window);
+        glfwSwapBuffers(win.window);
         glfwPollEvents();
+#ifdef __ANDROID__
+        while (minimized) {
+            glfwWaitEvents();
+        }
+#endif
     }
-    aven_gl_shape_rounded_buffer_deinit(gl, &buffer);
-    aven_gl_shape_rounded_geometry_deinit(&geometry);
-    aven_gl_shape_rounded_ctx_deinit(gl, &ctx);
+    aven_gl_shape_rounded_buffer_deinit(&win.gl, &app.data.rounded.buffer);
+    aven_gl_shape_rounded_geometry_deinit(&app.data.rounded.geometry);
+    aven_gl_shape_rounded_ctx_deinit(&win.gl, &app.data.rounded.ctx);
 }
 
-void test_aven_gl_texture(AvenGlWindow *win) {
-    uint32_t texture_data[] = { 0xffffffff, 0xff0000ff, 0xff0000ff, 0xffffffff };
-    Slice(uint32_t) texture = slice_array(texture_data);
-    AvenGl *gl = &win->gl;
+void test_aven_gl_texture(void) {
     AvenArena temp_arena = test_arena;
-    AvenGlTextureCtx ctx = aven_gl_texture_ctx_init(
-        gl,
-        2,
-        2,
+    app.state = TEST_AVEN_GL_TEXTURE;
+    app.data.texture.ctx = aven_gl_texture_ctx_init(
+        &win.gl,
+        TSIZE,
+        TSIZE,
         (AvenGlTextureBytesOptional){
             .valid = true,
             .value = slice_as_bytes(texture),
         }
     );
-    AvenGlTextureGeometry geometry = aven_gl_texture_geometry_init(
-        1,
-        &temp_arena
-    );
-    AvenGlTextureBuffer buffer = aven_gl_texture_buffer_init(
-        gl,
-        &geometry,
+    app.data.texture.geometry = aven_gl_texture_geometry_init(1, &temp_arena);
+    app.data.texture.buffer = aven_gl_texture_buffer_init(
+        &win.gl,
+        &app.data.texture.geometry,
         AVEN_GL_BUFFER_USAGE_DYNAMIC
     );
     Aff2 trans;
@@ -171,29 +316,52 @@ void test_aven_gl_texture(AvenGlWindow *win) {
     Aff2 camera;
     aff2_camera_position(camera, (Vec2){ 0.0f, 0.0f }, (Vec2){ 1.25f, 1.25f });
     AvenTimeInst start = aven_time_now();
-    while (aven_time_since(aven_time_now(), start) < 2 * AVEN_TIME_NSEC_PER_SEC) {
-        aven_gl_texture_geometry_clear(&geometry);
-        aven_gl_texture_geometry_push_square(&geometry, trans, trans);
-        aven_gl_texture_buffer_update(gl, &buffer, &geometry);
+    while (
+        aven_time_since(aven_time_now(), start) / 2 < AVEN_TIME_NSEC_PER_SEC
+    ) {
+        if (glfwWindowShouldClose(win.window)) {
+            break;
+        }
+        aven_gl_texture_geometry_clear(&app.data.texture.geometry);
+        aven_gl_texture_geometry_push_square(
+            &app.data.texture.geometry,
+            trans,
+            trans
+        );
+        aven_gl_texture_buffer_update(
+            &win.gl,
+            &app.data.texture.buffer,
+            &app.data.texture.geometry
+        );
 
         int width;
         int height;
-        glfwGetFramebufferSize(win->window, &width, &height);
-        gl->Viewport(0, 0, width, height);
-        assert(gl->GetError() == 0);
+        glfwGetFramebufferSize(win.window, &width, &height);
+        win.gl.Viewport(0, 0, width, height);
+        assert(win.gl.GetError() == 0);
 
-        gl->ClearColor(0.75f, 0.75f, 0.75f, 1.0f);
-        assert(gl->GetError() == 0);
-        gl->Clear(GL_COLOR_BUFFER_BIT);
-        assert(gl->GetError() == 0);
-        aven_gl_texture_draw(gl, &ctx, &buffer, camera);
+        win.gl.ClearColor(0.75f, 0.75f, 0.75f, 1.0f);
+        assert(win.gl.GetError() == 0);
+        win.gl.Clear(GL_COLOR_BUFFER_BIT);
+        assert(win.gl.GetError() == 0);
+        aven_gl_texture_draw(
+            &win.gl,
+            &app.data.texture.ctx,
+            &app.data.texture.buffer,
+            camera
+        );
 
-        glfwSwapBuffers(win->window);
+        glfwSwapBuffers(win.window);
         glfwPollEvents();
+#ifdef __ANDROID__
+        while (minimized) {
+            glfwWaitEvents();
+        }
+#endif
     }
-    aven_gl_texture_buffer_deinit(gl, &buffer);
-    aven_gl_texture_geometry_deinit(&geometry);
-    aven_gl_texture_ctx_deinit(gl, &ctx);
+    aven_gl_texture_buffer_deinit(&win.gl, &app.data.texture.buffer);
+    aven_gl_texture_geometry_deinit(&app.data.texture.geometry);
+    aven_gl_texture_ctx_deinit(&win.gl, &app.data.texture.ctx);
 }
 
 int main(void) {
@@ -201,10 +369,12 @@ int main(void) {
     void *mem = malloc(ARENA_SIZE);
     test_arena = aven_arena_init(mem, ARENA_SIZE);
 
-    int width = 480;
-    int height = 480;
+    win = aven_gl_window(INIT_WIDTH, INIT_HEIGHT, "AvenGL Test");
 
-    AvenGlWindow win = aven_gl_window(width, height, "AvenGL Test");
+#ifdef __ANDROID__
+    glfwSetWindowIconifyCallback(win.window, on_android_pause_resume);
+#endif
+
     bool fail = false;
 
     if (win.gl.ActiveTexture == NULL) {
@@ -784,9 +954,20 @@ int main(void) {
         aven_io_print("all gl functions loaded\n");
     }
 
-    test_aven_gl_shape(&win);
-    test_aven_gl_shape_rounded(&win);
-    test_aven_gl_texture(&win);
+#ifdef __ANDROID__
+    while (1) {
+        test_aven_gl_shape();
+        test_aven_gl_shape_rounded();
+        test_aven_gl_texture();
+    }
+#else
+    test_aven_gl_shape();
+    test_aven_gl_shape_rounded();
+    test_aven_gl_texture();
+#endif
+
+    glfwDestroyWindow(win.window);
+    glfwTerminate();
 
     return (int)fail;
 }

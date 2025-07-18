@@ -100,10 +100,16 @@ static int32_t handleInput(struct android_app* app, AInputEvent* event)
 
 static void handleEvents(int timeout)
 {
-    ALooper_pollOnce(timeout, NULL, NULL, (void**)&_glfw.gstate.source);
+    int events;
+    struct android_poll_source *source;
+    int res = ALooper_pollOnce(timeout, NULL, &events, (void**)&source);
 
-    if (_glfw.gstate.source != NULL)
-        _glfw.gstate.source->process(_glfw.gstate.app, _glfw.gstate.source);
+    while (res >= 0)
+    {
+        if (source != NULL)
+            source->process(_glfw.gstate.app, source);
+        res = ALooper_pollOnce(0, NULL, &events, (void**)&source);
+    }
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -155,7 +161,8 @@ void _glfwDestroyWindowAndroid(_GLFWwindow* window)
     if (window->context.destroy)
         window->context.destroy(window);
 
-    ANativeActivity_finish(window->android->activity);
+    _glfwTerminateEGL();
+    _glfwTerminateOSMesa();
 }
 
 void _glfwSetWindowTitleAndroid(_GLFWwindow* window, const char* title)

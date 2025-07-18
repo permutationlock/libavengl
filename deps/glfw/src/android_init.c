@@ -43,11 +43,10 @@ void handleAppCmd(struct android_app* app, int32_t cmd)
         break;
 
     case APP_CMD_RESUME:
-        //_glfwInputWindowIconify(_glfw.windowListHead, GLFW_FALSE);
         break;
 
     case APP_CMD_PAUSE:
-        //_glfwInputWindowIconify(_glfw.windowListHead, GLFW_TRUE);
+        _glfw.gstate.suspended = true;
         break;
 
     case APP_CMD_STOP:
@@ -57,18 +56,36 @@ void handleAppCmd(struct android_app* app, int32_t cmd)
         break;
 
     case APP_CMD_INIT_WINDOW:
+        if (!_glfw.gstate.suspended)
+        {
+            break;
+        }
+        _GLFWwndconfig wndconfig = _glfw.hints.window;
+        _GLFWfbconfig fbconfig = _glfw.hints.framebuffer;
+        _GLFWctxconfig ctxconfig = _glfw.hints.context;
+        assert(_glfwCreateWindowAndroid(_glfw.windowListHead, &wndconfig, &ctxconfig, &fbconfig));
+        _glfwInputWindowIconify(_glfw.windowListHead, GLFW_FALSE);
+        _glfw.gstate.suspended = false;
         break;
 
     case APP_CMD_TERM_WINDOW:
-        //_glfwInputWindowCloseRequest(_glfw.windowListHead);
+        if (_glfw.gstate.suspended)
+        {
+            _glfwInputWindowIconify(_glfw.windowListHead, GLFW_TRUE);
+            _glfwDestroyWindowAndroid(_glfw.windowListHead);
+        }
+        else
+        {
+            _glfwInputWindowCloseRequest(_glfw.windowListHead);
+        }
         break;
 
     case APP_CMD_LOST_FOCUS:
-        //_glfwInputWindowFocus(_glfw.windowListHead, GLFW_FALSE);
+        _glfwInputWindowFocus(_glfw.windowListHead, GLFW_FALSE);
         break;
 
     case APP_CMD_GAINED_FOCUS:
-        //_glfwInputWindowFocus(_glfw.windowListHead, GLFW_TRUE);
+        _glfwInputWindowFocus(_glfw.windowListHead, GLFW_TRUE);
         break;
 
     case APP_CMD_WINDOW_RESIZED:
@@ -190,12 +207,13 @@ GLFWbool _glfwConnectAndroid(int platformID, _GLFWplatform* platform)
 int _glfwInitAndroid(void)
 {
     _glfw.gstate.app = _globalAndroidApp;
-    _glfw.gstate.source = NULL;
 
     return GLFW_TRUE;
 }
 
 void _glfwTerminateAndroid(void)
 {
+    ANativeActivity_finish(_glfw.gstate.app->activity);
     _glfw.gstate.app = NULL;
+    _glfw.gstate.suspended = false;
 }

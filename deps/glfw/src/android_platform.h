@@ -42,8 +42,8 @@
 
 typedef struct android_gstate
 {
-    struct android_app* app;
-    struct android_poll_source* source;
+    struct android_app* app; 
+    GLFWbool suspended;
 } android_gstate;
 
 typedef VkFlags VkAndroidSurfaceCreateFlagsKHR;
