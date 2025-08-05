@@ -28,92 +28,140 @@
 #include <android_native_app_glue.h>
 #include <android/native_window.h>
 #include <android/log.h>
+#include <jni.h>
 
 #include "internal.h"
 
-struct android_app* _globalAndroidApp = NULL;
+struct android_app *_globalAndroidApp = NULL;
 
 extern int main(void);
 
-void handleAppCmd(struct android_app* app, int32_t cmd)
-{
-    switch (cmd)
-    {
-    case APP_CMD_START:
-        break;
-
-    case APP_CMD_RESUME:
-        break;
-
-    case APP_CMD_PAUSE:
-        _glfw.gstate.suspended = true;
-        break;
-
-    case APP_CMD_STOP:
-        break;
-
-    case APP_CMD_DESTROY:
-        break;
-
-    case APP_CMD_INIT_WINDOW:
-        if (!_glfw.gstate.suspended)
-        {
+void handleAppCmd(struct android_app *app, int32_t cmd) {
+    switch (cmd) {
+        case APP_CMD_START:
             break;
-        }
-        _GLFWwndconfig wndconfig = _glfw.hints.window;
-        _GLFWfbconfig fbconfig = _glfw.hints.framebuffer;
-        _GLFWctxconfig ctxconfig = _glfw.hints.context;
-        assert(_glfwCreateWindowAndroid(_glfw.windowListHead, &wndconfig, &ctxconfig, &fbconfig));
-        _glfwInputWindowIconify(_glfw.windowListHead, GLFW_FALSE);
-        _glfw.gstate.suspended = false;
-        break;
 
-    case APP_CMD_TERM_WINDOW:
-        if (_glfw.gstate.suspended)
-        {
-            _glfwInputWindowIconify(_glfw.windowListHead, GLFW_TRUE);
-            _glfwDestroyWindowAndroid(_glfw.windowListHead);
-        }
-        else
-        {
-            _glfwInputWindowCloseRequest(_glfw.windowListHead);
-        }
-        break;
+        case APP_CMD_RESUME:
+            break;
 
-    case APP_CMD_LOST_FOCUS:
-        _glfwInputWindowFocus(_glfw.windowListHead, GLFW_FALSE);
-        break;
+        case APP_CMD_PAUSE:
+            _glfw.gstate.suspended = true;
+            break;
 
-    case APP_CMD_GAINED_FOCUS:
-        _glfwInputWindowFocus(_glfw.windowListHead, GLFW_TRUE);
-        break;
+        case APP_CMD_STOP:
+            break;
 
-    case APP_CMD_WINDOW_RESIZED:
-        _glfwInputWindowSize(_glfw.windowListHead, ANativeWindow_getWidth(app->window), ANativeWindow_getHeight(app->window));
-        break;
+        case APP_CMD_DESTROY:
+            break;
 
-    case APP_CMD_WINDOW_REDRAW_NEEDED:
-        _glfwInputWindowDamage(_glfw.windowListHead);
-        break;
+        case APP_CMD_INIT_WINDOW:
+            if (!_glfw.gstate.suspended) {
+                break;
+            }
+            _GLFWwndconfig wndconfig = _glfw.hints.window;
+            _GLFWfbconfig fbconfig = _glfw.hints.framebuffer;
+            _GLFWctxconfig ctxconfig = _glfw.hints.context;
+            assert(
+                _glfwCreateWindowAndroid(
+                    _glfw.windowListHead,
+                    &wndconfig,
+                    &ctxconfig,
+                    &fbconfig
+                )
+            );
+            _glfwInputWindowIconify(_glfw.windowListHead, GLFW_FALSE);
+            _glfw.gstate.suspended = false;
+            break;
 
-    case APP_CMD_CONTENT_RECT_CHANGED:
-        _glfwInputFramebufferSize(_glfw.windowListHead, ANativeWindow_getWidth(app->window), ANativeWindow_getHeight(app->window));
-        break;
+        case APP_CMD_TERM_WINDOW:
+            if (_glfw.gstate.suspended) {
+                _glfwInputWindowIconify(_glfw.windowListHead, GLFW_TRUE);
+                _glfwDestroyWindowAndroid(_glfw.windowListHead);
+            } else {
+                _glfwInputWindowCloseRequest(_glfw.windowListHead);
+            }
+            break;
 
-    case APP_CMD_CONFIG_CHANGED:
-        break;
+        case APP_CMD_LOST_FOCUS:
+            _glfwInputWindowFocus(_glfw.windowListHead, GLFW_FALSE);
+            break;
 
-    case APP_CMD_INPUT_CHANGED:
-        break;
+        case APP_CMD_GAINED_FOCUS:
+            _glfwInputWindowFocus(_glfw.windowListHead, GLFW_TRUE);
+            break;
+
+        case APP_CMD_WINDOW_RESIZED:
+            _glfwInputWindowSize(
+                _glfw.windowListHead,
+                ANativeWindow_getWidth(app->window),
+                ANativeWindow_getHeight(app->window)
+            );
+            break;
+
+        case APP_CMD_WINDOW_REDRAW_NEEDED:
+            _glfwInputWindowDamage(_glfw.windowListHead);
+            break;
+
+        case APP_CMD_CONTENT_RECT_CHANGED:
+            _glfwInputFramebufferSize(
+                _glfw.windowListHead,
+                ANativeWindow_getWidth(app->window),
+                ANativeWindow_getHeight(app->window)
+            );
+            break;
+
+        case APP_CMD_CONFIG_CHANGED:
+            break;
+
+        case APP_CMD_INPUT_CHANGED:
+            break;
     }
 }
 
 // Android Entry Point
-void android_main(struct android_app* app)
-{
+void android_main(struct android_app *app) {
     app->onAppCmd = handleAppCmd;
 
     _globalAndroidApp = app;
+
+    const struct JNINativeInterface * env =
+        (struct JNINativeInterface*)app->activity->env;
+    const struct JNINativeInterface ** envptr = &env;
+    const struct JNIInvokeInterface ** jniiptr = app->activity->vm;
+    const struct JNIInvokeInterface * jnii = *jniiptr;
+    jnii->AttachCurrentThread(jniiptr, &envptr, NULL);
+    env = (*envptr);
+
+    jclass activityClass = env->FindClass(envptr, "android/app/NativeActivity");
+    jmethodID getWindow = env->GetMethodID(envptr, activityClass, "getWindow", "()Landroid/view/Window;");
+    jobject jwindow = env->CallObjectMethod(envptr, app->activity->clazz, getWindow);
+    jclass windowClass = env->FindClass(envptr, "android/view/Window");
+    jmethodID getDecorView = env->GetMethodID(envptr, windowClass, "getDecorView", "()Landroid/view/View;");
+    jobject decorView = env->CallObjectMethod(envptr, jwindow, getDecorView);
+
+    jclass viewClass = env->FindClass(envptr, "android/view/View");
+    const int flagLayoutHideNavigation = env->GetStaticIntField(envptr, viewClass, env->GetStaticFieldID(envptr, viewClass, "SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION", "I"));
+    const int flagLayoutFullscreen = env->GetStaticIntField(envptr, viewClass, env->GetStaticFieldID(envptr, viewClass, "SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN", "I"));
+    const int flagLowProfile = env->GetStaticIntField(envptr, viewClass, env->GetStaticFieldID(envptr, viewClass, "SYSTEM_UI_FLAG_LOW_PROFILE", "I"));
+    const int flagHideNavigation = env->GetStaticIntField(envptr, viewClass, env->GetStaticFieldID(envptr, viewClass, "SYSTEM_UI_FLAG_HIDE_NAVIGATION", "I"));
+    const int flagFullscreen = env->GetStaticIntField(envptr, viewClass, env->GetStaticFieldID(envptr, viewClass, "SYSTEM_UI_FLAG_FULLSCREEN", "I"));
+    const int flagImmersiveSticky = env->GetStaticIntField(envptr, viewClass, env->GetStaticFieldID(envptr, viewClass, "SYSTEM_UI_FLAG_IMMERSIVE_STICKY", "I"));
+    const int flagLayoutStable = env->GetStaticIntField(envptr, viewClass, env->GetStaticFieldID(envptr, viewClass, "SYSTEM_UI_FLAG_LAYOUT_STABLE", "I"));
+    jmethodID setSystemUiVisibility = env->GetMethodID(envptr, viewClass, "setSystemUiVisibility", "(I)V");
+
+    env->CallVoidMethod(envptr, decorView, setSystemUiVisibility,
+            (flagLayoutHideNavigation | flagLayoutFullscreen | flagLowProfile | flagHideNavigation | flagFullscreen | flagImmersiveSticky | flagLayoutStable));
+
+    jclass layoutManagerClass = env->FindClass(envptr, "android/view/WindowManager$LayoutParams");
+    const int flag_WinMan_Fullscreen = env->GetStaticIntField(envptr, layoutManagerClass, (env->GetStaticFieldID(envptr, layoutManagerClass, "FLAG_FULLSCREEN", "I")));
+    const int flag_WinMan_KeepScreenOn = env->GetStaticIntField(envptr, layoutManagerClass, (env->GetStaticFieldID(envptr, layoutManagerClass, "FLAG_KEEP_SCREEN_ON", "I")));
+    const int flag_WinMan_hw_acc = env->GetStaticIntField(envptr, layoutManagerClass, (env->GetStaticFieldID(envptr, layoutManagerClass, "FLAG_HARDWARE_ACCELERATED", "I")));
+    const int flag_WinMan_NoLimits = env->GetStaticIntField(envptr, layoutManagerClass, (env->GetStaticFieldID(envptr, layoutManagerClass, "FLAG_LAYOUT_NO_LIMITS", "I")));
+
+    env->CallVoidMethod(envptr, jwindow, (env->GetMethodID(envptr, windowClass, "addFlags" , "(I)V")),
+        (flag_WinMan_Fullscreen | flag_WinMan_KeepScreenOn | flag_WinMan_hw_acc | flag_WinMan_NoLimits));
+
+    jnii->DetachCurrentThread(jniiptr);
 
     main();
 }
@@ -122,10 +170,8 @@ void android_main(struct android_app* app)
 //////                       GLFW platform API                      //////
 //////////////////////////////////////////////////////////////////////////
 
-GLFWbool _glfwConnectAndroid(int platformID, _GLFWplatform* platform)
-{
-    const _GLFWplatform android =
-    {
+GLFWbool _glfwConnectAndroid(int platformID, _GLFWplatform *platform) {
+    const _GLFWplatform android = {
         .platformID = GLFW_PLATFORM_ANDROID,
         .init = _glfwInitAndroid,
         .terminate = _glfwTerminateAndroid,
@@ -195,24 +241,24 @@ GLFWbool _glfwConnectAndroid(int platformID, _GLFWplatform* platform)
         .getEGLPlatform = _glfwGetEGLPlatformAndroid,
         .getEGLNativeDisplay = _glfwGetEGLNativeDisplayAndroid,
         .getEGLNativeWindow = _glfwGetEGLNativeWindowAndroid,
-        .getRequiredInstanceExtensions = _glfwGetRequiredInstanceExtensionsAndroid,
-        .getPhysicalDevicePresentationSupport = _glfwGetPhysicalDevicePresentationSupportAndroid,
-        .createWindowSurface = _glfwCreateWindowSurfaceAndroid
+        .getRequiredInstanceExtensions =
+            _glfwGetRequiredInstanceExtensionsAndroid,
+        .getPhysicalDevicePresentationSupport =
+            _glfwGetPhysicalDevicePresentationSupportAndroid,
+        .createWindowSurface = _glfwCreateWindowSurfaceAndroid,
     };
 
     *platform = android;
     return GLFW_TRUE;
 }
 
-int _glfwInitAndroid(void)
-{
+int _glfwInitAndroid(void) {
     _glfw.gstate.app = _globalAndroidApp;
 
     return GLFW_TRUE;
 }
 
-void _glfwTerminateAndroid(void)
-{
+void _glfwTerminateAndroid(void) {
     ANativeActivity_finish(_glfw.gstate.app->activity);
     _glfw.gstate.app = NULL;
     _glfw.gstate.suspended = false;
