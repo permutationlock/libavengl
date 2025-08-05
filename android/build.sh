@@ -24,38 +24,38 @@ envsubst '$$ANDROID_VERSION $$APP_NAME $$ORG_NAME' < template/AndroidManifest.xm
 # build so for arm64
 cd ..
 ./build clean --android
-./build --android --cc $ANDROID_CLANG --ldflags "--target=aarch64-linux-android22 $LDFLAGS" --ccflags "--target=aarch64-linux-android22 $CFLAGS" --glfw-ccflags "--target=aarch64-linux-android22 $CFLAGS" --stb-ccflags "--target=aarch64-linux-android22 $CFLAGS" --android-ccflags "--target=aarch64-linux-android22 $CFLAGS"
+./build test --android --cc $ANDROID_CLANG --ldflags "--target=aarch64-linux-android22 $LDFLAGS" --ccflags "--target=aarch64-linux-android22 $CFLAGS" --glfw-ccflags "--target=aarch64-linux-android22 $CFLAGS" --stb-ccflags "--target=aarch64-linux-android22 $CFLAGS" --android-ccflags "--target=aarch64-linux-android22 $CFLAGS"
 cd android
 
 mkdir -p build_android/apk/lib/arm64-v8a
-cp ../build_out/visualization.so build_android/apk/lib/arm64-v8a/lib$APP_NAME.so
+cp ../build_work/test.so build_android/apk/lib/arm64-v8a/lib$APP_NAME.so
 
 # build so for arm32
 cd ..
 ./build clean --android
-./build --android --cc $ANDROID_CLANG --ldflags "--target=armv7a-linux-androideabi22 $LDFLAGS" --ccflags "--target=armv7a-linux-androideabi22 $CFLAGS" --glfw-ccflags "--target=armv7a-linux-androideabi22 $CFLAGS" --stb-ccflags "--target=armv7a-linux-androideabi22 $CFLAGS" --android-ccflags "--target=armv7a-linux-androideabi22 $CFLAGS"
+./build test --android --cc $ANDROID_CLANG --ldflags "--target=armv7a-linux-androideabi22 $LDFLAGS" --ccflags "--target=armv7a-linux-androideabi22 $CFLAGS" --glfw-ccflags "--target=armv7a-linux-androideabi22 $CFLAGS" --stb-ccflags "--target=armv7a-linux-androideabi22 $CFLAGS" --android-ccflags "--target=armv7a-linux-androideabi22 $CFLAGS"
 cd android
 
 mkdir -p build_android/apk/lib/armeabi-v7a
-cp ../build_out/visualization.so build_android/apk/lib/armeabi-v7a/lib$APP_NAME.so
+cp ../build_work/test.so build_android/apk/lib/armeabi-v7a/lib$APP_NAME.so
 
 # build so for x86
 cd ..
 ./build clean --android
-./build --android --cc $ANDROID_CLANG --ldflags "--target=i686-linux-android22 $LDFLAGS" --ccflags "--target=i686-linux-android22 $CFLAGS" --glfw-ccflags "--target=i686-linux-android22 $CFLAGS" --stb-ccflags "--target=i686-linux-android22 $CFLAGS" --android-ccflags "--target=i686-linux-android22 $CFLAGS"
+./build test --android --cc $ANDROID_CLANG --ldflags "--target=i686-linux-android22 $LDFLAGS" --ccflags "--target=i686-linux-android22 $CFLAGS" --glfw-ccflags "--target=i686-linux-android22 $CFLAGS" --stb-ccflags "--target=i686-linux-android22 $CFLAGS" --android-ccflags "--target=i686-linux-android22 $CFLAGS"
 cd android
 
 mkdir -p build_android/apk/lib/x86
-cp ../build_out/visualization.so build_android/apk/lib/x86/lib$APP_NAME.so
+cp ../build_work/test.so build_android/apk/lib/x86/lib$APP_NAME.so
 
 # build for x86_64
 cd ..
 ./build clean --android
-./build --android --cc $ANDROID_CLANG --ldflags "--target=x86_64-linux-android22 $LDFLAGS" --ccflags "--target=x86_64-linux-android22 $CFLAGS" --glfw-ccflags "--target=x86_64-linux-android22 $CFLAGS" --stb-ccflags "--target=x86_64-linux-android22 $CFLAGS" --android-ccflags "--target=x86_64-linux-android22 $CFLAGS"
+./build test --android --cc $ANDROID_CLANG --ldflags "--target=x86_64-linux-android22 $LDFLAGS" --ccflags "--target=x86_64-linux-android22 $CFLAGS" --glfw-ccflags "--target=x86_64-linux-android22 $CFLAGS" --stb-ccflags "--target=x86_64-linux-android22 $CFLAGS" --android-ccflags "--target=x86_64-linux-android22 $CFLAGS"
 cd android
 
 mkdir -p build_android/apk/lib/x86_64
-cp ../build_out/visualization.so build_android/apk/lib/x86_64/lib$APP_NAME.so
+cp ../build_work/test.so build_android/apk/lib/x86_64/lib$APP_NAME.so
 
 # build temporary apk and unzip back to directory
 $ANDROID_AAPT package -f -F build_android/temp.apk -I $ANDROID_JAR -M build_android/AndroidManifest.xml -S build_android/apk/res -v --target-sdk-version $ANDROID_VERSION
