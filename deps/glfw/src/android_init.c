@@ -25,6 +25,8 @@
 //
 //========================================================================
 
+#include <assert.h>
+
 #include <android_native_app_glue.h>
 #include <android/native_window.h>
 #include <android/log.h>
@@ -45,7 +47,6 @@ void handleAppCmd(struct android_app *app, int32_t cmd) {
             break;
 
         case APP_CMD_PAUSE:
-            _glfw.gstate.suspended = true;
             break;
 
         case APP_CMD_STOP:
@@ -61,25 +62,21 @@ void handleAppCmd(struct android_app *app, int32_t cmd) {
             _GLFWwndconfig wndconfig = _glfw.hints.window;
             _GLFWfbconfig fbconfig = _glfw.hints.framebuffer;
             _GLFWctxconfig ctxconfig = _glfw.hints.context;
-            assert(
-                _glfwCreateWindowAndroid(
-                    _glfw.windowListHead,
-                    &wndconfig,
-                    &ctxconfig,
-                    &fbconfig
-                )
+            GLFWbool created = _glfwCreateWindowAndroid(
+                _glfw.windowListHead,
+                &wndconfig,
+                &ctxconfig,
+                &fbconfig
             );
+            assert(created);
             _glfwInputWindowIconify(_glfw.windowListHead, GLFW_FALSE);
             _glfw.gstate.suspended = false;
             break;
 
         case APP_CMD_TERM_WINDOW:
-            if (_glfw.gstate.suspended) {
-                _glfwInputWindowIconify(_glfw.windowListHead, GLFW_TRUE);
-                _glfwDestroyWindowAndroid(_glfw.windowListHead);
-            } else {
-                _glfwInputWindowCloseRequest(_glfw.windowListHead);
-            }
+            _glfw.gstate.suspended = true;
+            _glfwInputWindowIconify(_glfw.windowListHead, GLFW_TRUE);
+            _glfwDestroyWindowAndroid(_glfw.windowListHead);
             break;
 
         case APP_CMD_LOST_FOCUS:
@@ -124,13 +121,11 @@ void android_main(struct android_app *app) {
 
     _globalAndroidApp = app;
 
-    const struct JNINativeInterface * env =
-        (struct JNINativeInterface*)app->activity->env;
-    const struct JNINativeInterface ** envptr = &env;
-    const struct JNIInvokeInterface ** jniiptr = app->activity->vm;
-    const struct JNIInvokeInterface * jnii = *jniiptr;
-    jnii->AttachCurrentThread(jniiptr, &envptr, NULL);
-    env = (*envptr);
+    JNIEnv *envptr = NULL;
+    JavaVM jnii = *app->activity->vm;
+    jnii->AttachCurrentThread(app->activity->vm, &envptr, NULL);
+
+    JNIEnv env = (*envptr);
 
     jclass activityClass = env->FindClass(envptr, "android/app/NativeActivity");
     jmethodID getWindow = env->GetMethodID(envptr, activityClass, "getWindow", "()Landroid/view/Window;");
@@ -156,12 +151,11 @@ void android_main(struct android_app *app) {
     const int flag_WinMan_Fullscreen = env->GetStaticIntField(envptr, layoutManagerClass, (env->GetStaticFieldID(envptr, layoutManagerClass, "FLAG_FULLSCREEN", "I")));
     const int flag_WinMan_KeepScreenOn = env->GetStaticIntField(envptr, layoutManagerClass, (env->GetStaticFieldID(envptr, layoutManagerClass, "FLAG_KEEP_SCREEN_ON", "I")));
     const int flag_WinMan_hw_acc = env->GetStaticIntField(envptr, layoutManagerClass, (env->GetStaticFieldID(envptr, layoutManagerClass, "FLAG_HARDWARE_ACCELERATED", "I")));
-    const int flag_WinMan_NoLimits = env->GetStaticIntField(envptr, layoutManagerClass, (env->GetStaticFieldID(envptr, layoutManagerClass, "FLAG_LAYOUT_NO_LIMITS", "I")));
 
     env->CallVoidMethod(envptr, jwindow, (env->GetMethodID(envptr, windowClass, "addFlags" , "(I)V")),
-        (flag_WinMan_Fullscreen | flag_WinMan_KeepScreenOn | flag_WinMan_hw_acc | flag_WinMan_NoLimits));
+        (flag_WinMan_Fullscreen | flag_WinMan_KeepScreenOn | flag_WinMan_hw_acc));
 
-    jnii->DetachCurrentThread(jniiptr);
+    jnii->DetachCurrentThread(app->activity->vm);
 
     main();
 }
