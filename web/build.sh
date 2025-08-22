@@ -1,5 +1,6 @@
 # required environment:
-#     WEB_EMCC: path to emcc
+#     WEB_CC: path to emscripten cc
+#     WEB_AR: path to emscripten ar
 #     APP_NAME: the name of your app
 #     CFLAGS: common flags to be passed to C compiler
 #     LDFLAGS: common flags to be passed to the linker
@@ -10,7 +11,9 @@
 mkdir -p build_web/public
 envsubst '$$APP_NAME' < template/shell.html > build_web/shell.html
 cd ..
-./build --cc "$WEB_EMCC" \
+./build --cc "$WEB_CC" \
+    --ld "$WEB_CC" \
+    --ar "$WEB_AR" \
     --ccflags "$CFLAGS" \
     --glfw-ccflags "$CFLAGS" \
     --stb-ccflags "$CFLAGS" \
@@ -20,7 +23,12 @@ cd ..
         -s EXPORTED_RUNTIME_METHODS=cwrap \
         -s EXPORTED_FUNCTIONS=_main,_on_resize \
         --shell-file web/build_web/shell.html" \
+    --arflags "-rcs" \
     --exext ".html .js .wasm" \
+    --obext ".o" \
+    --arext ".a" \
+    --winpthreads false \
+    --winutf8 false \
     --glfw-external \
     --syslibs ""
 cp build_test/test.html web/build_web/public/index.html
