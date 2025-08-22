@@ -14,6 +14,21 @@
 
 #include <stdlib.h>
 
+#include <GLFW/glfw3.h>
+
+#if defined(__EMSCRIPTEN__)
+    #include <emscripten.h>
+
+    #ifdef HOT_RELOAD
+        #error "hot reloading dll incompatible with emcc"
+    #endif
+
+    void on_resize(int width, int height) {
+        glfwSetWindowSize(win.window, width, height);
+        on_damage(win.window);
+    }
+#endif
+
 #define INIT_WIDTH 480
 #define INIT_HEIGHT 480
 #define ARENA_SIZE (4096 * 16)
@@ -316,9 +331,7 @@ void test_aven_gl_texture(void) {
     Aff2 camera;
     aff2_camera_position(camera, (Vec2){ 0.0f, 0.0f }, (Vec2){ 1.25f, 1.25f });
     AvenTimeInst start = aven_time_now();
-    while (
-        aven_time_since(aven_time_now(), start) / 2 < AVEN_TIME_NSEC_PER_SEC
-    ) {
+    while (aven_time_since(aven_time_now(), start) / 2 < AVEN_TIME_NSEC_PER_SEC) {
         if (glfwWindowShouldClose(win.window)) {
             break;
         }
@@ -954,7 +967,7 @@ int main(void) {
         aven_io_print("all gl functions loaded\n");
     }
 
-#ifdef __ANDROID__
+#if defined(__ANDROID__) or defined(__EMSCRIPTEN__)
     while (1) {
         test_aven_gl_shape();
         test_aven_gl_shape_rounded();
