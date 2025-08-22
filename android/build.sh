@@ -26,7 +26,7 @@ envsubst '$$ANDROID_VERSION $$APP_NAME $$ORG_NAME' \
 # build so for arm64
 cd ..
 ./build clean --android
-./build test --android --cc $ANDROID_CLANG \
+./build --android --cc $ANDROID_CLANG \
     --ldflags "--target=aarch64-linux-android22 $LDFLAGS" \
     --ccflags "--target=aarch64-linux-android22 $CFLAGS" \
     --glfw-ccflags "--target=aarch64-linux-android22 $CFLAGS" \
@@ -35,12 +35,12 @@ cd ..
 cd android
 
 mkdir -p build_android/apk/lib/arm64-v8a
-cp ../build_work/test.so build_android/apk/lib/arm64-v8a/libmain.so
+cp ../build_test/test.so build_android/apk/lib/arm64-v8a/libmain.so
 
 # build so for arm32
 cd ..
 ./build clean --android
-./build test --android --cc $ANDROID_CLANG \
+./build --android --cc $ANDROID_CLANG \
     --ldflags "--target=armv7a-linux-androideabi22 $LDFLAGS" \
     --ccflags "--target=armv7a-linux-androideabi22 $CFLAGS" \
     --glfw-ccflags "--target=armv7a-linux-androideabi22 $CFLAGS" \
@@ -49,12 +49,12 @@ cd ..
 cd android
 
 mkdir -p build_android/apk/lib/armeabi-v7a
-cp ../build_work/test.so build_android/apk/lib/armeabi-v7a/libmain.so
+cp ../build_test/test.so build_android/apk/lib/armeabi-v7a/libmain.so
 
 # build so for x86
 cd ..
 ./build clean --android
-./build test --android --cc $ANDROID_CLANG \
+./build --android --cc $ANDROID_CLANG \
     --ldflags "--target=i686-linux-android22 $LDFLAGS" \
     --ccflags "--target=i686-linux-android22 $CFLAGS" \
     --glfw-ccflags "--target=i686-linux-android22 $CFLAGS" \
@@ -63,12 +63,12 @@ cd ..
 cd android
 
 mkdir -p build_android/apk/lib/x86
-cp ../build_work/test.so build_android/apk/lib/x86/libmain.so
+cp ../build_test/test.so build_android/apk/lib/x86/libmain.so
 
 # build for x86_64
 cd ..
 ./build clean --android
-./build test --android --cc $ANDROID_CLANG \
+./build --android --cc $ANDROID_CLANG \
     --ldflags "--target=x86_64-linux-android22 $LDFLAGS" \
     --ccflags "--target=x86_64-linux-android22 $CFLAGS" \
     --glfw-ccflags "--target=x86_64-linux-android22 $CFLAGS" \
@@ -77,7 +77,7 @@ cd ..
 cd android
 
 mkdir -p build_android/apk/lib/x86_64
-cp ../build_work/test.so build_android/apk/lib/x86_64/libmain.so
+cp ../build_test/test.so build_android/apk/lib/x86_64/libmain.so
 
 # build temporary apk and unzip back to directory
 $ANDROID_AAPT package -f -v \

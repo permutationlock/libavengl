@@ -16,19 +16,6 @@
 
 #include <GLFW/glfw3.h>
 
-#if defined(__EMSCRIPTEN__)
-    #include <emscripten.h>
-
-    #ifdef HOT_RELOAD
-        #error "hot reloading dll incompatible with emcc"
-    #endif
-
-    void on_resize(int width, int height) {
-        glfwSetWindowSize(win.window, width, height);
-        on_damage(win.window);
-    }
-#endif
-
 #define INIT_WIDTH 480
 #define INIT_HEIGHT 480
 #define ARENA_SIZE (4096 * 16)
@@ -78,6 +65,18 @@ static uint32_t texture_data[TSIZE * TSIZE] = {
     0xffffffff,
 };
 static Slice(uint32_t) texture = slice_array(texture_data);
+
+#if defined(__EMSCRIPTEN__)
+    #include <emscripten.h>
+
+    #ifdef HOT_RELOAD
+        #error "hot reloading dll incompatible with emcc"
+    #endif
+
+    void on_resize(int width, int height) {
+        glfwSetWindowSize(win.window, width, height);
+    }
+#endif
 
 #ifdef __ANDROID__
     #include <android/log.h>

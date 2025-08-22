@@ -78,7 +78,7 @@ int main(int argc, char **argv) {
         aven_str("deps"),
         aven_str("libaven")
     );
-    AvenStr work_dir = aven_str("build_work");
+    AvenStr work_dir = aven_str("build_test");
 
     AvenStr libaven_include_path = libaven_build_include_path(
         libaven_dir,
@@ -137,22 +137,34 @@ int main(int argc, char **argv) {
         &arena
     );
 
+    AvenBuildStep root_step = aven_build_step_root();
+    aven_build_step_add_dep(&root_step, &build_step, &arena);
+
     AvenBuildStep run_step = aven_build_common_step_run_exe(
         &build_step,
         (AvenStrSlice){ 0 },
         &arena
     );
 
-    AvenBuildStep root_step = aven_build_step_root();
-    if (libavengl_opts.android.enabled) {
-        aven_build_step_add_dep(&root_step, &build_step, &arena);
-    } else {
-        aven_build_step_add_dep(&root_step, &run_step, &arena);
-    }
+    AvenBuildStep test_root_step = aven_build_step_root();
+    aven_build_step_add_dep(&test_root_step, &run_step, &arena);
 
     if (opts.clean) {
         aven_build_step_clean(&root_step, arena);
     } else if (opts.test) {
+        if (opts.dry_run) {
+            aven_build_step_dry_run(&test_root_step, arena);
+        } else {
+            AvenBuildStepRunError run_error = aven_build_step_run(
+                &test_root_step,
+                arena
+            );
+            if (run_error != 0) {
+                aven_io_perrf("BUILD FAILED: {}\n", aven_fmt_int(run_error));
+                return 1;
+            }
+        }
+    } else {
         if (opts.dry_run) {
             aven_build_step_dry_run(&root_step, arena);
         } else {
