@@ -1,6 +1,15 @@
 #ifndef LIBAVENGL_BUILD_H
     #define LIBAVENGL_BUILD_H
 
+    #include "deps/libaven/include/aven.h"
+    #include "deps/libaven/include/aven/arena.h"
+    #include "deps/libaven/include/aven/arg.h"
+    #include "deps/libaven/include/aven/build.h"
+    #include "deps/libaven/include/aven/build/common.h"
+    #include "deps/libaven/include/aven/path.h"
+
+    #include "deps/libaven/build.h"
+
     AvenArg libavengl_build_arg_data[] = {
         {
             .name = aven_str_init("--glfw-ccflags"),
@@ -266,7 +275,6 @@
     static inline AvenBuildStep libavengl_build_step_stb(
         AvenBuildCommonOpts *opts,
         LibAvenGlBuildOpts *libavengl_opts,
-        AvenStr libaven_include_path,
         AvenStr root_path,
         AvenBuildStep *out_dir_step,
         bool pic,
@@ -277,7 +285,17 @@
             stb_opts.cc.flags = libavengl_opts->stb.ccflags.value;
         }
 
-        AvenStr include_paths[] = { libaven_include_path };
+        AvenStr include_paths[] = {
+            libaven_build_include_path(
+                aven_path(
+                    arena,
+                    root_path,
+                    aven_str("deps"),
+                    aven_str("libaven")
+                ),
+                arena
+            ),
+        };
         AvenStrSlice includes = slice_array(include_paths);
 
         return aven_build_common_step_cc_ex(
@@ -391,7 +409,6 @@
     static inline AvenBuildStep libavengl_build_step(
         AvenBuildCommonOpts *opts,
         LibAvenGlBuildOpts *libavengl_opts,
-        AvenStr libaven_include_path,
         AvenStr root_path,
         AvenBuildStep *work_dir_step,
         AvenBuildStep *out_dir_step,
@@ -405,7 +422,6 @@
         *stb_step = libavengl_build_step_stb(
             opts,
             libavengl_opts,
-            libaven_include_path,
             root_path,
             work_dir_step,
             pic,
@@ -455,7 +471,6 @@
     static inline AvenBuildStep libavengl_build_step_ld(
         AvenBuildCommonOpts *opts,
         LibAvenGlBuildOpts *libavengl_opts,
-        AvenStr libaven_include_path,
         AvenStr root_path,
         AvenBuildStepPtrSlice obj_steps,
         AvenBuildStep *work_dir_step,
@@ -467,7 +482,6 @@
         *lib_step = libavengl_build_step(
             opts,
             libavengl_opts,
-            libaven_include_path,
             root_path,
             work_dir_step,
             work_dir_step,

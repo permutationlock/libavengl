@@ -17,8 +17,9 @@
 #include "deps/libaven/include/aven/io.h"
 #include "deps/libaven/include/aven/path.h"
 
-#include "build.h"
 #include "deps/libaven/build.h"
+
+#include "build.h"
 
 #define ARENA_SIZE (4096 * 2000)
 
@@ -80,11 +81,6 @@ int main(int argc, char **argv) {
     );
     AvenStr work_dir = aven_str("build_test");
 
-    AvenStr libaven_include_path = libaven_build_include_path(
-        libaven_dir,
-        &arena
-    );
-
     AvenBuildStep work_dir_step = aven_build_step_mkdir(work_dir);
 
     Optional(AvenBuildStep) winutf8_obj_step = { 0 };
@@ -100,7 +96,7 @@ int main(int argc, char **argv) {
 
     AvenStr include_data[4];
     List(AvenStr) include_list = list_array(include_data);
-    list_push(include_list) = libaven_include_path;
+    list_push(include_list) = libaven_build_include_path(libaven_dir, &arena);
     list_push(include_list) = libavengl_build_include_path(root_dir, &arena);
     list_push(include_list) = libavengl_build_include_gles2(root_dir, &arena);
     list_push(include_list) = libavengl_build_include_glfw(root_dir, &arena);
@@ -128,7 +124,6 @@ int main(int argc, char **argv) {
     AvenBuildStep build_step = libavengl_build_step_ld(
         &opts,
         &libavengl_opts,
-        libaven_include_path,
         root_dir,
         objs,
         &work_dir_step,
