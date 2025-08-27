@@ -98,7 +98,7 @@
         gl->AttachShader(ctx.program, ctx.fragment_shader);
         assert(gl->GetError() == 0);
         gl->LinkProgram(ctx.program);
-        assert(gl->GetError() == 0);
+        aven_gl_program_validate(gl, ctx.program);
 
         ctx.utrans_location = (GLuint)gl->GetUniformLocation(
             ctx.program,
