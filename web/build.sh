@@ -20,6 +20,7 @@ cd ..
     --ldflags "$LDFLAGS \
         -s ASYNCIFY \
         -s USE_GLFW=3 \
+        -s MAX_WEBGL_VERSION=2 \
         -s EXPORTED_RUNTIME_METHODS=cwrap \
         -s EXPORTED_FUNCTIONS=_main,_on_resize \
         --shell-file web/build_web/shell.html" \

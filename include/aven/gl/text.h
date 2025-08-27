@@ -132,14 +132,15 @@
         gl->TexImage2D(
             GL_TEXTURE_2D,
             0,
-            GL_ALPHA,
+            GL_RED,
             (GLsizei)font.texture_width,
             (GLsizei)font.texture_height,
             0,
-            GL_ALPHA,
+            GL_RED,
             GL_UNSIGNED_BYTE,
             texture_bytes.ptr
         );
+        assert(gl->GetError() == 0);
         gl->TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
         assert(gl->GetError() == 0);
         gl->TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
@@ -185,6 +186,7 @@
         size_t index_len;
         GLuint vertex;
         GLuint index;
+        GLuint vao;
         AvenGlBufferUsage usage;
     } AvenGlTextBuffer;
 
@@ -216,6 +218,12 @@
         return geometry;
     }
 
+    static inline void aven_gl_text_geometry_deinit(
+        AvenGlTextGeometry *geometry
+    ) {
+        *geometry = (AvenGlTextGeometry){ 0 };
+    }
+
     static inline void aven_gl_text_geometry_clear(AvenGlTextGeometry *geometry) {
         geometry->vertices.len = 0;
         geometry->indices.len = 0;
@@ -226,13 +234,14 @@
 
         const char *vertex_shader_text = aven_gl_shader(
             gl,
+            "precision mediump float;\n"
             "uniform mat2 uTrans;\n"
             "uniform vec2 uPos;\n"
-            "attribute vec2 vTex;\n"
-            "attribute vec2 vPos;\n"
-            "attribute vec4 vColor;\n"
-            "varying vec4 fColor;\n"
-            "varying vec2 tCoord;\n"
+            "in vec2 vTex;\n"
+            "in vec2 vPos;\n"
+            "in vec4 vColor;\n"
+            "out vec4 fColor;\n"
+            "out vec2 tCoord;\n"
             "void main() {\n"
             "    gl_Position = vec4((uTrans * vPos.xy) + uPos, 0.0, 1.0);\n"
             "    tCoord = vTex;\n"
@@ -242,13 +251,15 @@
 
         const char *fragment_shader_text = aven_gl_shader(
             gl,
+            "precision mediump float;\n"
             "uniform sampler2D texSampler;\n"
-            "varying vec4 fColor;\n"
-            "varying vec2 tCoord;\n"
+            "in vec4 fColor;\n"
+            "in vec2 tCoord;\n"
+            "out vec4 FragColor;\n"
             "void main() {\n"
-            "    vec4 tColor = texture2D(texSampler, tCoord);\n"
-            "    float alpha = tColor.w * fColor.w;\n"
-            "    gl_FragColor = vec4(fColor.xyz, alpha);\n"
+            "    vec4 tColor = texture(texSampler, tCoord);\n"
+            "    float alpha = tColor.r * fColor.w;\n"
+            "    FragColor = vec4(fColor.xyz, alpha);\n"
             "}\n"
         );
 
@@ -258,6 +269,7 @@
         assert(gl->GetError() == 0);
         gl->CompileShader(ctx.vertex_shader);
         assert(gl->GetError() == 0);
+        aven_gl_shader_validate(gl, ctx.vertex_shader, vertex_shader_text);
 
         ctx.fragment_shader = gl->CreateShader(GL_FRAGMENT_SHADER);
         assert(gl->GetError() == 0);
@@ -265,6 +277,7 @@
         assert(gl->GetError() == 0);
         gl->CompileShader(ctx.fragment_shader);
         assert(gl->GetError() == 0);
+        aven_gl_shader_validate(gl, ctx.fragment_shader, fragment_shader_text);
 
         ctx.program = gl->CreateProgram();
         assert(gl->GetError() == 0);
@@ -304,6 +317,7 @@
 
     static inline AvenGlTextBuffer aven_gl_text_buffer_init(
         AvenGl *gl,
+        AvenGlTextCtx *ctx,
         AvenGlTextGeometry *geometry,
         AvenGlBufferUsage buffer_usage
     ) {
@@ -328,6 +342,11 @@
                 assert(false);
         }
 
+        gl->GenVertexArrays(1, &buffer.vao);
+        assert(gl->GetError() == 0);
+        gl->BindVertexArray(buffer.vao);
+        assert(gl->GetError() == 0);
+
         gl->GenBuffers(1, &buffer.vertex);
         assert(gl->GetError() == 0);
         gl->BindBuffer(GL_ARRAY_BUFFER, buffer.vertex);
@@ -338,6 +357,43 @@
             geometry->vertices.ptr,
             (GLenum)buffer_usage
         );
+        assert(gl->GetError() == 0);
+
+        gl->VertexAttribPointer(
+            ctx->vpos_location,
+            2,
+            GL_FLOAT,
+            GL_FALSE,
+            sizeof(AvenGlTextVertex),
+            (void *)offsetof(AvenGlTextVertex, pos)
+        );
+        assert(gl->GetError() == 0);
+        gl->EnableVertexAttribArray(ctx->vpos_location);
+        assert(gl->GetError() == 0);
+        gl->VertexAttribPointer(
+            ctx->vtex_location,
+            2,
+            GL_FLOAT,
+            GL_FALSE,
+            sizeof(AvenGlTextVertex),
+            (void *)offsetof(AvenGlTextVertex, tex)
+        );
+        assert(gl->GetError() == 0);
+        gl->EnableVertexAttribArray(ctx->vtex_location);
+        assert(gl->GetError() == 0);
+        gl->VertexAttribPointer(
+            ctx->vcolor_location,
+            4,
+            GL_FLOAT,
+            GL_FALSE,
+            sizeof(AvenGlTextVertex),
+            (void *)offsetof(AvenGlTextVertex, color)
+        );
+        assert(gl->GetError() == 0);
+        gl->EnableVertexAttribArray(ctx->vcolor_location);
+        assert(gl->GetError() == 0);
+
+        gl->BindVertexArray(0);
         assert(gl->GetError() == 0);
 
         gl->GenBuffers(1, &buffer.index);
@@ -354,8 +410,6 @@
 
         gl->BindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
         assert(gl->GetError() == 0);
-        gl->BindBuffer(GL_ARRAY_BUFFER, 0);
-        assert(gl->GetError() == 0);
 
         return buffer;
     }
@@ -365,6 +419,7 @@
         AvenGlTextBuffer *buffer
     ) {
         gl->DeleteBuffers(1, &buffer->index);
+        gl->DeleteVertexArrays(1, &buffer->vao);
         gl->DeleteBuffers(1, &buffer->vertex);
         *buffer = (AvenGlTextBuffer){ 0 };
     }
@@ -523,8 +578,9 @@
         assert(geometry->vertices.len < buffer->vertex_cap);
         assert(geometry->indices.len < buffer->index_cap);
 
-        gl->BindBuffer(GL_ARRAY_BUFFER, buffer->vertex);
+        gl->BindVertexArray(buffer->vao);
         assert(gl->GetError() == 0);
+
         gl->BufferSubData(
             GL_ARRAY_BUFFER,
             0,
@@ -535,8 +591,12 @@
         );
         assert(gl->GetError() == 0);
 
+        gl->BindVertexArray(0);
+        assert(gl->GetError() == 0);
+
         gl->BindBuffer(GL_ELEMENT_ARRAY_BUFFER, buffer->index);
         assert(gl->GetError() == 0);
+
         gl->BufferSubData(
             GL_ELEMENT_ARRAY_BUFFER,
             0,
@@ -549,58 +609,23 @@
 
         gl->BindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
         assert(gl->GetError() == 0);
-        gl->BindBuffer(GL_ARRAY_BUFFER, 0);
-        assert(gl->GetError() == 0);
     }
 
-    static inline void aven_gl_text_geometry_draw(
+    static inline void aven_gl_text_draw(
         AvenGl *gl,
         AvenGlTextCtx *ctx,
         AvenGlTextBuffer *buffer,
         AvenGlTextFont *font,
         Aff2 cam_trans
     ) {
-        gl->BindBuffer(GL_ARRAY_BUFFER, buffer->vertex);
+        gl->UseProgram(ctx->program);
+        assert(gl->GetError() == 0);
+
+        gl->BindVertexArray(buffer->vao);
         assert(gl->GetError() == 0);
         gl->BindBuffer(GL_ELEMENT_ARRAY_BUFFER, buffer->index);
         assert(gl->GetError() == 0);
 
-        gl->UseProgram(ctx->program);
-        assert(gl->GetError() == 0);
-
-        gl->EnableVertexAttribArray(ctx->vpos_location);
-        assert(gl->GetError() == 0);
-        gl->EnableVertexAttribArray(ctx->vtex_location);
-        assert(gl->GetError() == 0);
-        gl->EnableVertexAttribArray(ctx->vcolor_location);
-        assert(gl->GetError() == 0);
-        gl->VertexAttribPointer(
-            ctx->vpos_location,
-            2,
-            GL_FLOAT,
-            GL_FALSE,
-            sizeof(AvenGlTextVertex),
-            (void *)offsetof(AvenGlTextVertex, pos)
-        );
-        assert(gl->GetError() == 0);
-        gl->VertexAttribPointer(
-            ctx->vtex_location,
-            2,
-            GL_FLOAT,
-            GL_FALSE,
-            sizeof(AvenGlTextVertex),
-            (void *)offsetof(AvenGlTextVertex, tex)
-        );
-        assert(gl->GetError() == 0);
-        gl->VertexAttribPointer(
-            ctx->vcolor_location,
-            4,
-            GL_FLOAT,
-            GL_FALSE,
-            sizeof(AvenGlTextVertex),
-            (void *)offsetof(AvenGlTextVertex, color)
-        );
-        assert(gl->GetError() == 0);
         gl->Enable(GL_BLEND);
         assert(gl->GetError() == 0);
         gl->BlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -631,16 +656,10 @@
 
         gl->Disable(GL_BLEND);
         assert(gl->GetError() == 0);
-        gl->DisableVertexAttribArray(ctx->vcolor_location);
-        assert(gl->GetError() == 0);
-        gl->DisableVertexAttribArray(ctx->vtex_location);
-        assert(gl->GetError() == 0);
-        gl->DisableVertexAttribArray(ctx->vpos_location);
-        assert(gl->GetError() == 0);
 
         gl->BindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
         assert(gl->GetError() == 0);
-        gl->BindBuffer(GL_ARRAY_BUFFER, 0);
+        gl->BindVertexArray(0);
         assert(gl->GetError() == 0);
     }
 #endif // AVEN_GL_TEXT_H

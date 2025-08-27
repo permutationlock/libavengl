@@ -1,7 +1,12 @@
 #ifndef AVEN_GL_H
     #define AVEN_GL_H
 
-    #include <GLES2/gl2.h>
+    #include <aven.h>
+    #include <aven/io.h>
+    #include <aven/str.h>
+
+    #define GL_GLES_PROTOTYPES 0
+    #include <GLES3/gl32.h>
 
     typedef struct {
         PFNGLACTIVETEXTUREPROC ActiveTexture;
@@ -147,6 +152,10 @@
         PFNGLVERTEXATTRIB1FPROC VertexAttrib4fv;
         PFNGLVERTEXATTRIBPOINTERPROC VertexAttribPointer;
         PFNGLVIEWPORTPROC Viewport;
+        PFNGLBINDVERTEXARRAYPROC BindVertexArray;
+        PFNGLGENVERTEXARRAYSPROC GenVertexArrays;
+        PFNGLDELETEVERTEXARRAYSPROC DeleteVertexArrays;
+        PFNGLISVERTEXARRAYPROC IsVertexArray;
         bool es;
     } AvenGl;
 
@@ -375,15 +384,66 @@
             "glVertexAttribPointer"
         );
         gl.Viewport = (PFNGLVIEWPORTPROC)load("glViewport");
+        gl.BindVertexArray = (PFNGLBINDVERTEXARRAYPROC)load("glBindVertexArray");
+        gl.GenVertexArrays = (PFNGLGENVERTEXARRAYSPROC)load("glGenVertexArrays");
+        gl.DeleteVertexArrays = (PFNGLDELETEVERTEXARRAYSPROC)load(
+            "glDeleteVertexArrays"
+        );
+        gl.IsVertexArray = (PFNGLISVERTEXARRAYPROC)load("glIsVertexArray");
 
         return gl;
     }
 
     #define aven_gl_shader(gl, str) ( \
-            gl->es ? \
-                "#version 100\n" "precision mediump float;\n" str : \
-                "#version 120\n" str \
+            gl->es ? "#version 310 es\n" str : "#version 450\n" str \
         )
+
+    void aven_gl_shader_validate(
+        AvenGl *gl,
+        GLuint shader,
+        const char *shader_text
+    ) {
+        GLint vertex_compiled = 0;
+        gl->GetShaderiv(shader, GL_COMPILE_STATUS, &vertex_compiled);
+        if (!vertex_compiled) {
+            GLint info_len = 0;
+            gl->GetShaderiv(shader, GL_INFO_LOG_LENGTH, &info_len);
+
+            char info_buffer[1024];
+            if (info_len > 0 and (size_t)info_len <= sizeof(info_buffer)) {
+                AvenStr info_tot = slice_array(info_buffer);
+                AvenStr info = aven_str_head(info_tot, (size_t)info_len);
+                gl->GetShaderInfoLog(shader, info_len, NULL, info.ptr);
+                AvenStr shader_str = aven_str_cstr((char *)shader_text);
+                aven_io_printf(
+                    "error compiling vertex shader:\n{}\n{}",
+                    aven_fmt_str(shader_str),
+                    aven_fmt_str(info)
+                );
+            }
+            aven_panic("failed to compile shader");
+        }
+        assert(gl->GetError() == 0);
+    }
+
+    void aven_gl_program_validate(AvenGl *gl, GLuint program) {
+        GLint linked = 0;
+        gl->GetProgramiv(program, GL_LINK_STATUS, &linked);
+        if (!linked) {
+            GLint info_len = 0;
+            gl->GetProgramiv(program, GL_INFO_LOG_LENGTH, &info_len);
+
+            char info_buffer[1024];
+            if (info_len > 0 and (size_t)info_len <= sizeof(info_buffer)) {
+                AvenStr info_tot = slice_array(info_buffer);
+                AvenStr info = aven_str_head(info_tot, (size_t)info_len);
+                gl->GetProgramInfoLog(program, info_len, NULL, info.ptr);
+                aven_io_printf("error linking program: {}", aven_fmt_str(info));
+            }
+            aven_panic("failed to compile shader");
+        }
+        assert(gl->GetError() == 0);
+    }
 
     typedef enum {
         AVEN_GL_BUFFER_USAGE_STATIC = GL_STATIC_DRAW,

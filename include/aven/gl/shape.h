@@ -6,11 +6,19 @@
     #include <aven/math.h>
 
     #include "../gl.h"
+    #include "GLES2/gl2.h"
 
     typedef struct {
         Vec4 color;
         Vec2 pos;
     } AvenGlShapeVertex;
+
+    typedef struct {
+        IVec2 pos;
+        IVec2 dim;
+        size_t start;
+        size_t end;
+    } AvenGlShapeScissor;
 
     typedef struct {
         List(AvenGlShapeVertex) vertices;
@@ -33,6 +41,7 @@
         size_t index_len;
         GLuint vertex;
         GLuint index;
+        GLuint vao;
         AvenGlBufferUsage usage;
     } AvenGlShapeBuffer;
 
@@ -79,11 +88,12 @@
 
         const char *vertex_shader_text = aven_gl_shader(
             gl,
+            "precision mediump float;\n"
+            "in vec2 vPos;\n"
+            "in vec4 vColor;\n"
             "uniform mat2 uTrans;\n"
             "uniform vec2 uPos;\n"
-            "attribute vec2 vPos;\n"
-            "attribute vec4 vColor;\n"
-            "varying vec4 fColor;\n"
+            "out vec4 fColor;\n"
             "void main() {\n"
             "    gl_Position = vec4((uTrans * vPos.xy) + uPos, 0.0, 1.0);\n"
             "    fColor = vColor;\n"
@@ -92,9 +102,11 @@
 
         const char *fragment_shader_text = aven_gl_shader(
             gl,
-            "varying vec4 fColor;\n"
+            "precision mediump float;\n"
+            "in vec4 fColor;\n"
+            "out vec4 FragColor;"
             "void main() {\n"
-            "    gl_FragColor = fColor;\n"
+            "    FragColor = fColor;\n"
             "}\n"
         );
 
@@ -104,6 +116,7 @@
         assert(gl->GetError() == 0);
         gl->CompileShader(ctx.vertex_shader);
         assert(gl->GetError() == 0);
+        aven_gl_shader_validate(gl, ctx.vertex_shader, vertex_shader_text);
 
         ctx.fragment_shader = gl->CreateShader(GL_FRAGMENT_SHADER);
         assert(gl->GetError() == 0);
@@ -111,6 +124,7 @@
         assert(gl->GetError() == 0);
         gl->CompileShader(ctx.fragment_shader);
         assert(gl->GetError() == 0);
+        aven_gl_shader_validate(gl, ctx.fragment_shader, fragment_shader_text);
 
         ctx.program = gl->CreateProgram();
         assert(gl->GetError() == 0);
@@ -119,7 +133,7 @@
         gl->AttachShader(ctx.program, ctx.fragment_shader);
         assert(gl->GetError() == 0);
         gl->LinkProgram(ctx.program);
-        assert(gl->GetError() == 0);
+        aven_gl_program_validate(gl, ctx.program);
 
         ctx.utrans_location = (GLuint)gl->GetUniformLocation(
             ctx.program,
@@ -130,6 +144,7 @@
         assert(gl->GetError() == 0);
 
         ctx.vpos_location = (GLuint)gl->GetAttribLocation(ctx.program, "vPos");
+        assert(gl->GetError() == 0);
         ctx.vcolor_location = (GLuint)gl->GetAttribLocation(
             ctx.program,
             "vColor"
@@ -148,6 +163,7 @@
 
     static inline AvenGlShapeBuffer aven_gl_shape_buffer_init(
         AvenGl *gl,
+        AvenGlShapeCtx *ctx,
         AvenGlShapeGeometry *geometry,
         AvenGlBufferUsage buffer_usage
     ) {
@@ -172,6 +188,11 @@
                 assert(false);
         }
 
+        gl->GenVertexArrays(1, &buffer.vao);
+        assert(gl->GetError() == 0);
+        gl->BindVertexArray(buffer.vao);
+        assert(gl->GetError() == 0);
+
         gl->GenBuffers(1, &buffer.vertex);
         assert(gl->GetError() == 0);
         gl->BindBuffer(GL_ARRAY_BUFFER, buffer.vertex);
@@ -182,6 +203,31 @@
             geometry->vertices.ptr,
             (GLenum)buffer_usage
         );
+        assert(gl->GetError() == 0);
+        gl->VertexAttribPointer(
+            ctx->vpos_location,
+            2,
+            GL_FLOAT,
+            GL_FALSE,
+            sizeof(AvenGlShapeVertex),
+            (void *)offsetof(AvenGlShapeVertex, pos)
+        );
+        assert(gl->GetError() == 0);
+        gl->EnableVertexAttribArray(ctx->vpos_location);
+        assert(gl->GetError() == 0);
+        gl->VertexAttribPointer(
+            ctx->vcolor_location,
+            4,
+            GL_FLOAT,
+            GL_FALSE,
+            sizeof(AvenGlShapeVertex),
+            (void *)offsetof(AvenGlShapeVertex, color)
+        );
+        assert(gl->GetError() == 0);
+        gl->EnableVertexAttribArray(ctx->vcolor_location);
+        assert(gl->GetError() == 0);
+
+        gl->BindVertexArray(0);
         assert(gl->GetError() == 0);
 
         gl->GenBuffers(1, &buffer.index);
@@ -198,8 +244,6 @@
 
         gl->BindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
         assert(gl->GetError() == 0);
-        gl->BindBuffer(GL_ARRAY_BUFFER, 0);
-        assert(gl->GetError() == 0);
 
         return buffer;
     }
@@ -209,6 +253,7 @@
         AvenGlShapeBuffer *buffer
     ) {
         gl->DeleteBuffers(1, &buffer->index);
+        gl->DeleteVertexArrays(1, &buffer->vao);
         gl->DeleteBuffers(1, &buffer->vertex);
         *buffer = (AvenGlShapeBuffer){ 0 };
     }
@@ -222,8 +267,9 @@
         assert(geometry->vertices.len < buffer->vertex_cap);
         assert(geometry->indices.len < buffer->index_cap);
 
-        gl->BindBuffer(GL_ARRAY_BUFFER, buffer->vertex);
+        gl->BindVertexArray(buffer->vao);
         assert(gl->GetError() == 0);
+
         gl->BufferSubData(
             GL_ARRAY_BUFFER,
             0,
@@ -234,8 +280,12 @@
         );
         assert(gl->GetError() == 0);
 
+        gl->BindVertexArray(0);
+        assert(gl->GetError() == 0);
+
         gl->BindBuffer(GL_ELEMENT_ARRAY_BUFFER, buffer->index);
         assert(gl->GetError() == 0);
+
         gl->BufferSubData(
             GL_ELEMENT_ARRAY_BUFFER,
             0,
@@ -248,8 +298,6 @@
 
         gl->BindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
         assert(gl->GetError() == 0);
-        gl->BindBuffer(GL_ARRAY_BUFFER, 0);
-        assert(gl->GetError() == 0);
     }
 
     static inline void aven_gl_shape_draw(
@@ -258,35 +306,14 @@
         AvenGlShapeBuffer *buffer,
         Aff2 cam_trans
     ) {
-        gl->BindBuffer(GL_ARRAY_BUFFER, buffer->vertex);
+        gl->UseProgram(ctx->program);
+        assert(gl->GetError() == 0);
+
+        gl->BindVertexArray(buffer->vao);
         assert(gl->GetError() == 0);
         gl->BindBuffer(GL_ELEMENT_ARRAY_BUFFER, buffer->index);
         assert(gl->GetError() == 0);
 
-        gl->UseProgram(ctx->program);
-        assert(gl->GetError() == 0);
-
-        gl->EnableVertexAttribArray(ctx->vpos_location);
-        assert(gl->GetError() == 0);
-        gl->EnableVertexAttribArray(ctx->vcolor_location);
-        assert(gl->GetError() == 0);
-        gl->VertexAttribPointer(
-            ctx->vpos_location,
-            2,
-            GL_FLOAT,
-            GL_FALSE,
-            sizeof(AvenGlShapeVertex),
-            (void *)offsetof(AvenGlShapeVertex, pos)
-        );
-        assert(gl->GetError() == 0);
-        gl->VertexAttribPointer(
-            ctx->vcolor_location,
-            4,
-            GL_FLOAT,
-            GL_FALSE,
-            sizeof(AvenGlShapeVertex),
-            (void *)offsetof(AvenGlShapeVertex, color)
-        );
         assert(gl->GetError() == 0);
         gl->Enable(GL_BLEND);
         assert(gl->GetError() == 0);
@@ -313,14 +340,10 @@
 
         gl->Disable(GL_BLEND);
         assert(gl->GetError() == 0);
-        gl->DisableVertexAttribArray(ctx->vcolor_location);
-        assert(gl->GetError() == 0);
-        gl->DisableVertexAttribArray(ctx->vpos_location);
-        assert(gl->GetError() == 0);
 
         gl->BindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
         assert(gl->GetError() == 0);
-        gl->BindBuffer(GL_ARRAY_BUFFER, 0);
+        gl->BindVertexArray(0);
         assert(gl->GetError() == 0);
     }
 
@@ -441,6 +464,7 @@
         size_t index_len;
         GLuint vertex;
         GLuint index;
+        GLuint vao;
         AvenGlBufferUsage usage;
     } AvenGlShapeRoundedBuffer;
 
@@ -501,15 +525,16 @@
 
         const char *vertex_shader_text = aven_gl_shader(
             gl,
+            "precision mediump float;\n"
             "uniform mat2 uTrans;\n"
             "uniform vec2 uPos;\n"
             "uniform float uPx;\n"
-            "attribute vec2 vPos;\n"
-            "attribute vec4 vInfo;\n"
-            "attribute vec4 vColor;\n"
-            "varying vec2 tPos;\n"
-            "varying vec2 tOffset;\n"
-            "varying vec4 fColor;\n"
+            "in vec2 vPos;\n"
+            "in vec4 vInfo;\n"
+            "in vec4 vColor;\n"
+            "out vec2 tPos;\n"
+            "out vec2 tOffset;\n"
+            "out vec4 fColor;\n"
             "void main() {\n"
             "    gl_Position = vec4((uTrans * vPos.xy) + uPos, 0.0, 1.0);\n"
             "    tPos = vInfo.xy;\n"
@@ -520,10 +545,12 @@
 
         const char *fragment_shader_text = aven_gl_shader(
             gl,
-            "varying vec2 tPos;\n"
-            "varying vec2 tOffset;\n"
-            "varying vec4 fColor;\n"
-            "float sample(vec2 p) {\n"
+            "precision mediump float;\n"
+            "in vec2 tPos;\n"
+            "in vec2 tOffset;\n"
+            "in vec4 fColor;\n"
+            "out vec4 FragColor;\n"
+            "float msaa(vec2 p) {\n"
             "    if (dot(p, p) > 1.0) {\n"
             "        return 0.0;\n"
             "    }\n"
@@ -531,17 +558,17 @@
             "}\n"
             "void main() {\n"
             "    float magnitude = 0.0;\n"
-            "    magnitude += sample(tPos);\n"
-            "    magnitude += sample(tPos + vec2(0, -tOffset.y));\n"
-            "    magnitude += sample(tPos + vec2(tOffset.x, 0));\n"
-            "    magnitude += sample(tPos + vec2(0, tOffset.y));\n"
-            "    magnitude += sample(tPos + vec2(-tOffset.x, 0));\n"
-            "    magnitude += sample(tPos + vec2(-tOffset.x, tOffset.y));\n"
-            "    magnitude += sample(tPos + vec2(-tOffset.x, -tOffset.y));\n"
-            "    magnitude += sample(tPos + vec2(tOffset.x, -tOffset.y));\n"
-            "    magnitude += sample(tPos + vec2(tOffset.x, tOffset.y));\n"
+            "    magnitude += msaa(tPos);\n"
+            "    magnitude += msaa(tPos + vec2(0, -tOffset.y));\n"
+            "    magnitude += msaa(tPos + vec2(tOffset.x, 0));\n"
+            "    magnitude += msaa(tPos + vec2(0, tOffset.y));\n"
+            "    magnitude += msaa(tPos + vec2(-tOffset.x, 0));\n"
+            "    magnitude += msaa(tPos + vec2(-tOffset.x, tOffset.y));\n"
+            "    magnitude += msaa(tPos + vec2(-tOffset.x, -tOffset.y));\n"
+            "    magnitude += msaa(tPos + vec2(tOffset.x, -tOffset.y));\n"
+            "    magnitude += msaa(tPos + vec2(tOffset.x, tOffset.y));\n"
             "    magnitude /= 9.0;\n"
-            "    gl_FragColor = vec4(fColor.xyz, fColor.w * magnitude);\n"
+            "    FragColor = vec4(fColor.xyz, fColor.w * magnitude);\n"
             "}\n"
         );
 
@@ -551,6 +578,7 @@
         assert(gl->GetError() == 0);
         gl->CompileShader(ctx.vertex_shader);
         assert(gl->GetError() == 0);
+        aven_gl_shader_validate(gl, ctx.vertex_shader, vertex_shader_text);
 
         ctx.fragment_shader = gl->CreateShader(GL_FRAGMENT_SHADER);
         assert(gl->GetError() == 0);
@@ -558,6 +586,7 @@
         assert(gl->GetError() == 0);
         gl->CompileShader(ctx.fragment_shader);
         assert(gl->GetError() == 0);
+        aven_gl_shader_validate(gl, ctx.fragment_shader, fragment_shader_text);
 
         ctx.program = gl->CreateProgram();
         assert(gl->GetError() == 0);
@@ -566,7 +595,7 @@
         gl->AttachShader(ctx.program, ctx.fragment_shader);
         assert(gl->GetError() == 0);
         gl->LinkProgram(ctx.program);
-        assert(gl->GetError() == 0);
+        aven_gl_program_validate(gl, ctx.program);
 
         ctx.utrans_location = (GLuint)gl->GetUniformLocation(
             ctx.program,
@@ -602,6 +631,7 @@
 
     static inline AvenGlShapeRoundedBuffer aven_gl_shape_rounded_buffer_init(
         AvenGl *gl,
+        AvenGlShapeRoundedCtx *ctx,
         AvenGlShapeRoundedGeometry *geometry,
         AvenGlBufferUsage buffer_usage
     ) {
@@ -626,6 +656,11 @@
                 assert(false);
         }
 
+        gl->GenVertexArrays(1, &buffer.vao);
+        assert(gl->GetError() == 0);
+        gl->BindVertexArray(buffer.vao);
+        assert(gl->GetError() == 0);
+
         gl->GenBuffers(1, &buffer.vertex);
         assert(gl->GetError() == 0);
         gl->BindBuffer(GL_ARRAY_BUFFER, buffer.vertex);
@@ -636,6 +671,43 @@
             geometry->vertices.ptr,
             (GLenum)buffer_usage
         );
+        assert(gl->GetError() == 0);
+
+        gl->VertexAttribPointer(
+            ctx->vpos_location,
+            2,
+            GL_FLOAT,
+            GL_FALSE,
+            sizeof(AvenGlShapeRoundedVertex),
+            (void *)offsetof(AvenGlShapeRoundedVertex, pos)
+        );
+        assert(gl->GetError() == 0);
+        gl->EnableVertexAttribArray(ctx->vpos_location);
+        assert(gl->GetError() == 0);
+        gl->VertexAttribPointer(
+            ctx->vinfo_location,
+            4,
+            GL_FLOAT,
+            GL_FALSE,
+            sizeof(AvenGlShapeRoundedVertex),
+            (void *)offsetof(AvenGlShapeRoundedVertex, info)
+        );
+        assert(gl->GetError() == 0);
+        gl->EnableVertexAttribArray(ctx->vinfo_location);
+        assert(gl->GetError() == 0);
+        gl->VertexAttribPointer(
+            ctx->vcolor_location,
+            4,
+            GL_FLOAT,
+            GL_FALSE,
+            sizeof(AvenGlShapeRoundedVertex),
+            (void *)offsetof(AvenGlShapeRoundedVertex, color)
+        );
+        assert(gl->GetError() == 0);
+        gl->EnableVertexAttribArray(ctx->vcolor_location);
+        assert(gl->GetError() == 0);
+
+        gl->BindVertexArray(0);
         assert(gl->GetError() == 0);
 
         gl->GenBuffers(1, &buffer.index);
@@ -652,8 +724,6 @@
 
         gl->BindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
         assert(gl->GetError() == 0);
-        gl->BindBuffer(GL_ARRAY_BUFFER, 0);
-        assert(gl->GetError() == 0);
 
         return buffer;
     }
@@ -663,6 +733,7 @@
         AvenGlShapeRoundedBuffer *buffer
     ) {
         gl->DeleteBuffers(1, &buffer->index);
+        gl->DeleteVertexArrays(1, &buffer->vao);
         gl->DeleteBuffers(1, &buffer->vertex);
         *buffer = (AvenGlShapeRoundedBuffer){ 0 };
     }
@@ -676,8 +747,9 @@
         assert(geometry->vertices.len < buffer->vertex_cap);
         assert(geometry->indices.len < buffer->index_cap);
 
-        gl->BindBuffer(GL_ARRAY_BUFFER, buffer->vertex);
+        gl->BindVertexArray(buffer->vao);
         assert(gl->GetError() == 0);
+
         gl->BufferSubData(
             GL_ARRAY_BUFFER,
             0,
@@ -688,8 +760,12 @@
         );
         assert(gl->GetError() == 0);
 
+        gl->BindVertexArray(0);
+        assert(gl->GetError() == 0);
+
         gl->BindBuffer(GL_ELEMENT_ARRAY_BUFFER, buffer->index);
         assert(gl->GetError() == 0);
+
         gl->BufferSubData(
             GL_ELEMENT_ARRAY_BUFFER,
             0,
@@ -702,8 +778,6 @@
 
         gl->BindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
         assert(gl->GetError() == 0);
-        gl->BindBuffer(GL_ARRAY_BUFFER, 0);
-        assert(gl->GetError() == 0);
     }
 
     static inline void aven_gl_shape_rounded_draw(
@@ -713,47 +787,14 @@
         float pixel_size,
         Aff2 cam_trans
     ) {
-        gl->BindBuffer(GL_ARRAY_BUFFER, buffer->vertex);
+        gl->UseProgram(ctx->program);
+        assert(gl->GetError() == 0);
+
+        gl->BindVertexArray(buffer->vao);
         assert(gl->GetError() == 0);
         gl->BindBuffer(GL_ELEMENT_ARRAY_BUFFER, buffer->index);
         assert(gl->GetError() == 0);
 
-        gl->UseProgram(ctx->program);
-        assert(gl->GetError() == 0);
-
-        gl->EnableVertexAttribArray(ctx->vpos_location);
-        assert(gl->GetError() == 0);
-        gl->EnableVertexAttribArray(ctx->vinfo_location);
-        assert(gl->GetError() == 0);
-        gl->EnableVertexAttribArray(ctx->vcolor_location);
-        assert(gl->GetError() == 0);
-        gl->VertexAttribPointer(
-            ctx->vpos_location,
-            2,
-            GL_FLOAT,
-            GL_FALSE,
-            sizeof(AvenGlShapeRoundedVertex),
-            (void *)offsetof(AvenGlShapeRoundedVertex, pos)
-        );
-        assert(gl->GetError() == 0);
-        gl->VertexAttribPointer(
-            ctx->vinfo_location,
-            4,
-            GL_FLOAT,
-            GL_FALSE,
-            sizeof(AvenGlShapeRoundedVertex),
-            (void *)offsetof(AvenGlShapeRoundedVertex, info)
-        );
-        assert(gl->GetError() == 0);
-        gl->VertexAttribPointer(
-            ctx->vcolor_location,
-            4,
-            GL_FLOAT,
-            GL_FALSE,
-            sizeof(AvenGlShapeRoundedVertex),
-            (void *)offsetof(AvenGlShapeRoundedVertex, color)
-        );
-        assert(gl->GetError() == 0);
         gl->Enable(GL_BLEND);
         assert(gl->GetError() == 0);
         gl->BlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -781,16 +822,10 @@
 
         gl->Disable(GL_BLEND);
         assert(gl->GetError() == 0);
-        gl->DisableVertexAttribArray(ctx->vcolor_location);
-        assert(gl->GetError() == 0);
-        gl->DisableVertexAttribArray(ctx->vinfo_location);
-        assert(gl->GetError() == 0);
-        gl->DisableVertexAttribArray(ctx->vpos_location);
-        assert(gl->GetError() == 0);
 
         gl->BindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
         assert(gl->GetError() == 0);
-        gl->BindBuffer(GL_ARRAY_BUFFER, 0);
+        gl->BindVertexArray(0);
         assert(gl->GetError() == 0);
     }
 

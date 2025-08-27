@@ -91,6 +91,7 @@
         );
         ctx.shape.buffer = aven_gl_shape_rounded_buffer_init(
             gl,
+            &ctx.shape.ctx,
             &ctx.shape.geometry,
             AVEN_GL_BUFFER_USAGE_DYNAMIC
         );

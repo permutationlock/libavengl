@@ -6,6 +6,7 @@
 #include <aven/fs.h>
 #include <aven/gl.h>
 #include <aven/gl/shape.h>
+#include <aven/gl/text.h>
 #include <aven/gl/texture.h>
 #include <aven/gl/ui.h>
 #include <aven/gl/window.h>
@@ -16,9 +17,11 @@
 
 #include <GLFW/glfw3.h>
 
+#include "font.h"
+
 #define INIT_WIDTH 480
 #define INIT_HEIGHT 480
-#define ARENA_SIZE (4096 * 16)
+#define ARENA_SIZE (4096 * 1024)
 
 static AvenArena test_arena;
 
@@ -26,6 +29,7 @@ typedef enum {
     TEST_AVEN_GL_SHAPE = 0,
     TEST_AVEN_GL_ROUNDED,
     TEST_AVEN_GL_TEXTURE,
+    TEST_AVEN_GL_TEXT,
 } TestAvenGlState;
 
 typedef union {
@@ -44,6 +48,13 @@ typedef union {
         AvenGlTextureGeometry geometry;
         AvenGlTextureBuffer buffer;
     } texture;
+    struct {
+        AvenGlTextFont font;
+        AvenGlTextCtx ctx;
+        AvenGlTextGeometry geometry;
+        AvenGlTextBuffer buffer;
+        AvenGlTextLine line;
+    } text;
 } TestAvenGlData;
 
 typedef struct {
@@ -106,6 +117,10 @@ static Slice(uint32_t) texture = slice_array(texture_data);
                     );
                     aven_gl_texture_ctx_deinit(&win.gl, &app.data.texture.ctx);
                     break;
+                case TEST_AVEN_GL_TEXT:
+                    aven_gl_text_buffer_deinit(&win.gl, &app.data.text.buffer);
+                    aven_gl_text_ctx_deinit(&win.gl, &app.data.text.ctx);
+                    break;
             }
             // win = (AvenGlWindow){ 0 };
             minimized = true;
@@ -117,6 +132,7 @@ static Slice(uint32_t) texture = slice_array(texture_data);
                     app.data.shape.ctx = aven_gl_shape_ctx_init(&win.gl);
                     app.data.shape.buffer = aven_gl_shape_buffer_init(
                         &win.gl,
+                        &app.data.shape.ctx,
                         &app.data.shape.geometry,
                         AVEN_GL_BUFFER_USAGE_DYNAMIC
                     );
@@ -127,6 +143,7 @@ static Slice(uint32_t) texture = slice_array(texture_data);
                     );
                     app.data.rounded.buffer = aven_gl_shape_rounded_buffer_init(
                         &win.gl,
+                        &app.data.rounded.ctx,
                         &app.data.rounded.geometry,
                         AVEN_GL_BUFFER_USAGE_DYNAMIC
                     );
@@ -143,10 +160,31 @@ static Slice(uint32_t) texture = slice_array(texture_data);
                     );
                     app.data.texture.buffer = aven_gl_texture_buffer_init(
                         &win.gl,
+                        &app.data.texture.ctx,
                         &app.data.texture.geometry,
                         AVEN_GL_BUFFER_USAGE_DYNAMIC
                     );
                     break;
+                case TEST_AVEN_GL_TEXT: {
+                    ByteSlice font_bytes = {
+                        .ptr = (unsigned char *)game_font_opensans_ttf,
+                        .len = sizeof(game_font_opensans_ttf),
+                    };
+                    app.data.text.font = aven_gl_text_font_init(
+                        &win.gl,
+                        font_bytes,
+                        48,
+                        test_arena
+                    );
+                    app.data.text.ctx = aven_gl_text_ctx_init(&win.gl);
+                    app.data.text.buffer = aven_gl_text_buffer_init(
+                        &win.gl,
+                        &app.data.text.ctx,
+                        &app.data.text.geometry,
+                        AVEN_GL_BUFFER_USAGE_DYNAMIC
+                    );
+                    break;
+                }
             }
             minimized = false;
         }
@@ -164,6 +202,7 @@ void test_aven_gl_shape(void) {
     );
     app.data.shape.buffer = aven_gl_shape_buffer_init(
         &win.gl,
+        &app.data.shape.ctx,
         &app.data.shape.geometry,
         AVEN_GL_BUFFER_USAGE_DYNAMIC
     );
@@ -239,6 +278,7 @@ void test_aven_gl_shape_rounded(void) {
     );
     app.data.rounded.buffer = aven_gl_shape_rounded_buffer_init(
         &win.gl,
+        &app.data.rounded.ctx,
         &app.data.rounded.geometry,
         AVEN_GL_BUFFER_USAGE_DYNAMIC
     );
@@ -322,6 +362,7 @@ void test_aven_gl_texture(void) {
     app.data.texture.geometry = aven_gl_texture_geometry_init(1, &temp_arena);
     app.data.texture.buffer = aven_gl_texture_buffer_init(
         &win.gl,
+        &app.data.texture.ctx,
         &app.data.texture.geometry,
         AVEN_GL_BUFFER_USAGE_DYNAMIC
     );
@@ -374,6 +415,106 @@ void test_aven_gl_texture(void) {
     aven_gl_texture_buffer_deinit(&win.gl, &app.data.texture.buffer);
     aven_gl_texture_geometry_deinit(&app.data.texture.geometry);
     aven_gl_texture_ctx_deinit(&win.gl, &app.data.texture.ctx);
+}
+
+void test_aven_gl_text(void) {
+    AvenArena temp_arena = test_arena;
+
+    AvenStr msg = aven_str("Hello, OpenGL!");
+    app.state = TEST_AVEN_GL_TEXT;
+    ByteSlice font_bytes = {
+        .ptr = (unsigned char *)game_font_opensans_ttf,
+        .len = sizeof(game_font_opensans_ttf),
+    };
+    app.data.text.font = aven_gl_text_font_init(
+        &win.gl,
+        font_bytes,
+        48,
+        test_arena
+    );
+    app.data.text.ctx = aven_gl_text_ctx_init(&win.gl);
+    app.data.text.geometry = aven_gl_text_geometry_init(msg.len, &temp_arena);
+    app.data.text.buffer = aven_gl_text_buffer_init(
+        &win.gl,
+        &app.data.text.ctx,
+        &app.data.text.geometry,
+        AVEN_GL_BUFFER_USAGE_DYNAMIC
+    );
+    app.data.text.line = aven_gl_text_line(
+        &app.data.text.font,
+        msg,
+        &temp_arena
+    );
+    Aff2 trans;
+    aff2_identity(trans);
+    AvenTimeInst start = aven_time_now();
+    while (aven_time_since(aven_time_now(), start) / 2 < AVEN_TIME_NSEC_PER_SEC) {
+        if (glfwWindowShouldClose(win.window)) {
+            break;
+        }
+
+        int width;
+        int height;
+        glfwGetFramebufferSize(win.window, &width, &height);
+
+        float screen_ratio = (float)width / (float)height;
+        float norm_height = 1.0f;
+        float norm_width = screen_ratio;
+        float pixel_size = 2.0f / (float)height;
+
+        if (screen_ratio < 1.0f) {
+            norm_height = 1.0f / screen_ratio;
+            norm_width = 1.0f;
+            screen_ratio = 1.0f / screen_ratio;
+            pixel_size = 2.0f / (float)width;
+        }
+        Aff2 camera;
+        aff2_camera_position(
+            camera,
+            (Vec2){ 0.0f, 0.0f },
+            (Vec2){ norm_width, norm_height }
+        );
+
+        aven_gl_text_geometry_clear(&app.data.text.geometry);
+        aven_gl_text_geometry_push_line(
+            &app.data.text.geometry,
+            &app.data.text.line,
+            trans,
+            pixel_size,
+            (Vec4){ 0.25f, 0.25f, 0.25f, 1.0f }
+        );
+        aven_gl_text_buffer_update(
+            &win.gl,
+            &app.data.text.buffer,
+            &app.data.text.geometry
+        );
+
+        win.gl.Viewport(0, 0, width, height);
+        assert(win.gl.GetError() == 0);
+
+        win.gl.ClearColor(0.75f, 0.75f, 0.75f, 1.0f);
+        assert(win.gl.GetError() == 0);
+        win.gl.Clear(GL_COLOR_BUFFER_BIT);
+        assert(win.gl.GetError() == 0);
+        aven_gl_text_draw(
+            &win.gl,
+            &app.data.text.ctx,
+            &app.data.text.buffer,
+            &app.data.text.font,
+            camera
+        );
+
+        glfwSwapBuffers(win.window);
+        glfwPollEvents();
+#ifdef __ANDROID__
+        while (minimized) {
+            glfwWaitEvents();
+        }
+#endif
+    }
+    aven_gl_text_buffer_deinit(&win.gl, &app.data.text.buffer);
+    aven_gl_text_geometry_deinit(&app.data.text.geometry);
+    aven_gl_text_ctx_deinit(&win.gl, &app.data.text.ctx);
 }
 
 int main(void) {
@@ -961,6 +1102,22 @@ int main(void) {
         fail = true;
         aven_io_print("test failed: aven_gl_load glViewport\n");
     }
+    if (win.gl.BindVertexArray == NULL) {
+        fail = true;
+        aven_io_print("test failed: aven_gl_load glBindVertexArray\n");
+    }
+    if (win.gl.GenVertexArrays == NULL) {
+        fail = true;
+        aven_io_print("test failed: aven_gl_load glGenVertexArrays\n");
+    }
+    if (win.gl.DeleteVertexArrays == NULL) {
+        fail = true;
+        aven_io_print("test failed: aven_gl_load glDeleteVertexArrays\n");
+    }
+    if (win.gl.IsVertexArray == NULL) {
+        fail = true;
+        aven_io_print("test failed: aven_gl_load glIsVertexArray\n");
+    }
 
     if (!fail) {
         aven_io_print("all gl functions loaded\n");
@@ -971,11 +1128,13 @@ int main(void) {
         test_aven_gl_shape();
         test_aven_gl_shape_rounded();
         test_aven_gl_texture();
+        test_aven_gl_text();
     }
 #else
     test_aven_gl_shape();
     test_aven_gl_shape_rounded();
     test_aven_gl_texture();
+    test_aven_gl_text();
 #endif
 
     glfwDestroyWindow(win.window);

@@ -194,7 +194,7 @@
         return aven_path(arena, root_path, aven_str("include"));
     }
 
-    static inline AvenStr libavengl_build_include_gles2(
+    static inline AvenStr libavengl_build_include_gles3(
         AvenStr root_path,
         AvenArena *arena
     ) {
@@ -202,7 +202,7 @@
             arena,
             root_path,
             aven_str("deps"),
-            aven_str("gles2"),
+            aven_str("gles3"),
             aven_str("include")
         );
     }
@@ -330,7 +330,7 @@
 
         AvenStr include_paths[6];
         List(AvenStr) include_list = list_array(include_paths);
-        list_push(include_list) = libavengl_build_include_gles2(
+        list_push(include_list) = libavengl_build_include_gles3(
             root_path,
             arena
         );

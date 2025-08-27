@@ -1,13 +1,13 @@
 # libavengl: a simple cross-platform 2D graphics library
 
-The `libavengl` library provides a dynamic loader for the OpenGL ES 2.0
+The `libavengl` library provides a dynamic loader for the OpenGL ES 3.1
 API and an API for drawing 2D shapes, textures, text, and an immediate mode
 UI. It vendors the GLFW and STB TrueType libraries, along with the
-headers for OpenGL ES 2.0, Wayland, X11, and xkbcommon.
+headers for OpenGL ES 3.1, Wayland, X11, and xkbcommon.
 
-The provided drawing APIs all use a common subset of desktop OpenGL 2.1
-and OpenGL ES 2.0, and the provided GLFW wrapper will automatically
-load OpenGL 2.1 as a runtime backup if OpenGL ES 2.0 support fails to load.
+The provided drawing APIs all use a common subset of desktop OpenGL 4.5
+and OpenGL ES 3.1, and the provided GLFW wrapper will automatically
+load OpenGL ES 3.1 as a runtime backup if OpenGL 4.5 support fails to load.
 A helper macro is provided to runtime select compatible shader preludes
 (GLSL version, etc.) for the loaded API.
 

@@ -63,7 +63,6 @@ int main(int argc, char **argv) {
     );
     if (arg_error != 0) {
         if (arg_error != AVEN_ARG_ERROR_HELP) {
-            aven_io_perrf("ARG PARSE ERROR: {}\n", aven_fmt_int(arg_error));
             return 1;
         }
         return 0;
@@ -98,7 +97,7 @@ int main(int argc, char **argv) {
     List(AvenStr) include_list = list_array(include_data);
     list_push(include_list) = libaven_build_include_path(libaven_dir, &arena);
     list_push(include_list) = libavengl_build_include_path(root_dir, &arena);
-    list_push(include_list) = libavengl_build_include_gles2(root_dir, &arena);
+    list_push(include_list) = libavengl_build_include_gles3(root_dir, &arena);
     list_push(include_list) = libavengl_build_include_glfw(root_dir, &arena);
     AvenStrSlice includes = slice_list(include_list);
 
