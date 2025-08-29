@@ -132,7 +132,7 @@
         gl->TexImage2D(
             GL_TEXTURE_2D,
             0,
-            GL_RED,
+            GL_R8,
             (GLsizei)font.texture_width,
             (GLsizei)font.texture_height,
             0,

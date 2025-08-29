@@ -26,7 +26,7 @@
         PFNGLCHECKFRAMEBUFFERSTATUSPROC CheckFramebufferStatus;
         PFNGLCLEARPROC Clear;
         PFNGLCLEARCOLORPROC ClearColor;
-        PFNGLCLEARDEPTHFPROC ClearDepth;
+        PFNGLCLEARDEPTHFPROC ClearDepthf;
         PFNGLCLEARSTENCILPROC ClearStencil;
         PFNGLCOLORMASKPROC ColorMask;
         PFNGLCOMPILESHADERPROC CompileShader;
@@ -192,7 +192,7 @@
         );
         gl.Clear = (PFNGLCLEARPROC)load("glClear");
         gl.ClearColor = (PFNGLCLEARCOLORPROC)load("glClearColor");
-        gl.ClearDepth = (PFNGLCLEARDEPTHFPROC)load("glClearDepth");
+        gl.ClearDepthf = (PFNGLCLEARDEPTHFPROC)load("glClearDepthf");
         gl.ClearStencil = (PFNGLCLEARSTENCILPROC)load("glClearStencil");
         gl.ColorMask = (PFNGLCOLORMASKPROC)load("glColorMask");
         gl.CompileShader = (PFNGLCOMPILESHADERPROC)load("glCompileShader");
@@ -395,7 +395,7 @@
     }
 
     #define aven_gl_shader(gl, str) ( \
-            gl->es ? "#version 310 es\n" str : "#version 450\n" str \
+            gl->es ? "#version 300 es\n" str : "#version 450\n" str \
         )
 
     void aven_gl_shader_validate(

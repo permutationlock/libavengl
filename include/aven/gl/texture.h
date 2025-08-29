@@ -432,12 +432,17 @@
         assert(gl->GetError() == 0);
     }
 
-    static inline void aven_gl_texture_draw(
+    static inline void aven_gl_texture_draw_range(
         AvenGl *gl,
         AvenGlTextureCtx *ctx,
         AvenGlTextureBuffer *buffer,
-        Aff2 cam_trans
+        Aff2 cam_trans,
+        size_t start,
+        size_t end
     ) {
+        assert(start < end);
+        assert(end <= buffer->index_len);
+
         gl->UseProgram(ctx->program);
         assert(gl->GetError() == 0);
 
@@ -465,9 +470,9 @@
 
         gl->DrawElements(
             GL_TRIANGLES,
-            (GLsizei)buffer->index_len,
+            (GLsizei)(end - start),
             GL_UNSIGNED_SHORT,
-            0
+            (void *)start
         );
         assert(gl->GetError() == 0);
 
@@ -481,5 +486,21 @@
         assert(gl->GetError() == 0);
         gl->BindVertexArray(0);
         assert(gl->GetError() == 0);
+    }
+
+    static inline void aven_gl_texture_draw(
+        AvenGl *gl,
+        AvenGlTextureCtx *ctx,
+        AvenGlTextureBuffer *buffer,
+        Aff2 cam_trans
+    ) {
+        aven_gl_texture_draw_range(
+            gl,
+            ctx,
+            buffer,
+            cam_trans,
+            0,
+            buffer->index_len
+        );
     }
 #endif // AVEN_GL_TEXTURE_H

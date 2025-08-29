@@ -20,6 +20,7 @@ cd ..
     --ldflags "$LDFLAGS \
         -s ASYNCIFY \
         -s USE_GLFW=3 \
+        -s MIN_WEBGL_VERSION=2 \
         -s MAX_WEBGL_VERSION=2 \
         -s EXPORTED_RUNTIME_METHODS=cwrap \
         -s EXPORTED_FUNCTIONS=_main,_on_resize \
@@ -32,7 +33,7 @@ cd ..
     --winutf8 false \
     --glfw-external \
     --syslibs ""
-cp build_test/test.html web/build_web/public/index.html
-cp build_test/test.js web/build_web/public/index.js
-cp build_test/test.wasm web/build_web/public/index.wasm
+cp build_test/test.html web/build_web/public/
+cp build_test/test.js web/build_web/public/
+cp build_test/test.wasm web/build_web/public/
 cd web
