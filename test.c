@@ -67,8 +67,8 @@ typedef struct {
 static AvenGlWindow win;
 static TestAvenGl app;
 
-#define NVERTICES 16
-#define NINDICES 64
+#define NVERTICES 10
+#define NINDICES 12
 #define TSIZE 2
 
 static uint32_t texture_data[TSIZE * TSIZE] = {

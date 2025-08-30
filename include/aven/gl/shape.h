@@ -171,17 +171,13 @@
 
         switch (buffer_usage) {
             case AVEN_GL_BUFFER_USAGE_DYNAMIC:
-                buffer.vertex_cap = geometry->vertices.cap *
-                    sizeof(*geometry->vertices.ptr);
-                buffer.index_cap = geometry->indices.cap *
-                    sizeof(*geometry->indices.ptr);
+                buffer.vertex_cap = geometry->vertices.cap;
+                buffer.index_cap = geometry->indices.cap;
                 break;
             case AVEN_GL_BUFFER_USAGE_STATIC:
             case AVEN_GL_BUFFER_USAGE_STREAM:
-                buffer.vertex_cap = geometry->vertices.len *
-                    sizeof(*geometry->vertices.ptr);
-                buffer.index_cap = geometry->indices.len *
-                    sizeof(*geometry->indices.ptr);
+                buffer.vertex_cap = geometry->vertices.len;
+                buffer.index_cap = geometry->indices.len;
                 buffer.index_len = geometry->indices.len;
                 break;
             default:
@@ -199,7 +195,7 @@
         assert(gl->GetError() == 0);
         gl->BufferData(
             GL_ARRAY_BUFFER,
-            (GLsizeiptr)buffer.vertex_cap,
+            (GLsizeiptr)(buffer.vertex_cap * sizeof(*geometry->vertices.ptr)),
             geometry->vertices.ptr,
             (GLenum)buffer_usage
         );
@@ -236,7 +232,7 @@
         assert(gl->GetError() == 0);
         gl->BufferData(
             GL_ELEMENT_ARRAY_BUFFER,
-            (GLsizeiptr)buffer.index_cap,
+            (GLsizeiptr)(buffer.index_cap * sizeof(*geometry->indices.ptr)),
             geometry->indices.ptr,
             (GLenum)buffer_usage
         );
@@ -264,8 +260,8 @@
         AvenGlShapeGeometry *geometry
     ) {
         assert(buffer->usage == AVEN_GL_BUFFER_USAGE_DYNAMIC);
-        assert(geometry->vertices.len < buffer->vertex_cap);
-        assert(geometry->indices.len < buffer->index_cap);
+        assert(geometry->vertices.len <= buffer->vertex_cap);
+        assert(geometry->indices.len <= buffer->index_cap);
 
         gl->BindVertexArray(buffer->vao);
         assert(gl->GetError() == 0);
@@ -289,7 +285,7 @@
         gl->BufferSubData(
             GL_ELEMENT_ARRAY_BUFFER,
             0,
-            (GLsizeiptr)(sizeof(*geometry->indices.ptr) * geometry->indices.len),
+            (GLsizeiptr)(geometry->indices.len * sizeof(*geometry->indices.ptr)),
             geometry->indices.ptr
         );
         assert(gl->GetError() == 0);
@@ -639,17 +635,13 @@
 
         switch (buffer_usage) {
             case AVEN_GL_BUFFER_USAGE_DYNAMIC:
-                buffer.vertex_cap = geometry->vertices.cap *
-                    sizeof(*geometry->vertices.ptr);
-                buffer.index_cap = geometry->indices.cap *
-                    sizeof(*geometry->indices.ptr);
+                buffer.vertex_cap = geometry->vertices.cap;
+                buffer.index_cap = geometry->indices.cap;
                 break;
             case AVEN_GL_BUFFER_USAGE_STATIC:
             case AVEN_GL_BUFFER_USAGE_STREAM:
-                buffer.vertex_cap = geometry->vertices.len *
-                    sizeof(*geometry->vertices.ptr);
-                buffer.index_cap = geometry->indices.len *
-                    sizeof(*geometry->indices.ptr);
+                buffer.vertex_cap = geometry->vertices.len;
+                buffer.index_cap = geometry->indices.len;
                 buffer.index_len = buffer.index_len;
                 break;
             default:
@@ -667,7 +659,7 @@
         assert(gl->GetError() == 0);
         gl->BufferData(
             GL_ARRAY_BUFFER,
-            (GLsizeiptr)buffer.vertex_cap,
+            (GLsizeiptr)(buffer.vertex_cap * sizeof(*geometry->vertices.ptr)),
             geometry->vertices.ptr,
             (GLenum)buffer_usage
         );
@@ -716,7 +708,7 @@
         assert(gl->GetError() == 0);
         gl->BufferData(
             GL_ELEMENT_ARRAY_BUFFER,
-            (GLsizeiptr)buffer.index_cap,
+            (GLsizeiptr)(buffer.index_cap * sizeof(*geometry->indices.ptr)),
             geometry->indices.ptr,
             (GLenum)buffer_usage
         );
@@ -744,8 +736,8 @@
         AvenGlShapeRoundedGeometry *geometry
     ) {
         assert(buffer->usage == AVEN_GL_BUFFER_USAGE_DYNAMIC);
-        assert(geometry->vertices.len < buffer->vertex_cap);
-        assert(geometry->indices.len < buffer->index_cap);
+        assert(geometry->vertices.len <= buffer->vertex_cap);
+        assert(geometry->indices.len <= buffer->index_cap);
 
         gl->BindVertexArray(buffer->vao);
         assert(gl->GetError() == 0);
@@ -754,7 +746,7 @@
             GL_ARRAY_BUFFER,
             0,
             (GLsizeiptr)(
-                sizeof(*geometry->vertices.ptr) * geometry->vertices.len
+                geometry->vertices.len * sizeof(*geometry->vertices.ptr)
             ),
             geometry->vertices.ptr
         );
@@ -769,7 +761,7 @@
         gl->BufferSubData(
             GL_ELEMENT_ARRAY_BUFFER,
             0,
-            (GLsizeiptr)(sizeof(*geometry->indices.ptr) * geometry->indices.len),
+            (GLsizeiptr)(geometry->indices.len * sizeof(*geometry->indices.ptr)),
             geometry->indices.ptr
         );
         assert(gl->GetError() == 0);

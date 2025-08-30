@@ -7,6 +7,7 @@
     #include "deps/libaven/include/aven/build.h"
     #include "deps/libaven/include/aven/build/common.h"
     #include "deps/libaven/include/aven/path.h"
+    #include "deps/libaven/include/aven/str.h"
 
     #include "deps/libaven/build.h"
 

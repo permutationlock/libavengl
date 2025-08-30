@@ -16,6 +16,7 @@
 #include "deps/libaven/include/aven/fs.h"
 #include "deps/libaven/include/aven/io.h"
 #include "deps/libaven/include/aven/path.h"
+#include "deps/libaven/include/aven/str.h"
 
 #include "deps/libaven/build.h"
 
