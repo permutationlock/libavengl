@@ -395,7 +395,7 @@
     }
 
     #define aven_gl_shader(gl, str) ( \
-            gl->es ? "#version 300 es\n" str : "#version 450\n" str \
+            gl->es ? "#version 300 es\n" str : "#version 430\n" str \
         )
 
     void aven_gl_shader_validate(
