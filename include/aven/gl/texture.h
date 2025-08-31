@@ -356,6 +356,9 @@
         gl->EnableVertexAttribArray(ctx->vpos_location);
         assert(gl->GetError() == 0);
 
+        gl->BindBuffer(GL_ARRAY_BUFFER, 0);
+        assert(gl->GetError() == 0);
+
         gl->BindVertexArray(0);
         assert(gl->GetError() == 0);
 
@@ -396,7 +399,7 @@
         assert(geometry->vertices.len <= buffer->vertex_cap);
         assert(geometry->indices.len <= buffer->index_cap);
 
-        gl->BindVertexArray(buffer->vao);
+        gl->BindBuffer(GL_ARRAY_BUFFER, buffer->vertex);
         assert(gl->GetError() == 0);
 
         gl->BufferSubData(
@@ -409,7 +412,7 @@
         );
         assert(gl->GetError() == 0);
 
-        gl->BindVertexArray(0);
+        gl->BindBuffer(GL_ARRAY_BUFFER, 0);
         assert(gl->GetError() == 0);
 
         gl->BindBuffer(GL_ELEMENT_ARRAY_BUFFER, buffer->index);
@@ -443,6 +446,8 @@
         assert(gl->GetError() == 0);
 
         gl->BindVertexArray(buffer->vao);
+        assert(gl->GetError() == 0);
+        gl->BindBuffer(GL_ARRAY_BUFFER, buffer->vertex);
         assert(gl->GetError() == 0);
         gl->BindBuffer(GL_ELEMENT_ARRAY_BUFFER, buffer->index);
         assert(gl->GetError() == 0);
@@ -479,6 +484,8 @@
         assert(gl->GetError() == 0);
 
         gl->BindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+        assert(gl->GetError() == 0);
+        gl->BindBuffer(GL_ARRAY_BUFFER, 0);
         assert(gl->GetError() == 0);
         gl->BindVertexArray(0);
         assert(gl->GetError() == 0);
