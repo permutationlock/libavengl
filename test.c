@@ -22,7 +22,7 @@
 #define INIT_WIDTH 480
 #define INIT_HEIGHT 480
 #define ARENA_SIZE (4096 * 2048)
-#define INTERVAL_NS 2 * AVEN_TIME_NSEC_PER_SEC
+#define INTERVAL_NS (2 * AVEN_TIME_NSEC_PER_SEC)
 
 static AvenArena test_arena;
 
@@ -31,6 +31,7 @@ typedef enum {
     TEST_AVEN_GL_ROUNDED,
     TEST_AVEN_GL_TEXTURE,
     TEST_AVEN_GL_TEXT,
+    TEST_AVEN_GL_JOIN,
 } TestAvenGlState;
 
 typedef union {
@@ -44,6 +45,11 @@ typedef union {
         AvenGlShapeRoundedGeometry geometry;
         AvenGlShapeRoundedBuffer buffer;
     } rounded;
+    struct {
+        AvenGlShapeJoinCtx ctx;
+        AvenGlShapeJoinGeometry geometry;
+        AvenGlShapeJoinBuffer buffer;
+    } join;
     struct {
         AvenGlTextureCtx ctx;
         AvenGlTextureGeometry geometry;
@@ -112,6 +118,13 @@ static Slice(uint32_t) texture = slice_array(texture_data);
                         &app.data.rounded.ctx
                     );
                     break;
+                case TEST_AVEN_GL_JOIN:
+                    aven_gl_shape_join_buffer_deinit(
+                        &win.gl,
+                        &app.data.join.buffer
+                    );
+                    aven_gl_shape_join_ctx_deinit(&win.gl, &app.data.join.ctx);
+                    break;
                 case TEST_AVEN_GL_TEXTURE:
                     aven_gl_texture_buffer_deinit(
                         &win.gl,
@@ -147,6 +160,15 @@ static Slice(uint32_t) texture = slice_array(texture_data);
                         &win.gl,
                         &app.data.rounded.ctx,
                         &app.data.rounded.geometry,
+                        AVEN_GL_BUFFER_USAGE_DYNAMIC
+                    );
+                    break;
+                case TEST_AVEN_GL_JOIN:
+                    app.data.join.ctx = aven_gl_shape_join_ctx_init(&win.gl);
+                    app.data.join.buffer = aven_gl_shape_join_buffer_init(
+                        &win.gl,
+                        &app.data.join.ctx,
+                        &app.data.join.geometry,
                         AVEN_GL_BUFFER_USAGE_DYNAMIC
                     );
                     break;
@@ -335,6 +357,65 @@ void test_aven_gl_shape_rounded_deinit(void) {
     aven_gl_shape_rounded_ctx_deinit(&win.gl, &app.data.rounded.ctx);
 }
 
+void test_aven_gl_shape_join_init(void) {
+    AvenArena temp_arena = test_arena;
+    app.state = TEST_AVEN_GL_JOIN;
+    app.data.join.ctx = aven_gl_shape_join_ctx_init(&win.gl);
+    app.data.join.geometry = aven_gl_shape_join_geometry_init(2, &temp_arena);
+    app.data.join.buffer = aven_gl_shape_join_buffer_init(
+        &win.gl,
+        &app.data.join.ctx,
+        &app.data.join.geometry,
+        AVEN_GL_BUFFER_USAGE_DYNAMIC
+    );
+}
+
+void test_aven_gl_shape_join_update(int64_t elapsed) {
+    Aff2 trans;
+    aff2_identity(trans);
+    float t = (float)elapsed / (float)INTERVAL_NS;
+    aff2_stretch(trans, (Vec2){ 0.5f + 0.5f * t, 0.5f }, trans);
+    Aff2 camera;
+    aff2_camera_position(camera, (Vec2){ 0.0f, 0.0f }, (Vec2){ 1.25f, 1.25f });
+
+    aven_gl_shape_join_geometry_clear(&app.data.join.geometry);
+    aven_gl_shape_join_geometry_push_square(
+        &app.data.join.geometry,
+        trans,
+        (Vec2){ 0.5f - 4.0f * t, 0.5f - 4.0f * t },
+        (Vec4){ 1.0f, 0.0f, 0.0f, 1.0f }
+    );
+    aven_gl_shape_join_buffer_update(
+        &win.gl,
+        &app.data.join.buffer,
+        &app.data.join.geometry
+    );
+
+    int width;
+    int height;
+    glfwGetFramebufferSize(win.window, &width, &height);
+    win.gl.Viewport(0, 0, width, height);
+    assert(win.gl.GetError() == 0);
+
+    win.gl.ClearColor(0.75f, 0.75f, 0.75f, 1.0f);
+    assert(win.gl.GetError() == 0);
+    win.gl.Clear(GL_COLOR_BUFFER_BIT);
+    assert(win.gl.GetError() == 0);
+    aven_gl_shape_join_draw(
+        &win.gl,
+        &app.data.join.ctx,
+        &app.data.join.buffer,
+        2.0f / (float)height,
+        camera
+    );
+}
+
+void test_aven_gl_shape_join_deinit(void) {
+    aven_gl_shape_join_buffer_deinit(&win.gl, &app.data.join.buffer);
+    aven_gl_shape_join_geometry_deinit(&app.data.join.geometry);
+    aven_gl_shape_join_ctx_deinit(&win.gl, &app.data.join.ctx);
+}
+
 void test_aven_gl_texture_init(void) {
     AvenArena temp_arena = test_arena;
     app.state = TEST_AVEN_GL_TEXTURE;
@@ -493,7 +574,8 @@ void test_aven_gl_text_deinit(void) {
 void update(void) {
     AvenTimeInst now = aven_time_now();
 
-    if (aven_time_since(now, app.start) >= INTERVAL_NS) {
+    int64_t elapsed = aven_time_since(now, app.start);
+    if (elapsed >= INTERVAL_NS) {
         switch (app.state) {
             case TEST_AVEN_GL_SHAPE:
                 test_aven_gl_shape_deinit();
@@ -501,6 +583,10 @@ void update(void) {
                 break;
             case TEST_AVEN_GL_ROUNDED:
                 test_aven_gl_shape_rounded_deinit();
+                test_aven_gl_shape_join_init();
+                break;
+            case TEST_AVEN_GL_JOIN:
+                test_aven_gl_shape_join_deinit();
                 test_aven_gl_texture_init();
                 break;
             case TEST_AVEN_GL_TEXTURE:
@@ -520,6 +606,9 @@ void update(void) {
                 break;
             case TEST_AVEN_GL_ROUNDED:
                 test_aven_gl_shape_rounded_update();
+                break;
+            case TEST_AVEN_GL_JOIN:
+                test_aven_gl_shape_join_update(elapsed);
                 break;
             case TEST_AVEN_GL_TEXTURE:
                 test_aven_gl_texture_update();
@@ -1146,7 +1235,7 @@ int main(void) {
     }
 
     app.start = aven_time_now();
-    test_aven_gl_shape_init();
+    test_aven_gl_shape_join_init();
 
 #ifdef __EMSCRIPTEN__
     emscripten_set_main_loop(update, 0, 0);

@@ -1109,4 +1109,455 @@
         list_push(geometry->indices) = (GLushort)start_index + 2;
         list_push(geometry->indices) = (GLushort)start_index + 3;
     }
+
+    // Join
+
+    typedef struct {
+        Vec4 color;
+        Vec4 info;
+        Vec4 pos;
+    } AvenGlShapeJoinVertex;
+
+    typedef struct {
+        List(AvenGlShapeJoinVertex) vertices;
+        List(GLushort) indices;
+    } AvenGlShapeJoinGeometry;
+
+    typedef struct {
+        size_t vertex_cap;
+        size_t index_cap;
+        size_t index_len;
+        GLuint vertex;
+        GLuint index;
+        GLuint vao;
+        AvenGlBufferUsage usage;
+    } AvenGlShapeJoinBuffer;
+
+    typedef struct {
+        GLuint vertex_shader;
+        GLuint fragment_shader;
+        GLuint program;
+        GLuint utrans_location;
+        GLuint upos_location;
+        GLuint upx_location;
+        GLuint vpos_location;
+        GLuint vinfo_location;
+        GLuint vcolor_location;
+    } AvenGlShapeJoinCtx;
+
+    static inline AvenGlShapeJoinGeometry aven_gl_shape_join_geometry_init(
+        size_t max_lines,
+        AvenArena *arena
+    ) {
+        AvenGlShapeJoinGeometry geometry = {
+            .vertices = { .cap = 4 * max_lines },
+            .indices = { .cap = 6 * max_lines },
+        };
+        geometry.vertices.ptr = aven_arena_create_array(
+            AvenGlShapeJoinVertex,
+            arena,
+            geometry.vertices.cap
+        );
+        geometry.indices.ptr = aven_arena_create_array(
+            GLushort,
+            arena,
+            geometry.indices.cap
+        );
+
+        return geometry;
+    }
+
+    static inline void aven_gl_shape_join_geometry_clear(
+        AvenGlShapeJoinGeometry *geometry
+    ) {
+        geometry->vertices.len = 0;
+        geometry->indices.len = 0;
+    }
+
+    static inline void aven_gl_shape_join_geometry_deinit(
+        AvenGlShapeJoinGeometry *geometry
+    ) {
+        *geometry = (AvenGlShapeJoinGeometry){ 0 };
+    }
+
+    static inline AvenGlShapeJoinCtx aven_gl_shape_join_ctx_init(AvenGl *gl) {
+        AvenGlShapeJoinCtx ctx = { 0 };
+
+        const char *vertex_shader_text = aven_gl_shader(
+            gl,
+            "precision mediump float;\n"
+            "uniform mat2 uTrans;\n"
+            "uniform vec2 uPos;\n"
+            "uniform float uPx;\n"
+            "in vec4 vPos;\n"
+            "in vec4 vInfo;\n"
+            "in vec4 vColor;\n"
+            "out vec2 tPos;\n"
+            "out vec2 tOffset;\n"
+            "out vec2 tFocus;\n"
+            "out vec4 fColor;\n"
+            "void main() {\n"
+            "    gl_Position = vec4((uTrans * vPos.xy) + uPos, 0.0, 1.0);\n"
+            "    tPos = vInfo.xy;\n"
+            "    tOffset = vec2(uPx * vInfo.z, uPx * vInfo.w);\n"
+            "    fColor = vColor;\n"
+            "    tFocus = vec2(-1.0 / (4.0 * vPos.z), 1.0 / (4.0 * vPos.w));\n"
+            "}\n"
+        );
+
+        const char *fragment_shader_text = aven_gl_shader(
+            gl,
+            "precision mediump float;\n"
+            "in vec2 tPos;\n"
+            "in vec2 tOffset;\n"
+            "in vec2 tFocus;\n"
+            "in vec4 fColor;\n"
+            "out vec4 FragColor;\n"
+            "float msaa(vec2 p) {\n"
+            "    if (p.y >= 0.0) {\n"
+            "        float h = tFocus.x * p.x * p.x + 0.5 - tFocus.x;\n"
+            "        if (p.y > h) {\n"
+            "            return 0.0;\n"
+            "        }\n"
+            "    } else {\n"
+            "        float h = tFocus.y * p.x * p.x - 0.5 - tFocus.y;\n"
+            "        if (p.y < h) {\n"
+            "            return 0.0;\n"
+            "        }\n"
+            "    }\n"
+            "    return 1.0;\n"
+            "}\n"
+            "void main() {\n"
+            "    float magnitude = 0.0;\n"
+            "    magnitude += msaa(tPos);\n"
+            "    magnitude += msaa(tPos + vec2(0, -tOffset.y));\n"
+            "    magnitude += msaa(tPos + vec2(tOffset.x, 0));\n"
+            "    magnitude += msaa(tPos + vec2(0, tOffset.y));\n"
+            "    magnitude += msaa(tPos + vec2(-tOffset.x, 0));\n"
+            "    magnitude += msaa(tPos + vec2(-tOffset.x, tOffset.y));\n"
+            "    magnitude += msaa(tPos + vec2(-tOffset.x, -tOffset.y));\n"
+            "    magnitude += msaa(tPos + vec2(tOffset.x, -tOffset.y));\n"
+            "    magnitude += msaa(tPos + vec2(tOffset.x, tOffset.y));\n"
+            "    magnitude /= 9.0;\n"
+            "    FragColor = vec4(fColor.xyz, fColor.w * magnitude);\n"
+            "}\n"
+        );
+
+        ctx.vertex_shader = gl->CreateShader(GL_VERTEX_SHADER);
+        assert(gl->GetError() == 0);
+        gl->ShaderSource(ctx.vertex_shader, 1, &vertex_shader_text, NULL);
+        assert(gl->GetError() == 0);
+        gl->CompileShader(ctx.vertex_shader);
+        assert(gl->GetError() == 0);
+        aven_gl_shader_validate(gl, ctx.vertex_shader, vertex_shader_text);
+
+        ctx.fragment_shader = gl->CreateShader(GL_FRAGMENT_SHADER);
+        assert(gl->GetError() == 0);
+        gl->ShaderSource(ctx.fragment_shader, 1, &fragment_shader_text, NULL);
+        assert(gl->GetError() == 0);
+        gl->CompileShader(ctx.fragment_shader);
+        assert(gl->GetError() == 0);
+        aven_gl_shader_validate(gl, ctx.fragment_shader, fragment_shader_text);
+
+        ctx.program = gl->CreateProgram();
+        assert(gl->GetError() == 0);
+        gl->AttachShader(ctx.program, ctx.vertex_shader);
+        assert(gl->GetError() == 0);
+        gl->AttachShader(ctx.program, ctx.fragment_shader);
+        assert(gl->GetError() == 0);
+        gl->LinkProgram(ctx.program);
+        aven_gl_program_validate(gl, ctx.program);
+
+        ctx.utrans_location = (GLuint)gl->GetUniformLocation(
+            ctx.program,
+            "uTrans"
+        );
+        assert(gl->GetError() == 0);
+        ctx.upos_location = (GLuint)gl->GetUniformLocation(ctx.program, "uPos");
+        assert(gl->GetError() == 0);
+        ctx.upx_location = (GLuint)gl->GetUniformLocation(ctx.program, "uPx");
+        assert(gl->GetError() == 0);
+
+        ctx.vpos_location = (GLuint)gl->GetAttribLocation(ctx.program, "vPos");
+        ctx.vinfo_location = (GLuint)gl->GetAttribLocation(ctx.program, "vInfo");
+        assert(gl->GetError() == 0);
+        ctx.vcolor_location = (GLuint)gl->GetAttribLocation(
+            ctx.program,
+            "vColor"
+        );
+        assert(gl->GetError() == 0);
+
+        return ctx;
+    }
+
+    static inline void aven_gl_shape_join_ctx_deinit(
+        AvenGl *gl,
+        AvenGlShapeJoinCtx *ctx
+    ) {
+        gl->DeleteProgram(ctx->program);
+        gl->DeleteShader(ctx->fragment_shader);
+        gl->DeleteShader(ctx->vertex_shader);
+        *ctx = (AvenGlShapeJoinCtx){ 0 };
+    }
+
+    static inline AvenGlShapeJoinBuffer aven_gl_shape_join_buffer_init(
+        AvenGl *gl,
+        AvenGlShapeJoinCtx *ctx,
+        AvenGlShapeJoinGeometry *geometry,
+        AvenGlBufferUsage buffer_usage
+    ) {
+        AvenGlShapeJoinBuffer buffer = { .usage = buffer_usage };
+
+        switch (buffer_usage) {
+            case AVEN_GL_BUFFER_USAGE_DYNAMIC:
+                buffer.vertex_cap = geometry->vertices.cap;
+                buffer.index_cap = geometry->indices.cap;
+                break;
+            case AVEN_GL_BUFFER_USAGE_STATIC:
+            case AVEN_GL_BUFFER_USAGE_STREAM:
+                buffer.vertex_cap = geometry->vertices.len;
+                buffer.index_cap = geometry->indices.len;
+                buffer.index_len = buffer.index_len;
+                break;
+            default:
+                assert(false);
+        }
+
+        gl->GenVertexArrays(1, &buffer.vao);
+        assert(gl->GetError() == 0);
+        gl->BindVertexArray(buffer.vao);
+        assert(gl->GetError() == 0);
+
+        gl->GenBuffers(1, &buffer.vertex);
+        assert(gl->GetError() == 0);
+        gl->BindBuffer(GL_ARRAY_BUFFER, buffer.vertex);
+        assert(gl->GetError() == 0);
+        gl->BufferData(
+            GL_ARRAY_BUFFER,
+            (GLsizeiptr)(buffer.vertex_cap * sizeof(*geometry->vertices.ptr)),
+            geometry->vertices.ptr,
+            (GLenum)buffer_usage
+        );
+        assert(gl->GetError() == 0);
+
+        gl->VertexAttribPointer(
+            ctx->vpos_location,
+            4,
+            GL_FLOAT,
+            GL_FALSE,
+            sizeof(AvenGlShapeJoinVertex),
+            (void *)offsetof(AvenGlShapeJoinVertex, pos)
+        );
+        assert(gl->GetError() == 0);
+        gl->EnableVertexAttribArray(ctx->vpos_location);
+        assert(gl->GetError() == 0);
+        gl->VertexAttribPointer(
+            ctx->vinfo_location,
+            4,
+            GL_FLOAT,
+            GL_FALSE,
+            sizeof(AvenGlShapeJoinVertex),
+            (void *)offsetof(AvenGlShapeJoinVertex, info)
+        );
+        assert(gl->GetError() == 0);
+        gl->EnableVertexAttribArray(ctx->vinfo_location);
+        assert(gl->GetError() == 0);
+        gl->VertexAttribPointer(
+            ctx->vcolor_location,
+            4,
+            GL_FLOAT,
+            GL_FALSE,
+            sizeof(AvenGlShapeJoinVertex),
+            (void *)offsetof(AvenGlShapeJoinVertex, color)
+        );
+        assert(gl->GetError() == 0);
+        gl->EnableVertexAttribArray(ctx->vcolor_location);
+        assert(gl->GetError() == 0);
+
+        gl->BindBuffer(GL_ARRAY_BUFFER, 0);
+        assert(gl->GetError() == 0);
+
+        gl->BindVertexArray(0);
+        assert(gl->GetError() == 0);
+
+        gl->GenBuffers(1, &buffer.index);
+        assert(gl->GetError() == 0);
+        gl->BindBuffer(GL_ELEMENT_ARRAY_BUFFER, buffer.index);
+        assert(gl->GetError() == 0);
+        gl->BufferData(
+            GL_ELEMENT_ARRAY_BUFFER,
+            (GLsizeiptr)(buffer.index_cap * sizeof(*geometry->indices.ptr)),
+            geometry->indices.ptr,
+            (GLenum)buffer_usage
+        );
+        assert(gl->GetError() == 0);
+
+        gl->BindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+        assert(gl->GetError() == 0);
+
+        return buffer;
+    }
+
+    static inline void aven_gl_shape_join_buffer_deinit(
+        AvenGl *gl,
+        AvenGlShapeJoinBuffer *buffer
+    ) {
+        gl->DeleteBuffers(1, &buffer->index);
+        gl->DeleteVertexArrays(1, &buffer->vao);
+        gl->DeleteBuffers(1, &buffer->vertex);
+        *buffer = (AvenGlShapeJoinBuffer){ 0 };
+    }
+
+    static inline void aven_gl_shape_join_buffer_update(
+        AvenGl *gl,
+        AvenGlShapeJoinBuffer *buffer,
+        AvenGlShapeJoinGeometry *geometry
+    ) {
+        assert(buffer->usage == AVEN_GL_BUFFER_USAGE_DYNAMIC);
+        assert(geometry->vertices.len <= buffer->vertex_cap);
+        assert(geometry->indices.len <= buffer->index_cap);
+
+        gl->BindBuffer(GL_ARRAY_BUFFER, buffer->vertex);
+        assert(gl->GetError() == 0);
+
+        gl->BufferSubData(
+            GL_ARRAY_BUFFER,
+            0,
+            (GLsizeiptr)(
+                geometry->vertices.len * sizeof(*geometry->vertices.ptr)
+            ),
+            geometry->vertices.ptr
+        );
+        assert(gl->GetError() == 0);
+
+        gl->BindBuffer(GL_ARRAY_BUFFER, 0);
+        assert(gl->GetError() == 0);
+
+        gl->BindBuffer(GL_ELEMENT_ARRAY_BUFFER, buffer->index);
+        assert(gl->GetError() == 0);
+
+        gl->BufferSubData(
+            GL_ELEMENT_ARRAY_BUFFER,
+            0,
+            (GLsizeiptr)(geometry->indices.len * sizeof(*geometry->indices.ptr)),
+            geometry->indices.ptr
+        );
+        assert(gl->GetError() == 0);
+
+        buffer->index_len = geometry->indices.len;
+
+        gl->BindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+        assert(gl->GetError() == 0);
+    }
+
+    static inline void aven_gl_shape_join_draw(
+        AvenGl *gl,
+        AvenGlShapeJoinCtx *ctx,
+        AvenGlShapeJoinBuffer *buffer,
+        float pixel_size,
+        Aff2 cam_trans
+    ) {
+        gl->UseProgram(ctx->program);
+        assert(gl->GetError() == 0);
+
+        gl->BindVertexArray(buffer->vao);
+        assert(gl->GetError() == 0);
+        gl->BindBuffer(GL_ARRAY_BUFFER, buffer->vertex);
+        assert(gl->GetError() == 0);
+        gl->BindBuffer(GL_ELEMENT_ARRAY_BUFFER, buffer->index);
+        assert(gl->GetError() == 0);
+
+        gl->Enable(GL_BLEND);
+        assert(gl->GetError() == 0);
+        gl->BlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+        assert(gl->GetError() == 0);
+
+        gl->UniformMatrix2fv(
+            (GLint)ctx->utrans_location,
+            1,
+            GL_FALSE,
+            (GLfloat *)cam_trans
+        );
+        assert(gl->GetError() == 0);
+        gl->Uniform2fv((GLint)ctx->upos_location, 1, (GLfloat *)cam_trans[2]);
+        assert(gl->GetError() == 0);
+        gl->Uniform1fv((GLint)ctx->upx_location, 1, (GLfloat *)&pixel_size);
+        assert(gl->GetError() == 0);
+
+        gl->DrawElements(
+            GL_TRIANGLES,
+            (GLsizei)buffer->index_len,
+            GL_UNSIGNED_SHORT,
+            0
+        );
+        assert(gl->GetError() == 0);
+
+        gl->Disable(GL_BLEND);
+        assert(gl->GetError() == 0);
+
+        gl->BindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+        assert(gl->GetError() == 0);
+        gl->BindBuffer(GL_ARRAY_BUFFER, 0);
+        assert(gl->GetError() == 0);
+        gl->BindVertexArray(0);
+        assert(gl->GetError() == 0);
+    }
+
+    static inline void aven_gl_shape_join_geometry_push_square(
+        AvenGlShapeJoinGeometry *geometry,
+        Aff2 trans,
+        Vec2 roundness,
+        Vec4 color
+    ) {
+        Vec2 p1 = { -1.0f, -2.0f };
+        Vec2 p2 = { 1.0f, -2.0f };
+        Vec2 p3 = { 1.0f, 2.0f };
+        Vec2 p4 = { -1.0f, 2.0f };
+
+        aff2_transform(p1, trans, p1);
+        aff2_transform(p2, trans, p2);
+        aff2_transform(p3, trans, p3);
+        aff2_transform(p4, trans, p4);
+
+        Vec2 p1p2;
+        vec2_sub(p1p2, p2, p1);
+
+        Vec2 p1p4;
+        vec2_sub(p1p4, p4, p1);
+
+        float wscale = 1.0f / vec2_mag(p1p2);
+        float hscale = 1.0f / vec2_mag(p1p4);
+
+        Vec2 focus = { 0.5f / roundness[0], 0.5f / roundness[1] };
+
+        size_t start_index = geometry->vertices.len;
+
+        list_push(geometry->vertices) = (AvenGlShapeJoinVertex){
+            .pos = { p1[0], p1[1], focus[0], focus[1] },
+            .info = { -1.0f, -1.0f, wscale, hscale },
+            .color = { color[0], color[1], color[2], color[3] },
+        };
+        list_push(geometry->vertices) = (AvenGlShapeJoinVertex){
+            .pos = { p2[0], p2[1], focus[0], focus[1] },
+            .info = { 1.0f, -1.0f, wscale, hscale },
+            .color = { color[0], color[1], color[2], color[3] },
+        };
+        list_push(geometry->vertices) = (AvenGlShapeJoinVertex){
+            .pos = { p3[0], p3[1], focus[0], focus[1] },
+            .info = { 1.0f, 1.0f, wscale, hscale },
+            .color = { color[0], color[1], color[2], color[3] },
+        };
+        list_push(geometry->vertices) = (AvenGlShapeJoinVertex){
+            .pos = { p4[0], p4[1], focus[0], focus[1] },
+            .info = { -1.0f, 1.0f, wscale, hscale },
+            .color = { color[0], color[1], color[2], color[3] },
+        };
+
+        list_push(geometry->indices) = (GLushort)start_index + 0;
+        list_push(geometry->indices) = (GLushort)start_index + 1;
+        list_push(geometry->indices) = (GLushort)start_index + 2;
+        list_push(geometry->indices) = (GLushort)start_index + 0;
+        list_push(geometry->indices) = (GLushort)start_index + 2;
+        list_push(geometry->indices) = (GLushort)start_index + 3;
+    }
 #endif // AVEN_GL_SHAPE_H

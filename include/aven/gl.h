@@ -409,7 +409,7 @@
             GLint info_len = 0;
             gl->GetShaderiv(shader, GL_INFO_LOG_LENGTH, &info_len);
 
-            char info_buffer[1024];
+            char info_buffer[4096];
             if (info_len > 0 and (size_t)info_len <= sizeof(info_buffer)) {
                 AvenStr info_tot = slice_array(info_buffer);
                 AvenStr info = aven_str_head(info_tot, (size_t)info_len);
@@ -433,7 +433,7 @@
             GLint info_len = 0;
             gl->GetProgramiv(program, GL_INFO_LOG_LENGTH, &info_len);
 
-            char info_buffer[1024];
+            char info_buffer[4096];
             if (info_len > 0 and (size_t)info_len <= sizeof(info_buffer)) {
                 AvenStr info_tot = slice_array(info_buffer);
                 AvenStr info = aven_str_head(info_tot, (size_t)info_len);
