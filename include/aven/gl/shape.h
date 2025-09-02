@@ -1114,8 +1114,9 @@
 
     typedef struct {
         Vec4 color;
+        Vec4 texture;
         Vec4 info;
-        Vec4 pos;
+        Vec2 pos;
     } AvenGlShapeJoinVertex;
 
     typedef struct {
@@ -1141,6 +1142,7 @@
         GLuint upos_location;
         GLuint upx_location;
         GLuint vpos_location;
+        GLuint vtex_location;
         GLuint vinfo_location;
         GLuint vcolor_location;
     } AvenGlShapeJoinCtx;
@@ -1189,26 +1191,27 @@
             "uniform mat2 uTrans;\n"
             "uniform vec2 uPos;\n"
             "uniform float uPx;\n"
-            "in vec4 vPos;\n"
+            "in vec4 vTex;\n"
             "in vec4 vInfo;\n"
             "in vec4 vColor;\n"
-            "out vec2 tPos;\n"
+            "in vec2 vPos;\n"
+            "out vec4 tPos;\n"
             "out vec2 tOffset;\n"
             "out vec2 tFocus;\n"
             "out vec4 fColor;\n"
             "void main() {\n"
-            "    gl_Position = vec4((uTrans * vPos.xy) + uPos, 0.0, 1.0);\n"
-            "    tPos = vInfo.xy;\n"
-            "    tOffset = vec2(uPx * vInfo.z, uPx * vInfo.w);\n"
+            "    gl_Position = vec4((uTrans * vPos) + uPos, 0.0, 1.0);\n"
+            "    tPos = vTex;\n"
+            "    tOffset = uPx * vInfo.zw;\n"
             "    fColor = vColor;\n"
-            "    tFocus = vec2(-1.0 / (4.0 * vPos.z), 1.0 / (4.0 * vPos.w));\n"
+            "    tFocus = vInfo.xy;\n"
             "}\n"
         );
 
         const char *fragment_shader_text = aven_gl_shader(
             gl,
             "precision mediump float;\n"
-            "in vec2 tPos;\n"
+            "in vec4 tPos;\n"
             "in vec2 tOffset;\n"
             "in vec2 tFocus;\n"
             "in vec4 fColor;\n"
@@ -1228,16 +1231,17 @@
             "    return 1.0;\n"
             "}\n"
             "void main() {\n"
+            "    vec2 pos = vec2(tPos.x / tPos.w, tPos.y / tPos.w);\n"
             "    float magnitude = 0.0;\n"
-            "    magnitude += msaa(tPos);\n"
-            "    magnitude += msaa(tPos + vec2(0, -tOffset.y));\n"
-            "    magnitude += msaa(tPos + vec2(tOffset.x, 0));\n"
-            "    magnitude += msaa(tPos + vec2(0, tOffset.y));\n"
-            "    magnitude += msaa(tPos + vec2(-tOffset.x, 0));\n"
-            "    magnitude += msaa(tPos + vec2(-tOffset.x, tOffset.y));\n"
-            "    magnitude += msaa(tPos + vec2(-tOffset.x, -tOffset.y));\n"
-            "    magnitude += msaa(tPos + vec2(tOffset.x, -tOffset.y));\n"
-            "    magnitude += msaa(tPos + vec2(tOffset.x, tOffset.y));\n"
+            "    magnitude += msaa(pos);\n"
+            "    magnitude += msaa(pos + vec2(0, -tOffset.y));\n"
+            "    magnitude += msaa(pos + vec2(tOffset.x, 0));\n"
+            "    magnitude += msaa(pos + vec2(0, tOffset.y));\n"
+            "    magnitude += msaa(pos + vec2(-tOffset.x, 0));\n"
+            "    magnitude += msaa(pos + vec2(-tOffset.x, tOffset.y));\n"
+            "    magnitude += msaa(pos + vec2(-tOffset.x, -tOffset.y));\n"
+            "    magnitude += msaa(pos + vec2(tOffset.x, -tOffset.y));\n"
+            "    magnitude += msaa(pos + vec2(tOffset.x, tOffset.y));\n"
             "    magnitude /= 9.0;\n"
             "    FragColor = vec4(fColor.xyz, fColor.w * magnitude);\n"
             "}\n"
@@ -1279,6 +1283,9 @@
         assert(gl->GetError() == 0);
 
         ctx.vpos_location = (GLuint)gl->GetAttribLocation(ctx.program, "vPos");
+        assert(gl->GetError() == 0);
+        ctx.vtex_location = (GLuint)gl->GetAttribLocation(ctx.program, "vTex");
+        assert(gl->GetError() == 0);
         ctx.vinfo_location = (GLuint)gl->GetAttribLocation(ctx.program, "vInfo");
         assert(gl->GetError() == 0);
         ctx.vcolor_location = (GLuint)gl->GetAttribLocation(
@@ -1342,7 +1349,7 @@
 
         gl->VertexAttribPointer(
             ctx->vpos_location,
-            4,
+            2,
             GL_FLOAT,
             GL_FALSE,
             sizeof(AvenGlShapeJoinVertex),
@@ -1350,6 +1357,17 @@
         );
         assert(gl->GetError() == 0);
         gl->EnableVertexAttribArray(ctx->vpos_location);
+        assert(gl->GetError() == 0);
+        gl->VertexAttribPointer(
+            ctx->vtex_location,
+            4,
+            GL_FLOAT,
+            GL_FALSE,
+            sizeof(AvenGlShapeJoinVertex),
+            (void *)offsetof(AvenGlShapeJoinVertex, texture)
+        );
+        assert(gl->GetError() == 0);
+        gl->EnableVertexAttribArray(ctx->vtex_location);
         assert(gl->GetError() == 0);
         gl->VertexAttribPointer(
             ctx->vinfo_location,
@@ -1506,13 +1524,14 @@
     static inline void aven_gl_shape_join_geometry_push_square(
         AvenGlShapeJoinGeometry *geometry,
         Aff2 trans,
+        Vec2 end_scale,
         Vec2 roundness,
         Vec4 color
     ) {
-        Vec2 p1 = { -1.0f, -2.0f };
-        Vec2 p2 = { 1.0f, -2.0f };
-        Vec2 p3 = { 1.0f, 2.0f };
-        Vec2 p4 = { -1.0f, 2.0f };
+        Vec2 p1 = { -1.0f, -2.0f * end_scale[0] };
+        Vec2 p2 = { 1.0f, -2.0f * end_scale[1] };
+        Vec2 p3 = { 1.0f, 2.0f * end_scale[1] };
+        Vec2 p4 = { -1.0f, 2.0f * end_scale[0] };
 
         aff2_transform(p1, trans, p1);
         aff2_transform(p2, trans, p2);
@@ -1525,31 +1544,39 @@
         Vec2 p1p4;
         vec2_sub(p1p4, p4, p1);
 
-        float wscale = 1.0f / vec2_mag(p1p2);
-        float hscale = 1.0f / vec2_mag(p1p4);
+        Vec2 p2p3;
+        vec2_sub(p2p3, p3, p2);
 
-        Vec2 focus = { 0.5f / roundness[0], 0.5f / roundness[1] };
+        float wscale = 1.0f / vec2_mag(p1p2);
+        float hscale1 = 1.0f / vec2_mag(p1p4);
+        float hscale2 = 1.0f / vec2_mag(p2p3);
+
+        Vec2 focus = { -0.5f * roundness[0], 0.5f * roundness[1] };
 
         size_t start_index = geometry->vertices.len;
 
         list_push(geometry->vertices) = (AvenGlShapeJoinVertex){
-            .pos = { p1[0], p1[1], focus[0], focus[1] },
-            .info = { -1.0f, -1.0f, wscale, hscale },
+            .pos = { p1[0], p1[1] },
+            .info = { focus[0], focus[1], wscale, hscale1 },
+            .texture = { -end_scale[0], -end_scale[0], 0.0f, end_scale[0] },
             .color = { color[0], color[1], color[2], color[3] },
         };
         list_push(geometry->vertices) = (AvenGlShapeJoinVertex){
-            .pos = { p2[0], p2[1], focus[0], focus[1] },
-            .info = { 1.0f, -1.0f, wscale, hscale },
+            .pos = { p2[0], p2[1] },
+            .info = { focus[0], focus[1], wscale, hscale2 },
+            .texture = { end_scale[1], -end_scale[1], 0.0f, end_scale[1] },
             .color = { color[0], color[1], color[2], color[3] },
         };
         list_push(geometry->vertices) = (AvenGlShapeJoinVertex){
-            .pos = { p3[0], p3[1], focus[0], focus[1] },
-            .info = { 1.0f, 1.0f, wscale, hscale },
+            .pos = { p3[0], p3[1] },
+            .info = { focus[0], focus[1], wscale, hscale2 },
+            .texture = { end_scale[1], end_scale[1], 0.0f, end_scale[1] },
             .color = { color[0], color[1], color[2], color[3] },
         };
         list_push(geometry->vertices) = (AvenGlShapeJoinVertex){
-            .pos = { p4[0], p4[1], focus[0], focus[1] },
-            .info = { -1.0f, 1.0f, wscale, hscale },
+            .pos = { p4[0], p4[1] },
+            .info = { focus[0], focus[1], wscale, hscale1 },
+            .texture = { -end_scale[0], end_scale[0], 0.0f, end_scale[0] },
             .color = { color[0], color[1], color[2], color[3] },
         };
 

@@ -232,7 +232,8 @@ void test_aven_gl_shape_init(void) {
     );
 }
 
-void test_aven_gl_shape_update(void) {
+void test_aven_gl_shape_update(float t) {
+    (void)t;
     Aff2 trans;
     aff2_identity(trans);
     Aff2 camera;
@@ -301,7 +302,7 @@ void test_aven_gl_shape_rounded_init(void) {
     );
 }
 
-void test_aven_gl_shape_rounded_update(void) {
+void test_aven_gl_shape_rounded_update(float t) {
     Aff2 trans;
     aff2_identity(trans);
     Aff2 camera;
@@ -311,19 +312,19 @@ void test_aven_gl_shape_rounded_update(void) {
     aven_gl_shape_rounded_geometry_push_square(
         &app.data.rounded.geometry,
         trans,
-        0.25f,
+        t,
         (Vec4){ 1.0f, 0.0f, 0.0f, 1.0f }
     );
     aven_gl_shape_rounded_geometry_push_triangle_isoceles(
         &app.data.rounded.geometry,
         trans,
-        0.25f,
+        t,
         (Vec4){ 0.0f, 1.0f, 0.0f, 1.0f }
     );
     aven_gl_shape_rounded_geometry_push_triangle_right(
         &app.data.rounded.geometry,
         trans,
-        0.25f,
+        t,
         (Vec4){ 0.0f, 0.0f, 1.0f, 1.0f }
     );
     aven_gl_shape_rounded_buffer_update(
@@ -370,19 +371,19 @@ void test_aven_gl_shape_join_init(void) {
     );
 }
 
-void test_aven_gl_shape_join_update(int64_t elapsed) {
+void test_aven_gl_shape_join_update(float t) {
     Aff2 trans;
     aff2_identity(trans);
-    float t = (float)elapsed / (float)INTERVAL_NS;
-    aff2_stretch(trans, (Vec2){ 0.5f + 0.5f * t, 0.5f }, trans);
+    aff2_stretch(trans, (Vec2){ 0.3f + 0.5f * t, 0.5f }, trans);
     Aff2 camera;
-    aff2_camera_position(camera, (Vec2){ 0.0f, 0.0f }, (Vec2){ 1.25f, 1.25f });
+    aff2_camera_position(camera, (Vec2){ 0.0f, 0.0f }, (Vec2){ 1.0f, 1.0f });
 
     aven_gl_shape_join_geometry_clear(&app.data.join.geometry);
     aven_gl_shape_join_geometry_push_square(
         &app.data.join.geometry,
         trans,
-        (Vec2){ 0.5f - 4.0f * t, 0.5f - 4.0f * t },
+        (Vec2){ 1.0f, 0.5f },
+        (Vec2){ 0.5f - 2.0f * t, 0.5f - 2.0f * t },
         (Vec4){ 1.0f, 0.0f, 0.0f, 1.0f }
     );
     aven_gl_shape_join_buffer_update(
@@ -437,7 +438,8 @@ void test_aven_gl_texture_init(void) {
     );
 }
 
-void test_aven_gl_texture_update(void) {
+void test_aven_gl_texture_update(float t) {
+    (void)t;
     Aff2 trans;
     aff2_identity(trans);
     Aff2 camera;
@@ -509,7 +511,8 @@ void test_aven_gl_text_init(void) {
     );
 }
 
-void test_aven_gl_text_update(void) {
+void test_aven_gl_text_update(float t) {
+    (void)t;
     Aff2 trans;
     aff2_identity(trans);
 
@@ -600,21 +603,22 @@ void update(void) {
         }
         app.start = now;
     } else {
+        float t = (float)elapsed / (float)INTERVAL_NS;
         switch (app.state) {
             case TEST_AVEN_GL_SHAPE:
-                test_aven_gl_shape_update();
+                test_aven_gl_shape_update(t);
                 break;
             case TEST_AVEN_GL_ROUNDED:
-                test_aven_gl_shape_rounded_update();
+                test_aven_gl_shape_rounded_update(t);
                 break;
             case TEST_AVEN_GL_JOIN:
-                test_aven_gl_shape_join_update(elapsed);
+                test_aven_gl_shape_join_update(t);
                 break;
             case TEST_AVEN_GL_TEXTURE:
-                test_aven_gl_texture_update();
+                test_aven_gl_texture_update(t);
                 break;
             case TEST_AVEN_GL_TEXT:
-                test_aven_gl_text_update();
+                test_aven_gl_text_update(t);
                 break;
         }
     }
