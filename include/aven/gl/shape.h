@@ -6,7 +6,6 @@
     #include <aven/math.h>
 
     #include "../gl.h"
-    #include "GLES2/gl2.h"
 
     typedef struct {
         Vec4 color;
