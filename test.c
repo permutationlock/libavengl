@@ -308,23 +308,24 @@ void test_aven_gl_shape_rounded_update(float t) {
     Aff2 camera;
     aff2_camera_position(camera, (Vec2){ 0.0f, 0.0f }, (Vec2){ 1.25f, 1.25f });
 
+    float rounded = min(1.0f, 1.33f * t);
     aven_gl_shape_rounded_geometry_clear(&app.data.rounded.geometry);
     aven_gl_shape_rounded_geometry_push_square(
         &app.data.rounded.geometry,
         trans,
-        t,
+        rounded,
         (Vec4){ 1.0f, 0.0f, 0.0f, 1.0f }
     );
     aven_gl_shape_rounded_geometry_push_triangle_isoceles(
         &app.data.rounded.geometry,
         trans,
-        t,
+        rounded,
         (Vec4){ 0.0f, 1.0f, 0.0f, 1.0f }
     );
     aven_gl_shape_rounded_geometry_push_triangle_right(
         &app.data.rounded.geometry,
         trans,
-        t,
+        rounded,
         (Vec4){ 0.0f, 0.0f, 1.0f, 1.0f }
     );
     aven_gl_shape_rounded_buffer_update(
@@ -1239,7 +1240,7 @@ int main(void) {
     }
 
     app.start = aven_time_now();
-    test_aven_gl_shape_join_init();
+    test_aven_gl_text_init();
 
 #ifdef __EMSCRIPTEN__
     emscripten_set_main_loop(update, 0, 0);
