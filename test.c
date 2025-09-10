@@ -12,7 +12,9 @@
 #include <aven/gl/texture.h>
 #include <aven/gl/ui.h>
 #include <aven/gl/window.h>
+#include <aven/gl/window/app.h>
 #include <aven/io.h>
+#include <aven/math.h>
 #include <aven/time.h>
 
 #include <stdlib.h>
@@ -1162,31 +1164,24 @@ void key(AvenGlWindow *win, int key, int scancode, int action, int modes) {
     );
 }
 
-void mouse_click(
-    AvenGlWindow *win,
-    float x,
-    float y,
-    int button,
-    int action,
-    int modes
-) {
+void mouse_click(AvenGlWindow *win, Vec2 pos, int button, int action, int modes) {
     (void)win;
     aven_io_printf(
         "click: (({}, {}), {}, {}, {})\n",
-        aven_fmt_int((int)x),
-        aven_fmt_int((int)y),
+        aven_fmt_int((int)pos[0]),
+        aven_fmt_int((int)pos[1]),
         aven_fmt_int(button),
         aven_fmt_int(action),
         aven_fmt_int(modes)
     );
 }
 
-void mouse_move(AvenGlWindow *win, float x, float y) {
+void mouse_move(AvenGlWindow *win, Vec2 pos) {
     (void)win;
     aven_io_printf(
         "mouse: ({}, {})\n",
-        aven_fmt_int((int)x),
-        aven_fmt_int((int)y)
+        aven_fmt_int((int)pos[0]),
+        aven_fmt_int((int)pos[1])
     );
 }
 
@@ -1207,7 +1202,7 @@ int main(void) {
 
     test_arena = aven_arena_init(mem, ARENA_SIZE);
 
-    AvenGlWindowCode rcode = aven_gl_window(
+    AvenGlWindowAppCode rcode = aven_gl_window_app(
         INIT_WIDTH,
         INIT_HEIGHT,
         "AvenGL Test",
