@@ -15,8 +15,6 @@
 
 #include <stdlib.h>
 
-#include <GLFW/glfw3.h>
-
 #include "font.h"
 
 #define INIT_WIDTH 480
@@ -626,13 +624,7 @@ static AvenGlWindowAction update(AvenGlWindow *win) {
                 break;
         }
     }
-    //     glfwSwapBuffers(win->window);
-    //     glfwPollEvents();
-    // #ifdef __ANDROID__
-    //     while (minimized) {
-    //         glfwWaitEvents();
-    //     }
-    // #endif
+
     return AVEN_GL_WINDOW_ACTION_SWAP;
 }
 
@@ -1333,20 +1325,6 @@ int main(void) {
     }
 
     test_arena = aven_arena_init(mem, ARENA_SIZE);
-
-    // #ifdef __ANDROID__
-    //     glfwSetWindowIconifyCallback(win->window, on_android_pause_resume);
-    // #endif
-
-    // #ifdef __EMSCRIPTEN__
-    //     emscripten_set_main_loop(update, 0, 0);
-    // #else
-    //     while (!glfwWindowShouldClose(win->window)) {
-    //         update();
-    //     }
-    //     glfwDestroyWindow(win->window);
-    //     glfwTerminate();
-    // #endif
 
     AvenGlWindowCode rcode = aven_gl_window(
         INIT_WIDTH,
