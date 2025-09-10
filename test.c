@@ -1344,3 +1344,9 @@ int main(void) {
 
     return (int)rcode;
 }
+
+#ifdef _MSC_VER
+    int WinMain(void) {
+        main();
+    }
+#endif
