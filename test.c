@@ -1162,10 +1162,19 @@ void key(AvenGlWindow *win, int key, int scancode, int action, int modes) {
     );
 }
 
-void mouse_click(AvenGlWindow *win, int button, int action, int modes) {
+void mouse_click(
+    AvenGlWindow *win,
+    float x,
+    float y,
+    int button,
+    int action,
+    int modes
+) {
     (void)win;
     aven_io_printf(
-        "click: ({}, {}, {})\n",
+        "click: (({}, {}), {}, {}, {})\n",
+        aven_fmt_int((int)x),
+        aven_fmt_int((int)y),
         aven_fmt_int(button),
         aven_fmt_int(action),
         aven_fmt_int(modes)

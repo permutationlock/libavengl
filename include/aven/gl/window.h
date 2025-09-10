@@ -25,6 +25,8 @@
     typedef void AvenGlWindowDamageFn(AvenGlWindow *win);
     typedef void AvenGlWindowMouseClickFn(
         AvenGlWindow *win,
+        float x,
+        float y,
         int button,
         int action,
         int modes
@@ -92,7 +94,17 @@
     ) {
         (void)window;
         AvenGlWindow *win = &aven_gl_window_ctx;
-        unwrap(win->vtable.mouse_click)(win, button, action, modes);
+        double x;
+        double y;
+        glfwGetCursorPos(win->window, &x, &y);
+        unwrap(win->vtable.mouse_click)(
+            win,
+            (float)x,
+            (float)y,
+            button,
+            action,
+            modes
+        );
     }
 
     static void aven_gl_window_mouse_move_internal(
