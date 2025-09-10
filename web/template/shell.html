@@ -24,32 +24,32 @@
         <canvas id="canvas"></canvas>
     </body>
     <script type=text/javascript>
-        // function on_load() {
-        //     let canvas = document.getElementById(
-        //         "canvas"
-        //     );
-        //     let on_resize = Module.cwrap(
-        //         "on_resize",
-        //         null,
-        //         ["number", "number"]
-        //     );
-        //     let resize_handler = () => {
-        //         const w = canvas.width
-        //             = window.innerWidth;
-        //         const h = canvas.height
-        //             = window.innerHeight;
-        //         on_resize(w, h);
-        //     }
-        //     window.addEventListener(
-        //         "resize",
-        //         resize_handler,
-        //         true
-        //     );
-        //     resize_handler();
-        // }
+        function on_load() {
+            let canvas = document.getElementById(
+                "canvas"
+            );
+            let on_resize = Module.cwrap(
+                "aven_gl_window_emscripten_resize",
+                null,
+                ["number", "number"]
+            );
+            let resize_handler = () => {
+                const w = canvas.width
+                    = window.innerWidth;
+                const h = canvas.height
+                    = window.innerHeight;
+                on_resize(w, h);
+            }
+            window.addEventListener(
+                "resize",
+                resize_handler,
+                true
+            );
+            resize_handler();
+        }
 
         var Module = {
-            // postRun: [on_load],
+            postRun: [on_load],
             canvas: document.getElementById('canvas'),
         };
     </script>

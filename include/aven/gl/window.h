@@ -117,7 +117,7 @@
     #ifdef __ANDROID__
         static void aven_gl_window_iconify_android_internal(
             GLFWwindow *window,
-            int inconfied
+            int iconified
         ) {
             (void)window;
             AvenGlWindow *win = &aven_gl_window_ctx;
@@ -160,10 +160,20 @@
     }
 
     #ifdef __EMSCRIPTEN__
+        void aven_gl_window_emscripten_resize(int width, int height) {
+            AvenGlWindow *win = &aven_gl_window_ctx;
+            glfwSetWindowSize(win->window, width, height);
+            win->width = width;
+            win->height = height;
+            if (win->vtable.damage.valid) {
+                unwrap(win->vtable.damage)(win);
+            }
+        }
+
         static void aven_gl_window_emscripten_main_loop(void) {
             AvenGlWindow *win = &aven_gl_window_ctx;
             if (!aven_gl_window_update(win)) {
-                win->deinit(win);
+                win->vtable.deinit(win);
                 glfwDestroyWindow(win->window);
                 glfwTerminate();
                 emscripten_cancel_main_loop();
@@ -246,7 +256,7 @@
         }
 
     #ifdef __EMSCRIPTEN__
-        emscripten_set_main_loop(aven_gl_window_update, 0, 0);
+        emscripten_set_main_loop(aven_gl_window_emscripten_main_loop, 0, 0);
     #endif
 
         if (win->vtable.damage.valid) {
@@ -289,11 +299,14 @@
         win->gl = aven_gl_load(glfwGetProcAddress, es);
 
         win->vtable.init(win);
+
+    #ifndef __EMSCRIPTEN__
         while (aven_gl_window_update(win)) {}
 
         glfwDestroyWindow(win->window);
         glfwTerminate();
         *win = (AvenGlWindow){ 0 };
+    #endif
 
         return AVEN_GL_WINDOW_CODE_NONE;
     }
