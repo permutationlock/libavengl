@@ -132,15 +132,15 @@
     #endif
 
     static bool aven_gl_window_update(AvenGlWindow *win) {
-        if (glfwWindowShouldClose(win->window)) {
-            return false;
-        }
         glfwPollEvents();
     #ifdef __ANDROID__
         while (win->minimized) {
             glfwWaitEvents();
         }
     #endif
+        if (glfwWindowShouldClose(win->window)) {
+            return false;
+        }
         glfwGetFramebufferSize(win->window, &win->width, &win->height);
         win->last = win->now;
         win->now = aven_time_now();
@@ -177,6 +177,53 @@
                 glfwDestroyWindow(win->window);
                 glfwTerminate();
                 emscripten_cancel_main_loop();
+            }
+        }
+    #endif
+
+    #ifdef _WIN32
+        void *glfwGetWin32Window(void *window);
+        typedef void TimerCallbackFn(
+            void *p1,
+            unsigned int p2,
+            unsigned int p3,
+            uint32_t p4
+        );
+        AVEN_WIN32_FN(int) SetTimer(
+            void *hwnd,
+            unsigned int id,
+            unsigned int tstep,
+            TimerCallbackFn *callback
+        );
+
+        static void aven_gl_window_win32_timestep(
+            void *p1,
+            unsigned int p2,
+            unsigned int p3,
+            uint32_t p4
+        ) {
+            (void)p1;
+            (void)p2;
+            (void)p3;
+            (void)p4;
+
+            AvenGlWindow *win = &aven_gl_window_ctx;
+            if (glfwWindowShouldClose(win->window)) {
+                return;
+            }
+            glfwGetFramebufferSize(win->window, &win->width, &win->height);
+            win->last = win->now;
+            win->now = aven_time_now();
+            switch (win->vtable.update(win)) {
+                case AVEN_GL_WINDOW_ACTION_NONE:
+                    break;
+                case AVEN_GL_WINDOW_ACTION_SWAP:
+                    glfwSwapBuffers(win->window);
+                    break;
+                case AVEN_GL_WINDOW_ACTION_CLOSE:
+                    win->vtable.deinit(win);
+                    glfwSetWindowShouldClose(win->window, GLFW_TRUE);
+                    break;
             }
         }
     #endif
@@ -299,6 +346,18 @@
         win->gl = aven_gl_load(glfwGetProcAddress, es);
 
         win->vtable.init(win);
+
+    #ifdef _WIN32
+        int success = SetTimer(
+            glfwGetWin32Window(win->window),
+            1,
+            AVEN_TIME_MSEC_PER_SEC / 60,
+            aven_gl_window_win32_timestep
+        );
+        if (!success) {
+            aven_panic("failed to set window timer");
+        }
+    #endif
 
     #ifndef __EMSCRIPTEN__
         while (aven_gl_window_update(win)) {}
