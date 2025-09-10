@@ -25,8 +25,6 @@
 #define ARENA_SIZE (4096 * 2000)
 
 int main(int argc, char **argv) {
-    aven_fs_utf8_mode();
-
     void *mem = malloc(ARENA_SIZE);
     if (mem == NULL) {
         aven_panic("malloc failed");
@@ -83,17 +81,6 @@ int main(int argc, char **argv) {
 
     AvenBuildStep work_dir_step = aven_build_step_mkdir(work_dir);
 
-    Optional(AvenBuildStep) winutf8_obj_step = { 0 };
-    if (libaven_opts.winutf8) {
-        winutf8_obj_step.value = libaven_build_step_windres_manifest(
-            &opts,
-            libaven_dir,
-            &work_dir_step,
-            &arena
-        );
-        winutf8_obj_step.valid = true;
-    }
-
     AvenStr include_data[4];
     List(AvenStr) include_list = list_array(include_data);
     list_push(include_list) = libaven_build_include_path(libaven_dir, &arena);
@@ -112,14 +99,8 @@ int main(int argc, char **argv) {
         &arena
     );
 
-    AvenBuildStep *obj_data[2];
-    List(AvenBuildStep *) obj_list = list_array(obj_data);
-    if (winutf8_obj_step.valid) {
-        list_push(obj_list) = &winutf8_obj_step.value;
-    }
-    list_push(obj_list) = &test_obj_step;
-
-    AvenBuildStepPtrSlice objs = slice_list(obj_list);
+    AvenBuildStep *obj_data[] = { &test_obj_step };
+    AvenBuildStepPtrSlice objs = slice_array(obj_data);
 
     AvenBuildStep build_step = libavengl_build_step_ld(
         &opts,

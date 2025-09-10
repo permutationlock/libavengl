@@ -22,8 +22,8 @@ cd ..
         -s USE_GLFW=3 \
         -s MIN_WEBGL_VERSION=2 \
         -s MAX_WEBGL_VERSION=2 \
-        -s EXPORTED_RUNTIME_METHODS=cwrap \
-        -s EXPORTED_FUNCTIONS=_main,_on_resize \
+        # -s EXPORTED_RUNTIME_METHODS=cwrap \
+        # -s EXPORTED_FUNCTIONS=_main,_on_resize \
         --shell-file web/build_web/shell.html" \
     --arflags "-rcs" \
     --exext ".html .js .wasm" \
