@@ -1,6 +1,8 @@
-#define _POSIX_C_SOURCE 200112L
-#define AVEN_IMPLEMENTATION
+#if !defined(_WIN32) && !defined(_POSIX_C_SOURCE)
+    #define _POSIX_C_SOURCE 200112L
+#endif
 
+#define AVEN_IMPLEMENTATION
 #include <aven.h>
 #include <aven/arena.h>
 #include <aven/fs.h>
@@ -81,136 +83,6 @@ static Slice(uint32_t) texture = slice_array(texture_data);
 
 static AvenArena test_arena;
 static TestAvenGl app;
-
-// #if defined(__EMSCRIPTEN__)
-//     #include <emscripten.h>
-
-//     #ifdef HOT_RELOAD
-//         #error "hot reloading dll incompatible with emcc"
-//     #endif
-
-//     void on_resize(int width, int height) {
-//         glfwSetWindowSize(win.window, width, height);
-//     }
-// #endif
-
-// #ifdef __ANDROID__
-//     #include <android/log.h>
-//     static bool minimized;
-
-//     void on_android_pause_resume(GLFWwindow *window, int iconified) {
-//         if (iconified) {
-//             switch (app.state) {
-//                 case TEST_AVEN_GL_SHAPE:
-//                     aven_gl_shape_buffer_deinit(&win.gl, &app.data.shape.buffer);
-//                     aven_gl_shape_ctx_deinit(&win.gl, &app.data.shape.ctx);
-//                     break;
-//                 case TEST_AVEN_GL_ROUNDED:
-//                     aven_gl_shape_rounded_buffer_deinit(
-//                         &win.gl,
-//                         &app.data.rounded.buffer
-//                     );
-//                     aven_gl_shape_rounded_ctx_deinit(
-//                         &win.gl,
-//                         &app.data.rounded.ctx
-//                     );
-//                     break;
-//                 case TEST_AVEN_GL_JOIN:
-//                     aven_gl_shape_join_buffer_deinit(
-//                         &win.gl,
-//                         &app.data.join.buffer
-//                     );
-//                     aven_gl_shape_join_ctx_deinit(&win.gl, &app.data.join.ctx);
-//                     break;
-//                 case TEST_AVEN_GL_TEXTURE:
-//                     aven_gl_texture_buffer_deinit(
-//                         &win.gl,
-//                         &app.data.texture.buffer
-//                     );
-//                     aven_gl_texture_ctx_deinit(&win.gl, &app.data.texture.ctx);
-//                     break;
-//                 case TEST_AVEN_GL_TEXT:
-//                     aven_gl_text_buffer_deinit(&win.gl, &app.data.text.buffer);
-//                     aven_gl_text_ctx_deinit(&win.gl, &app.data.text.ctx);
-//                     break;
-//             }
-//             // win = (AvenGlWindow){ 0 };
-//             minimized = true;
-//         } else {
-//             win.window = window;
-//             win.gl = aven_gl_load(glfwGetProcAddress, win.gl.es);
-//             switch (app.state) {
-//                 case TEST_AVEN_GL_SHAPE:
-//                     app.data.shape.ctx = aven_gl_shape_ctx_init(&win.gl);
-//                     app.data.shape.buffer = aven_gl_shape_buffer_init(
-//                         &win.gl,
-//                         &app.data.shape.ctx,
-//                         &app.data.shape.geometry,
-//                         AVEN_GL_BUFFER_USAGE_DYNAMIC
-//                     );
-//                     break;
-//                 case TEST_AVEN_GL_ROUNDED:
-//                     app.data.rounded.ctx = aven_gl_shape_rounded_ctx_init(
-//                         &win.gl
-//                     );
-//                     app.data.rounded.buffer = aven_gl_shape_rounded_buffer_init(
-//                         &win.gl,
-//                         &app.data.rounded.ctx,
-//                         &app.data.rounded.geometry,
-//                         AVEN_GL_BUFFER_USAGE_DYNAMIC
-//                     );
-//                     break;
-//                 case TEST_AVEN_GL_JOIN:
-//                     app.data.join.ctx = aven_gl_shape_join_ctx_init(&win.gl);
-//                     app.data.join.buffer = aven_gl_shape_join_buffer_init(
-//                         &win.gl,
-//                         &app.data.join.ctx,
-//                         &app.data.join.geometry,
-//                         AVEN_GL_BUFFER_USAGE_DYNAMIC
-//                     );
-//                     break;
-//                 case TEST_AVEN_GL_TEXTURE:
-//                     app.data.texture.ctx = aven_gl_texture_ctx_init(
-//                         &win.gl,
-//                         TSIZE,
-//                         TSIZE,
-//                         (AvenGlTextureBytesOptional){
-//                             .valid = true,
-//                             .value = slice_as_bytes(texture),
-//                         }
-//                     );
-//                     app.data.texture.buffer = aven_gl_texture_buffer_init(
-//                         &win.gl,
-//                         &app.data.texture.ctx,
-//                         &app.data.texture.geometry,
-//                         AVEN_GL_BUFFER_USAGE_DYNAMIC
-//                     );
-//                     break;
-//                 case TEST_AVEN_GL_TEXT: {
-//                     ByteSlice font_bytes = {
-//                         .ptr = (unsigned char *)game_font_opensans_ttf,
-//                         .len = sizeof(game_font_opensans_ttf),
-//                     };
-//                     app.data.text.font = aven_gl_text_font_init(
-//                         &win.gl,
-//                         font_bytes,
-//                         48,
-//                         test_arena
-//                     );
-//                     app.data.text.ctx = aven_gl_text_ctx_init(&win.gl);
-//                     app.data.text.buffer = aven_gl_text_buffer_init(
-//                         &win.gl,
-//                         &app.data.text.ctx,
-//                         &app.data.text.geometry,
-//                         AVEN_GL_BUFFER_USAGE_DYNAMIC
-//                     );
-//                     break;
-//                 }
-//             }
-//             minimized = false;
-//         }
-//     }
-// #endif
 
 static void test_aven_gl_shape_init(AvenGlWindow *win) {
     AvenArena temp_arena = test_arena;
