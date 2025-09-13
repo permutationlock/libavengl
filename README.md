@@ -7,7 +7,7 @@ headers for OpenGL ES 3, Wayland, X11, and xkbcommon.
 
 The provided drawing APIs all use a common subset of desktop OpenGL 4,
 OpenGL ES 3, and WebGL 2. The provided GLFW wrapper will automatically
-load OpenGL 4.3 as a runtime backup if ES 3.0 support fails to load.
+load OpenGL 4.3 as a runtime backup if ES 3.2 support fails to load.
 A helper macro is provided to runtime select a compatible shader
 GLSL version for the loaded API.
 

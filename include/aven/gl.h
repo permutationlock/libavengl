@@ -156,6 +156,7 @@
         PFNGLGENVERTEXARRAYSPROC GenVertexArrays;
         PFNGLDELETEVERTEXARRAYSPROC DeleteVertexArrays;
         PFNGLISVERTEXARRAYPROC IsVertexArray;
+        PFNGLDEBUGMESSAGECALLBACKPROC DebugMessageCallback;
         bool es;
     } AvenGl;
 
@@ -390,15 +391,26 @@
             "glDeleteVertexArrays"
         );
         gl.IsVertexArray = (PFNGLISVERTEXARRAYPROC)load("glIsVertexArray");
+        gl.DebugMessageCallback = (PFNGLDEBUGMESSAGECALLBACKPROC)load(
+            "glDebugMessageCallback"
+        );
 
         return gl;
+    }
+
+    static inline void aven_gl_check_error(AvenGl *gl) {
+    #ifndef AVEN_GL_NDEBUG
+        if (gl->GetError() != 0) {
+            aven_panic("opengl error");
+        }
+    #endif
     }
 
     #define aven_gl_shader(gl, str) ( \
             gl->es ? "#version 300 es\n" str : "#version 430\n" str \
         )
 
-    void aven_gl_shader_validate(
+    static inline void aven_gl_shader_validate(
         AvenGl *gl,
         GLuint shader,
         const char *shader_text
@@ -423,10 +435,10 @@
             }
             aven_panic("failed to compile shader");
         }
-        assert(gl->GetError() == 0);
+        aven_gl_check_error(gl);
     }
 
-    void aven_gl_program_validate(AvenGl *gl, GLuint program) {
+    static inline void aven_gl_program_validate(AvenGl *gl, GLuint program) {
         GLint linked = 0;
         gl->GetProgramiv(program, GL_LINK_STATUS, &linked);
         if (!linked) {
@@ -442,7 +454,7 @@
             }
             aven_panic("failed to compile shader");
         }
-        assert(gl->GetError() == 0);
+        aven_gl_check_error(gl);
     }
 
     typedef enum {

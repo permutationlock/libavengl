@@ -103,34 +103,34 @@
             gl,
             "precision mediump float;\n"
             "in vec4 fColor;\n"
-            "out vec4 FragColor;"
+            "out vec4 FragColor;\n"
             "void main() {\n"
             "    FragColor = fColor;\n"
             "}\n"
         );
 
         ctx.vertex_shader = gl->CreateShader(GL_VERTEX_SHADER);
-        assert(gl->GetError() == 0);
+        aven_gl_check_error(gl);
         gl->ShaderSource(ctx.vertex_shader, 1, &vertex_shader_text, NULL);
-        assert(gl->GetError() == 0);
+        aven_gl_check_error(gl);
         gl->CompileShader(ctx.vertex_shader);
-        assert(gl->GetError() == 0);
+        aven_gl_check_error(gl);
         aven_gl_shader_validate(gl, ctx.vertex_shader, vertex_shader_text);
 
         ctx.fragment_shader = gl->CreateShader(GL_FRAGMENT_SHADER);
-        assert(gl->GetError() == 0);
+        aven_gl_check_error(gl);
         gl->ShaderSource(ctx.fragment_shader, 1, &fragment_shader_text, NULL);
-        assert(gl->GetError() == 0);
+        aven_gl_check_error(gl);
         gl->CompileShader(ctx.fragment_shader);
-        assert(gl->GetError() == 0);
+        aven_gl_check_error(gl);
         aven_gl_shader_validate(gl, ctx.fragment_shader, fragment_shader_text);
 
         ctx.program = gl->CreateProgram();
-        assert(gl->GetError() == 0);
+        aven_gl_check_error(gl);
         gl->AttachShader(ctx.program, ctx.vertex_shader);
-        assert(gl->GetError() == 0);
+        aven_gl_check_error(gl);
         gl->AttachShader(ctx.program, ctx.fragment_shader);
-        assert(gl->GetError() == 0);
+        aven_gl_check_error(gl);
         gl->LinkProgram(ctx.program);
         aven_gl_program_validate(gl, ctx.program);
 
@@ -138,17 +138,17 @@
             ctx.program,
             "uTrans"
         );
-        assert(gl->GetError() == 0);
+        aven_gl_check_error(gl);
         ctx.upos_location = (GLuint)gl->GetUniformLocation(ctx.program, "uPos");
-        assert(gl->GetError() == 0);
+        aven_gl_check_error(gl);
 
         ctx.vpos_location = (GLuint)gl->GetAttribLocation(ctx.program, "vPos");
-        assert(gl->GetError() == 0);
+        aven_gl_check_error(gl);
         ctx.vcolor_location = (GLuint)gl->GetAttribLocation(
             ctx.program,
             "vColor"
         );
-        assert(gl->GetError() == 0);
+        aven_gl_check_error(gl);
 
         return ctx;
     }
@@ -184,21 +184,21 @@
         }
 
         gl->GenVertexArrays(1, &buffer.vao);
-        assert(gl->GetError() == 0);
+        aven_gl_check_error(gl);
         gl->BindVertexArray(buffer.vao);
-        assert(gl->GetError() == 0);
+        aven_gl_check_error(gl);
 
         gl->GenBuffers(1, &buffer.vertex);
-        assert(gl->GetError() == 0);
+        aven_gl_check_error(gl);
         gl->BindBuffer(GL_ARRAY_BUFFER, buffer.vertex);
-        assert(gl->GetError() == 0);
+        aven_gl_check_error(gl);
         gl->BufferData(
             GL_ARRAY_BUFFER,
             (GLsizeiptr)(buffer.vertex_cap * sizeof(*geometry->vertices.ptr)),
             geometry->vertices.ptr,
             (GLenum)buffer_usage
         );
-        assert(gl->GetError() == 0);
+        aven_gl_check_error(gl);
         gl->VertexAttribPointer(
             ctx->vpos_location,
             2,
@@ -207,9 +207,9 @@
             sizeof(AvenGlShapeVertex),
             (void *)offsetof(AvenGlShapeVertex, pos)
         );
-        assert(gl->GetError() == 0);
+        aven_gl_check_error(gl);
         gl->EnableVertexAttribArray(ctx->vpos_location);
-        assert(gl->GetError() == 0);
+        aven_gl_check_error(gl);
         gl->VertexAttribPointer(
             ctx->vcolor_location,
             4,
@@ -218,30 +218,30 @@
             sizeof(AvenGlShapeVertex),
             (void *)offsetof(AvenGlShapeVertex, color)
         );
-        assert(gl->GetError() == 0);
+        aven_gl_check_error(gl);
         gl->EnableVertexAttribArray(ctx->vcolor_location);
-        assert(gl->GetError() == 0);
+        aven_gl_check_error(gl);
 
         gl->BindBuffer(GL_ARRAY_BUFFER, 0);
-        assert(gl->GetError() == 0);
+        aven_gl_check_error(gl);
 
         gl->BindVertexArray(0);
-        assert(gl->GetError() == 0);
+        aven_gl_check_error(gl);
 
         gl->GenBuffers(1, &buffer.index);
-        assert(gl->GetError() == 0);
+        aven_gl_check_error(gl);
         gl->BindBuffer(GL_ELEMENT_ARRAY_BUFFER, buffer.index);
-        assert(gl->GetError() == 0);
+        aven_gl_check_error(gl);
         gl->BufferData(
             GL_ELEMENT_ARRAY_BUFFER,
             (GLsizeiptr)(buffer.index_cap * sizeof(*geometry->indices.ptr)),
             geometry->indices.ptr,
             (GLenum)buffer_usage
         );
-        assert(gl->GetError() == 0);
+        aven_gl_check_error(gl);
 
         gl->BindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-        assert(gl->GetError() == 0);
+        aven_gl_check_error(gl);
 
         return buffer;
     }
@@ -266,7 +266,7 @@
         assert(geometry->indices.len <= buffer->index_cap);
 
         gl->BindBuffer(GL_ARRAY_BUFFER, buffer->vertex);
-        assert(gl->GetError() == 0);
+        aven_gl_check_error(gl);
 
         gl->BufferSubData(
             GL_ARRAY_BUFFER,
@@ -276,13 +276,13 @@
             ),
             geometry->vertices.ptr
         );
-        assert(gl->GetError() == 0);
+        aven_gl_check_error(gl);
 
         gl->BindBuffer(GL_ARRAY_BUFFER, 0);
-        assert(gl->GetError() == 0);
+        aven_gl_check_error(gl);
 
         gl->BindBuffer(GL_ELEMENT_ARRAY_BUFFER, buffer->index);
-        assert(gl->GetError() == 0);
+        aven_gl_check_error(gl);
 
         gl->BufferSubData(
             GL_ELEMENT_ARRAY_BUFFER,
@@ -290,12 +290,12 @@
             (GLsizeiptr)(geometry->indices.len * sizeof(*geometry->indices.ptr)),
             geometry->indices.ptr
         );
-        assert(gl->GetError() == 0);
+        aven_gl_check_error(gl);
 
         buffer->index_len = geometry->indices.len;
 
         gl->BindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-        assert(gl->GetError() == 0);
+        aven_gl_check_error(gl);
     }
 
     static inline void aven_gl_shape_draw(
@@ -305,20 +305,20 @@
         Aff2 cam_trans
     ) {
         gl->UseProgram(ctx->program);
-        assert(gl->GetError() == 0);
+        aven_gl_check_error(gl);
 
         gl->BindVertexArray(buffer->vao);
-        assert(gl->GetError() == 0);
+        aven_gl_check_error(gl);
         gl->BindBuffer(GL_ARRAY_BUFFER, buffer->vertex);
-        assert(gl->GetError() == 0);
+        aven_gl_check_error(gl);
         gl->BindBuffer(GL_ELEMENT_ARRAY_BUFFER, buffer->index);
-        assert(gl->GetError() == 0);
+        aven_gl_check_error(gl);
 
-        assert(gl->GetError() == 0);
+        aven_gl_check_error(gl);
         gl->Enable(GL_BLEND);
-        assert(gl->GetError() == 0);
+        aven_gl_check_error(gl);
         gl->BlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-        assert(gl->GetError() == 0);
+        aven_gl_check_error(gl);
 
         gl->UniformMatrix2fv(
             (GLint)ctx->utrans_location,
@@ -326,9 +326,9 @@
             GL_FALSE,
             (GLfloat *)cam_trans
         );
-        assert(gl->GetError() == 0);
+        aven_gl_check_error(gl);
         gl->Uniform2fv((GLint)ctx->upos_location, 1, (GLfloat *)cam_trans[2]);
-        assert(gl->GetError() == 0);
+        aven_gl_check_error(gl);
 
         gl->DrawElements(
             GL_TRIANGLES,
@@ -336,17 +336,17 @@
             GL_UNSIGNED_SHORT,
             0
         );
-        assert(gl->GetError() == 0);
+        aven_gl_check_error(gl);
 
         gl->Disable(GL_BLEND);
-        assert(gl->GetError() == 0);
+        aven_gl_check_error(gl);
 
         gl->BindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-        assert(gl->GetError() == 0);
+        aven_gl_check_error(gl);
         gl->BindBuffer(GL_ARRAY_BUFFER, 0);
-        assert(gl->GetError() == 0);
+        aven_gl_check_error(gl);
         gl->BindVertexArray(0);
-        assert(gl->GetError() == 0);
+        aven_gl_check_error(gl);
     }
 
     static inline void aven_gl_shape_geometry_push_triangle(
@@ -575,27 +575,27 @@
         );
 
         ctx.vertex_shader = gl->CreateShader(GL_VERTEX_SHADER);
-        assert(gl->GetError() == 0);
+        aven_gl_check_error(gl);
         gl->ShaderSource(ctx.vertex_shader, 1, &vertex_shader_text, NULL);
-        assert(gl->GetError() == 0);
+        aven_gl_check_error(gl);
         gl->CompileShader(ctx.vertex_shader);
-        assert(gl->GetError() == 0);
+        aven_gl_check_error(gl);
         aven_gl_shader_validate(gl, ctx.vertex_shader, vertex_shader_text);
 
         ctx.fragment_shader = gl->CreateShader(GL_FRAGMENT_SHADER);
-        assert(gl->GetError() == 0);
+        aven_gl_check_error(gl);
         gl->ShaderSource(ctx.fragment_shader, 1, &fragment_shader_text, NULL);
-        assert(gl->GetError() == 0);
+        aven_gl_check_error(gl);
         gl->CompileShader(ctx.fragment_shader);
-        assert(gl->GetError() == 0);
+        aven_gl_check_error(gl);
         aven_gl_shader_validate(gl, ctx.fragment_shader, fragment_shader_text);
 
         ctx.program = gl->CreateProgram();
-        assert(gl->GetError() == 0);
+        aven_gl_check_error(gl);
         gl->AttachShader(ctx.program, ctx.vertex_shader);
-        assert(gl->GetError() == 0);
+        aven_gl_check_error(gl);
         gl->AttachShader(ctx.program, ctx.fragment_shader);
-        assert(gl->GetError() == 0);
+        aven_gl_check_error(gl);
         gl->LinkProgram(ctx.program);
         aven_gl_program_validate(gl, ctx.program);
 
@@ -603,20 +603,20 @@
             ctx.program,
             "uTrans"
         );
-        assert(gl->GetError() == 0);
+        aven_gl_check_error(gl);
         ctx.upos_location = (GLuint)gl->GetUniformLocation(ctx.program, "uPos");
-        assert(gl->GetError() == 0);
+        aven_gl_check_error(gl);
         ctx.upx_location = (GLuint)gl->GetUniformLocation(ctx.program, "uPx");
-        assert(gl->GetError() == 0);
+        aven_gl_check_error(gl);
 
         ctx.vpos_location = (GLuint)gl->GetAttribLocation(ctx.program, "vPos");
         ctx.vinfo_location = (GLuint)gl->GetAttribLocation(ctx.program, "vInfo");
-        assert(gl->GetError() == 0);
+        aven_gl_check_error(gl);
         ctx.vcolor_location = (GLuint)gl->GetAttribLocation(
             ctx.program,
             "vColor"
         );
-        assert(gl->GetError() == 0);
+        aven_gl_check_error(gl);
 
         return ctx;
     }
@@ -655,21 +655,21 @@
         }
 
         gl->GenVertexArrays(1, &buffer.vao);
-        assert(gl->GetError() == 0);
+        aven_gl_check_error(gl);
         gl->BindVertexArray(buffer.vao);
-        assert(gl->GetError() == 0);
+        aven_gl_check_error(gl);
 
         gl->GenBuffers(1, &buffer.vertex);
-        assert(gl->GetError() == 0);
+        aven_gl_check_error(gl);
         gl->BindBuffer(GL_ARRAY_BUFFER, buffer.vertex);
-        assert(gl->GetError() == 0);
+        aven_gl_check_error(gl);
         gl->BufferData(
             GL_ARRAY_BUFFER,
             (GLsizeiptr)(buffer.vertex_cap * sizeof(*geometry->vertices.ptr)),
             geometry->vertices.ptr,
             (GLenum)buffer_usage
         );
-        assert(gl->GetError() == 0);
+        aven_gl_check_error(gl);
 
         gl->VertexAttribPointer(
             ctx->vpos_location,
@@ -679,9 +679,9 @@
             sizeof(AvenGlShapeRoundedVertex),
             (void *)offsetof(AvenGlShapeRoundedVertex, pos)
         );
-        assert(gl->GetError() == 0);
+        aven_gl_check_error(gl);
         gl->EnableVertexAttribArray(ctx->vpos_location);
-        assert(gl->GetError() == 0);
+        aven_gl_check_error(gl);
         gl->VertexAttribPointer(
             ctx->vinfo_location,
             4,
@@ -690,9 +690,9 @@
             sizeof(AvenGlShapeRoundedVertex),
             (void *)offsetof(AvenGlShapeRoundedVertex, info)
         );
-        assert(gl->GetError() == 0);
+        aven_gl_check_error(gl);
         gl->EnableVertexAttribArray(ctx->vinfo_location);
-        assert(gl->GetError() == 0);
+        aven_gl_check_error(gl);
         gl->VertexAttribPointer(
             ctx->vcolor_location,
             4,
@@ -701,30 +701,30 @@
             sizeof(AvenGlShapeRoundedVertex),
             (void *)offsetof(AvenGlShapeRoundedVertex, color)
         );
-        assert(gl->GetError() == 0);
+        aven_gl_check_error(gl);
         gl->EnableVertexAttribArray(ctx->vcolor_location);
-        assert(gl->GetError() == 0);
+        aven_gl_check_error(gl);
 
         gl->BindBuffer(GL_ARRAY_BUFFER, 0);
-        assert(gl->GetError() == 0);
+        aven_gl_check_error(gl);
 
         gl->BindVertexArray(0);
-        assert(gl->GetError() == 0);
+        aven_gl_check_error(gl);
 
         gl->GenBuffers(1, &buffer.index);
-        assert(gl->GetError() == 0);
+        aven_gl_check_error(gl);
         gl->BindBuffer(GL_ELEMENT_ARRAY_BUFFER, buffer.index);
-        assert(gl->GetError() == 0);
+        aven_gl_check_error(gl);
         gl->BufferData(
             GL_ELEMENT_ARRAY_BUFFER,
             (GLsizeiptr)(buffer.index_cap * sizeof(*geometry->indices.ptr)),
             geometry->indices.ptr,
             (GLenum)buffer_usage
         );
-        assert(gl->GetError() == 0);
+        aven_gl_check_error(gl);
 
         gl->BindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-        assert(gl->GetError() == 0);
+        aven_gl_check_error(gl);
 
         return buffer;
     }
@@ -749,7 +749,7 @@
         assert(geometry->indices.len <= buffer->index_cap);
 
         gl->BindBuffer(GL_ARRAY_BUFFER, buffer->vertex);
-        assert(gl->GetError() == 0);
+        aven_gl_check_error(gl);
 
         gl->BufferSubData(
             GL_ARRAY_BUFFER,
@@ -759,13 +759,13 @@
             ),
             geometry->vertices.ptr
         );
-        assert(gl->GetError() == 0);
+        aven_gl_check_error(gl);
 
         gl->BindBuffer(GL_ARRAY_BUFFER, 0);
-        assert(gl->GetError() == 0);
+        aven_gl_check_error(gl);
 
         gl->BindBuffer(GL_ELEMENT_ARRAY_BUFFER, buffer->index);
-        assert(gl->GetError() == 0);
+        aven_gl_check_error(gl);
 
         gl->BufferSubData(
             GL_ELEMENT_ARRAY_BUFFER,
@@ -773,12 +773,12 @@
             (GLsizeiptr)(geometry->indices.len * sizeof(*geometry->indices.ptr)),
             geometry->indices.ptr
         );
-        assert(gl->GetError() == 0);
+        aven_gl_check_error(gl);
 
         buffer->index_len = geometry->indices.len;
 
         gl->BindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-        assert(gl->GetError() == 0);
+        aven_gl_check_error(gl);
     }
 
     static inline void aven_gl_shape_rounded_draw(
@@ -789,19 +789,19 @@
         Aff2 cam_trans
     ) {
         gl->UseProgram(ctx->program);
-        assert(gl->GetError() == 0);
+        aven_gl_check_error(gl);
 
         gl->BindVertexArray(buffer->vao);
-        assert(gl->GetError() == 0);
+        aven_gl_check_error(gl);
         gl->BindBuffer(GL_ARRAY_BUFFER, buffer->vertex);
-        assert(gl->GetError() == 0);
+        aven_gl_check_error(gl);
         gl->BindBuffer(GL_ELEMENT_ARRAY_BUFFER, buffer->index);
-        assert(gl->GetError() == 0);
+        aven_gl_check_error(gl);
 
         gl->Enable(GL_BLEND);
-        assert(gl->GetError() == 0);
+        aven_gl_check_error(gl);
         gl->BlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-        assert(gl->GetError() == 0);
+        aven_gl_check_error(gl);
 
         gl->UniformMatrix2fv(
             (GLint)ctx->utrans_location,
@@ -809,11 +809,11 @@
             GL_FALSE,
             (GLfloat *)cam_trans
         );
-        assert(gl->GetError() == 0);
+        aven_gl_check_error(gl);
         gl->Uniform2fv((GLint)ctx->upos_location, 1, (GLfloat *)cam_trans[2]);
-        assert(gl->GetError() == 0);
+        aven_gl_check_error(gl);
         gl->Uniform1fv((GLint)ctx->upx_location, 1, (GLfloat *)&pixel_size);
-        assert(gl->GetError() == 0);
+        aven_gl_check_error(gl);
 
         gl->DrawElements(
             GL_TRIANGLES,
@@ -821,17 +821,17 @@
             GL_UNSIGNED_SHORT,
             0
         );
-        assert(gl->GetError() == 0);
+        aven_gl_check_error(gl);
 
         gl->Disable(GL_BLEND);
-        assert(gl->GetError() == 0);
+        aven_gl_check_error(gl);
 
         gl->BindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-        assert(gl->GetError() == 0);
+        aven_gl_check_error(gl);
         gl->BindBuffer(GL_ARRAY_BUFFER, 0);
-        assert(gl->GetError() == 0);
+        aven_gl_check_error(gl);
         gl->BindVertexArray(0);
-        assert(gl->GetError() == 0);
+        aven_gl_check_error(gl);
     }
 
     static inline void aven_gl_shape_rounded_geometry_push_sector(
@@ -1247,27 +1247,27 @@
         );
 
         ctx.vertex_shader = gl->CreateShader(GL_VERTEX_SHADER);
-        assert(gl->GetError() == 0);
+        aven_gl_check_error(gl);
         gl->ShaderSource(ctx.vertex_shader, 1, &vertex_shader_text, NULL);
-        assert(gl->GetError() == 0);
+        aven_gl_check_error(gl);
         gl->CompileShader(ctx.vertex_shader);
-        assert(gl->GetError() == 0);
+        aven_gl_check_error(gl);
         aven_gl_shader_validate(gl, ctx.vertex_shader, vertex_shader_text);
 
         ctx.fragment_shader = gl->CreateShader(GL_FRAGMENT_SHADER);
-        assert(gl->GetError() == 0);
+        aven_gl_check_error(gl);
         gl->ShaderSource(ctx.fragment_shader, 1, &fragment_shader_text, NULL);
-        assert(gl->GetError() == 0);
+        aven_gl_check_error(gl);
         gl->CompileShader(ctx.fragment_shader);
-        assert(gl->GetError() == 0);
+        aven_gl_check_error(gl);
         aven_gl_shader_validate(gl, ctx.fragment_shader, fragment_shader_text);
 
         ctx.program = gl->CreateProgram();
-        assert(gl->GetError() == 0);
+        aven_gl_check_error(gl);
         gl->AttachShader(ctx.program, ctx.vertex_shader);
-        assert(gl->GetError() == 0);
+        aven_gl_check_error(gl);
         gl->AttachShader(ctx.program, ctx.fragment_shader);
-        assert(gl->GetError() == 0);
+        aven_gl_check_error(gl);
         gl->LinkProgram(ctx.program);
         aven_gl_program_validate(gl, ctx.program);
 
@@ -1275,23 +1275,23 @@
             ctx.program,
             "uTrans"
         );
-        assert(gl->GetError() == 0);
+        aven_gl_check_error(gl);
         ctx.upos_location = (GLuint)gl->GetUniformLocation(ctx.program, "uPos");
-        assert(gl->GetError() == 0);
+        aven_gl_check_error(gl);
         ctx.upx_location = (GLuint)gl->GetUniformLocation(ctx.program, "uPx");
-        assert(gl->GetError() == 0);
+        aven_gl_check_error(gl);
 
         ctx.vpos_location = (GLuint)gl->GetAttribLocation(ctx.program, "vPos");
-        assert(gl->GetError() == 0);
+        aven_gl_check_error(gl);
         ctx.vtex_location = (GLuint)gl->GetAttribLocation(ctx.program, "vTex");
-        assert(gl->GetError() == 0);
+        aven_gl_check_error(gl);
         ctx.vinfo_location = (GLuint)gl->GetAttribLocation(ctx.program, "vInfo");
-        assert(gl->GetError() == 0);
+        aven_gl_check_error(gl);
         ctx.vcolor_location = (GLuint)gl->GetAttribLocation(
             ctx.program,
             "vColor"
         );
-        assert(gl->GetError() == 0);
+        aven_gl_check_error(gl);
 
         return ctx;
     }
@@ -1330,21 +1330,21 @@
         }
 
         gl->GenVertexArrays(1, &buffer.vao);
-        assert(gl->GetError() == 0);
+        aven_gl_check_error(gl);
         gl->BindVertexArray(buffer.vao);
-        assert(gl->GetError() == 0);
+        aven_gl_check_error(gl);
 
         gl->GenBuffers(1, &buffer.vertex);
-        assert(gl->GetError() == 0);
+        aven_gl_check_error(gl);
         gl->BindBuffer(GL_ARRAY_BUFFER, buffer.vertex);
-        assert(gl->GetError() == 0);
+        aven_gl_check_error(gl);
         gl->BufferData(
             GL_ARRAY_BUFFER,
             (GLsizeiptr)(buffer.vertex_cap * sizeof(*geometry->vertices.ptr)),
             geometry->vertices.ptr,
             (GLenum)buffer_usage
         );
-        assert(gl->GetError() == 0);
+        aven_gl_check_error(gl);
 
         gl->VertexAttribPointer(
             ctx->vpos_location,
@@ -1354,9 +1354,9 @@
             sizeof(AvenGlShapeJoinVertex),
             (void *)offsetof(AvenGlShapeJoinVertex, pos)
         );
-        assert(gl->GetError() == 0);
+        aven_gl_check_error(gl);
         gl->EnableVertexAttribArray(ctx->vpos_location);
-        assert(gl->GetError() == 0);
+        aven_gl_check_error(gl);
         gl->VertexAttribPointer(
             ctx->vtex_location,
             4,
@@ -1365,9 +1365,9 @@
             sizeof(AvenGlShapeJoinVertex),
             (void *)offsetof(AvenGlShapeJoinVertex, texture)
         );
-        assert(gl->GetError() == 0);
+        aven_gl_check_error(gl);
         gl->EnableVertexAttribArray(ctx->vtex_location);
-        assert(gl->GetError() == 0);
+        aven_gl_check_error(gl);
         gl->VertexAttribPointer(
             ctx->vinfo_location,
             4,
@@ -1376,9 +1376,9 @@
             sizeof(AvenGlShapeJoinVertex),
             (void *)offsetof(AvenGlShapeJoinVertex, info)
         );
-        assert(gl->GetError() == 0);
+        aven_gl_check_error(gl);
         gl->EnableVertexAttribArray(ctx->vinfo_location);
-        assert(gl->GetError() == 0);
+        aven_gl_check_error(gl);
         gl->VertexAttribPointer(
             ctx->vcolor_location,
             4,
@@ -1387,30 +1387,30 @@
             sizeof(AvenGlShapeJoinVertex),
             (void *)offsetof(AvenGlShapeJoinVertex, color)
         );
-        assert(gl->GetError() == 0);
+        aven_gl_check_error(gl);
         gl->EnableVertexAttribArray(ctx->vcolor_location);
-        assert(gl->GetError() == 0);
+        aven_gl_check_error(gl);
 
         gl->BindBuffer(GL_ARRAY_BUFFER, 0);
-        assert(gl->GetError() == 0);
+        aven_gl_check_error(gl);
 
         gl->BindVertexArray(0);
-        assert(gl->GetError() == 0);
+        aven_gl_check_error(gl);
 
         gl->GenBuffers(1, &buffer.index);
-        assert(gl->GetError() == 0);
+        aven_gl_check_error(gl);
         gl->BindBuffer(GL_ELEMENT_ARRAY_BUFFER, buffer.index);
-        assert(gl->GetError() == 0);
+        aven_gl_check_error(gl);
         gl->BufferData(
             GL_ELEMENT_ARRAY_BUFFER,
             (GLsizeiptr)(buffer.index_cap * sizeof(*geometry->indices.ptr)),
             geometry->indices.ptr,
             (GLenum)buffer_usage
         );
-        assert(gl->GetError() == 0);
+        aven_gl_check_error(gl);
 
         gl->BindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-        assert(gl->GetError() == 0);
+        aven_gl_check_error(gl);
 
         return buffer;
     }
@@ -1435,7 +1435,7 @@
         assert(geometry->indices.len <= buffer->index_cap);
 
         gl->BindBuffer(GL_ARRAY_BUFFER, buffer->vertex);
-        assert(gl->GetError() == 0);
+        aven_gl_check_error(gl);
 
         gl->BufferSubData(
             GL_ARRAY_BUFFER,
@@ -1445,13 +1445,13 @@
             ),
             geometry->vertices.ptr
         );
-        assert(gl->GetError() == 0);
+        aven_gl_check_error(gl);
 
         gl->BindBuffer(GL_ARRAY_BUFFER, 0);
-        assert(gl->GetError() == 0);
+        aven_gl_check_error(gl);
 
         gl->BindBuffer(GL_ELEMENT_ARRAY_BUFFER, buffer->index);
-        assert(gl->GetError() == 0);
+        aven_gl_check_error(gl);
 
         gl->BufferSubData(
             GL_ELEMENT_ARRAY_BUFFER,
@@ -1459,12 +1459,12 @@
             (GLsizeiptr)(geometry->indices.len * sizeof(*geometry->indices.ptr)),
             geometry->indices.ptr
         );
-        assert(gl->GetError() == 0);
+        aven_gl_check_error(gl);
 
         buffer->index_len = geometry->indices.len;
 
         gl->BindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-        assert(gl->GetError() == 0);
+        aven_gl_check_error(gl);
     }
 
     static inline void aven_gl_shape_join_draw(
@@ -1475,19 +1475,19 @@
         Aff2 cam_trans
     ) {
         gl->UseProgram(ctx->program);
-        assert(gl->GetError() == 0);
+        aven_gl_check_error(gl);
 
         gl->BindVertexArray(buffer->vao);
-        assert(gl->GetError() == 0);
+        aven_gl_check_error(gl);
         gl->BindBuffer(GL_ARRAY_BUFFER, buffer->vertex);
-        assert(gl->GetError() == 0);
+        aven_gl_check_error(gl);
         gl->BindBuffer(GL_ELEMENT_ARRAY_BUFFER, buffer->index);
-        assert(gl->GetError() == 0);
+        aven_gl_check_error(gl);
 
         gl->Enable(GL_BLEND);
-        assert(gl->GetError() == 0);
+        aven_gl_check_error(gl);
         gl->BlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-        assert(gl->GetError() == 0);
+        aven_gl_check_error(gl);
 
         gl->UniformMatrix2fv(
             (GLint)ctx->utrans_location,
@@ -1495,11 +1495,11 @@
             GL_FALSE,
             (GLfloat *)cam_trans
         );
-        assert(gl->GetError() == 0);
+        aven_gl_check_error(gl);
         gl->Uniform2fv((GLint)ctx->upos_location, 1, (GLfloat *)cam_trans[2]);
-        assert(gl->GetError() == 0);
+        aven_gl_check_error(gl);
         gl->Uniform1fv((GLint)ctx->upx_location, 1, (GLfloat *)&pixel_size);
-        assert(gl->GetError() == 0);
+        aven_gl_check_error(gl);
 
         gl->DrawElements(
             GL_TRIANGLES,
@@ -1507,17 +1507,17 @@
             GL_UNSIGNED_SHORT,
             0
         );
-        assert(gl->GetError() == 0);
+        aven_gl_check_error(gl);
 
         gl->Disable(GL_BLEND);
-        assert(gl->GetError() == 0);
+        aven_gl_check_error(gl);
 
         gl->BindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-        assert(gl->GetError() == 0);
+        aven_gl_check_error(gl);
         gl->BindBuffer(GL_ARRAY_BUFFER, 0);
-        assert(gl->GetError() == 0);
+        aven_gl_check_error(gl);
         gl->BindVertexArray(0);
-        assert(gl->GetError() == 0);
+        aven_gl_check_error(gl);
     }
 
     static inline void aven_gl_shape_join_geometry_push_square(

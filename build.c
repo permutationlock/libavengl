@@ -68,7 +68,6 @@ int main(int argc, char **argv) {
     }
 
     AvenBuildCommonOpts opts = aven_build_common_opts(args, &arena);
-    LibAvenBuildOpts libaven_opts = libaven_build_opts(args, &arena);
     LibAvenGlBuildOpts libavengl_opts = libavengl_build_opts(args, &arena);
 
     AvenStr root_dir = aven_str(".");

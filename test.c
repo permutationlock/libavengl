@@ -12,7 +12,6 @@
 #include <aven/gl/texture.h>
 #include <aven/gl/ui.h>
 #include <aven/gl/window.h>
-#include <aven/gl/window/app.h>
 #include <aven/io.h>
 #include <aven/math.h>
 #include <aven/time.h>
@@ -136,12 +135,12 @@ static void test_aven_gl_shape_update(AvenGlWindow *win, float t) {
     int height;
     glfwGetFramebufferSize(win->window, &width, &height);
     win->gl.Viewport(0, 0, width, height);
-    assert(win->gl.GetError() == 0);
+    aven_gl_check_error(&win->gl);
 
     win->gl.ClearColor(0.75f, 0.75f, 0.75f, 1.0f);
-    assert(win->gl.GetError() == 0);
+    aven_gl_check_error(&win->gl);
     win->gl.Clear(GL_COLOR_BUFFER_BIT);
-    assert(win->gl.GetError() == 0);
+    aven_gl_check_error(&win->gl);
     aven_gl_shape_draw(
         &win->gl,
         &app.data.shape.ctx,
@@ -209,12 +208,12 @@ static void test_aven_gl_shape_rounded_update(AvenGlWindow *win, float t) {
     int height;
     glfwGetFramebufferSize(win->window, &width, &height);
     win->gl.Viewport(0, 0, width, height);
-    assert(win->gl.GetError() == 0);
+    aven_gl_check_error(&win->gl);
 
     win->gl.ClearColor(0.75f, 0.75f, 0.75f, 1.0f);
-    assert(win->gl.GetError() == 0);
+    aven_gl_check_error(&win->gl);
     win->gl.Clear(GL_COLOR_BUFFER_BIT);
-    assert(win->gl.GetError() == 0);
+    aven_gl_check_error(&win->gl);
     aven_gl_shape_rounded_draw(
         &win->gl,
         &app.data.rounded.ctx,
@@ -268,12 +267,12 @@ static void test_aven_gl_shape_join_update(AvenGlWindow *win, float t) {
     int height;
     glfwGetFramebufferSize(win->window, &width, &height);
     win->gl.Viewport(0, 0, width, height);
-    assert(win->gl.GetError() == 0);
+    aven_gl_check_error(&win->gl);
 
     win->gl.ClearColor(0.75f, 0.75f, 0.75f, 1.0f);
-    assert(win->gl.GetError() == 0);
+    aven_gl_check_error(&win->gl);
     win->gl.Clear(GL_COLOR_BUFFER_BIT);
-    assert(win->gl.GetError() == 0);
+    aven_gl_check_error(&win->gl);
     aven_gl_shape_join_draw(
         &win->gl,
         &app.data.join.ctx,
@@ -333,12 +332,12 @@ static void test_aven_gl_texture_update(AvenGlWindow *win, float t) {
     int height;
     glfwGetFramebufferSize(win->window, &width, &height);
     win->gl.Viewport(0, 0, width, height);
-    assert(win->gl.GetError() == 0);
+    aven_gl_check_error(&win->gl);
 
     win->gl.ClearColor(0.75f, 0.75f, 0.75f, 1.0f);
-    assert(win->gl.GetError() == 0);
+    aven_gl_check_error(&win->gl);
     win->gl.Clear(GL_COLOR_BUFFER_BIT);
-    assert(win->gl.GetError() == 0);
+    aven_gl_check_error(&win->gl);
     aven_gl_texture_draw(
         &win->gl,
         &app.data.texture.ctx,
@@ -425,12 +424,12 @@ static void test_aven_gl_text_update(AvenGlWindow *win, float t) {
     );
 
     win->gl.Viewport(0, 0, width, height);
-    assert(win->gl.GetError() == 0);
+    aven_gl_check_error(&win->gl);
 
     win->gl.ClearColor(0.75f, 0.75f, 0.75f, 1.0f);
-    assert(win->gl.GetError() == 0);
+    aven_gl_check_error(&win->gl);
     win->gl.Clear(GL_COLOR_BUFFER_BIT);
-    assert(win->gl.GetError() == 0);
+    aven_gl_check_error(&win->gl);
     aven_gl_text_draw(
         &win->gl,
         &app.data.text.ctx,
@@ -1202,7 +1201,7 @@ int main(void) {
 
     test_arena = aven_arena_init(mem, ARENA_SIZE);
 
-    AvenGlWindowAppCode rcode = aven_gl_window_app(
+    AvenGlWindowCode rcode = aven_gl_window(
         INIT_WIDTH,
         INIT_HEIGHT,
         "AvenGL Test",
