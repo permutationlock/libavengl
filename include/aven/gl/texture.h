@@ -75,47 +75,52 @@
             "}\n"
         );
 
-        ctx.vertex_shader = gl->CreateShader(GL_VERTEX_SHADER);
-        aven_gl_check_error(gl);
-        gl->ShaderSource(ctx.vertex_shader, 1, &vertex_shader_text, NULL);
-        aven_gl_check_error(gl);
-        gl->CompileShader(ctx.vertex_shader);
-        aven_gl_check_error(gl);
-        aven_gl_shader_validate(gl, ctx.vertex_shader, vertex_shader_text);
+        ctx.vertex_shader = aven_gl_CreateShader(gl, GL_VERTEX_SHADER);
+        aven_gl_ShaderSource(
+            gl,
+            ctx.vertex_shader,
+            1,
+            &vertex_shader_text,
+            NULL
+        );
+        aven_gl_CompileShader(gl, ctx.vertex_shader);
 
-        ctx.fragment_shader = gl->CreateShader(GL_FRAGMENT_SHADER);
-        aven_gl_check_error(gl);
-        gl->ShaderSource(ctx.fragment_shader, 1, &fragment_shader_text, NULL);
-        aven_gl_check_error(gl);
-        gl->CompileShader(ctx.fragment_shader);
-        aven_gl_check_error(gl);
-        aven_gl_shader_validate(gl, ctx.fragment_shader, fragment_shader_text);
+        ctx.fragment_shader = aven_gl_CreateShader(gl, GL_FRAGMENT_SHADER);
+        aven_gl_ShaderSource(
+            gl,
+            ctx.fragment_shader,
+            1,
+            &fragment_shader_text,
+            NULL
+        );
+        aven_gl_CompileShader(gl, ctx.fragment_shader);
 
-        ctx.program = gl->CreateProgram();
-        aven_gl_check_error(gl);
-        gl->AttachShader(ctx.program, ctx.vertex_shader);
-        aven_gl_check_error(gl);
-        gl->AttachShader(ctx.program, ctx.fragment_shader);
-        aven_gl_check_error(gl);
-        gl->LinkProgram(ctx.program);
-        aven_gl_program_validate(gl, ctx.program);
+        ctx.program = aven_gl_CreateProgram(gl);
+        aven_gl_AttachShader(gl, ctx.program, ctx.vertex_shader);
+        aven_gl_AttachShader(gl, ctx.program, ctx.fragment_shader);
+        aven_gl_LinkProgram(gl, ctx.program);
 
-        ctx.utrans_location = (GLuint)gl->GetUniformLocation(
+        ctx.utrans_location = (GLuint)aven_gl_GetUniformLocation(
+            gl,
             ctx.program,
             "uTrans"
         );
-        aven_gl_check_error(gl);
-        ctx.upos_location = (GLuint)gl->GetUniformLocation(ctx.program, "uPos");
-        aven_gl_check_error(gl);
+        ctx.upos_location = (GLuint)aven_gl_GetUniformLocation(
+            gl,
+            ctx.program,
+            "uPos"
+        );
 
-        ctx.vpos_location = (GLuint)gl->GetAttribLocation(ctx.program, "vPos");
-        aven_gl_check_error(gl);
+        ctx.vpos_location = (GLuint)aven_gl_GetAttribLocation(
+            gl,
+            ctx.program,
+            "vPos"
+        );
 
-        gl->GenTextures(1, &ctx.texture_id);
-        aven_gl_check_error(gl);
-        gl->BindTexture(GL_TEXTURE_2D, ctx.texture_id);
-        aven_gl_check_error(gl);
-        gl->TexImage2D(
+        aven_gl_GenTextures(gl, 1, &ctx.texture_id);
+        aven_gl_BindTexture(gl, GL_TEXTURE_2D, ctx.texture_id);
+        aven_gl_TexImage2D(
+            gl,
             GL_TEXTURE_2D,
             0,
             GL_RGBA,
@@ -126,18 +131,32 @@
             GL_UNSIGNED_BYTE,
             maybe_bytes.valid ? maybe_bytes.value.ptr : NULL
         );
-        aven_gl_check_error(gl);
-        gl->TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-        aven_gl_check_error(gl);
-        gl->TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-        aven_gl_check_error(gl);
-        gl->TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-        aven_gl_check_error(gl);
-        gl->TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-        aven_gl_check_error(gl);
+        aven_gl_TexParameteri(
+            gl,
+            GL_TEXTURE_2D,
+            GL_TEXTURE_WRAP_S,
+            GL_CLAMP_TO_EDGE
+        );
+        aven_gl_TexParameteri(
+            gl,
+            GL_TEXTURE_2D,
+            GL_TEXTURE_WRAP_T,
+            GL_CLAMP_TO_EDGE
+        );
+        aven_gl_TexParameteri(
+            gl,
+            GL_TEXTURE_2D,
+            GL_TEXTURE_MIN_FILTER,
+            GL_NEAREST
+        );
+        aven_gl_TexParameteri(
+            gl,
+            GL_TEXTURE_2D,
+            GL_TEXTURE_MAG_FILTER,
+            GL_NEAREST
+        );
 
-        gl->BindTexture(GL_TEXTURE_2D, 0);
-        aven_gl_check_error(gl);
+        aven_gl_BindTexture(gl, GL_TEXTURE_2D, 0);
 
         return ctx;
     }
@@ -149,9 +168,9 @@
         size_t height,
         AvenGlTextureBytesOptional maybe_bytes
     ) {
-        gl->BindTexture(GL_TEXTURE_2D, ctx->texture_id);
-        aven_gl_check_error(gl);
-        gl->TexImage2D(
+        aven_gl_BindTexture(gl, GL_TEXTURE_2D, ctx->texture_id);
+        aven_gl_TexImage2D(
+            gl,
             GL_TEXTURE_2D,
             0,
             GL_RGBA,
@@ -162,18 +181,32 @@
             GL_UNSIGNED_BYTE,
             maybe_bytes.valid ? maybe_bytes.value.ptr : NULL
         );
-        aven_gl_check_error(gl);
-        gl->TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-        aven_gl_check_error(gl);
-        gl->TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-        aven_gl_check_error(gl);
-        gl->TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-        aven_gl_check_error(gl);
-        gl->TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-        aven_gl_check_error(gl);
+        aven_gl_TexParameteri(
+            gl,
+            GL_TEXTURE_2D,
+            GL_TEXTURE_WRAP_S,
+            GL_CLAMP_TO_EDGE
+        );
+        aven_gl_TexParameteri(
+            gl,
+            GL_TEXTURE_2D,
+            GL_TEXTURE_WRAP_T,
+            GL_CLAMP_TO_EDGE
+        );
+        aven_gl_TexParameteri(
+            gl,
+            GL_TEXTURE_2D,
+            GL_TEXTURE_MIN_FILTER,
+            GL_NEAREST
+        );
+        aven_gl_TexParameteri(
+            gl,
+            GL_TEXTURE_2D,
+            GL_TEXTURE_MAG_FILTER,
+            GL_NEAREST
+        );
 
-        gl->BindTexture(GL_TEXTURE_2D, 0);
-        aven_gl_check_error(gl);
+        aven_gl_BindTexture(gl, GL_TEXTURE_2D, 0);
     }
 
     static inline void aven_gl_texture_ctx_update_framebuffer(
@@ -184,9 +217,9 @@
         size_t width,
         size_t height
     ) {
-        gl->BindTexture(GL_TEXTURE_2D, ctx->texture_id);
-        aven_gl_check_error(gl);
-        gl->CopyTexImage2D(
+        aven_gl_BindTexture(gl, GL_TEXTURE_2D, ctx->texture_id);
+        aven_gl_CopyTexImage2D(
+            gl,
             GL_TEXTURE_2D,
             0,
             GL_RGBA,
@@ -196,27 +229,41 @@
             (GLsizei)height,
             0
         );
-        aven_gl_check_error(gl);
-        gl->TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-        aven_gl_check_error(gl);
-        gl->TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-        aven_gl_check_error(gl);
-        gl->TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-        aven_gl_check_error(gl);
-        gl->TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-        aven_gl_check_error(gl);
+        aven_gl_TexParameteri(
+            gl,
+            GL_TEXTURE_2D,
+            GL_TEXTURE_WRAP_S,
+            GL_CLAMP_TO_EDGE
+        );
+        aven_gl_TexParameteri(
+            gl,
+            GL_TEXTURE_2D,
+            GL_TEXTURE_WRAP_T,
+            GL_CLAMP_TO_EDGE
+        );
+        aven_gl_TexParameteri(
+            gl,
+            GL_TEXTURE_2D,
+            GL_TEXTURE_MIN_FILTER,
+            GL_NEAREST
+        );
+        aven_gl_TexParameteri(
+            gl,
+            GL_TEXTURE_2D,
+            GL_TEXTURE_MAG_FILTER,
+            GL_NEAREST
+        );
 
-        gl->BindTexture(GL_TEXTURE_2D, 0);
-        aven_gl_check_error(gl);
+        aven_gl_BindTexture(gl, GL_TEXTURE_2D, 0);
     }
 
     static inline void aven_gl_texture_ctx_deinit(
         AvenGl *gl,
         AvenGlTextureCtx *ctx
     ) {
-        gl->DeleteProgram(ctx->program);
-        gl->DeleteShader(ctx->fragment_shader);
-        gl->DeleteShader(ctx->vertex_shader);
+        aven_gl_DeleteProgram(gl, ctx->program);
+        aven_gl_DeleteShader(gl, ctx->fragment_shader);
+        aven_gl_DeleteShader(gl, ctx->vertex_shader);
     }
 
     static inline AvenGlTextureGeometry aven_gl_texture_geometry_init(
@@ -326,25 +373,22 @@
                 assert(false);
         }
 
-        gl->GenVertexArrays(1, &buffer.vao);
-        aven_gl_check_error(gl);
-        gl->BindVertexArray(buffer.vao);
-        aven_gl_check_error(gl);
+        aven_gl_GenVertexArrays(gl, 1, &buffer.vao);
+        aven_gl_BindVertexArray(gl, buffer.vao);
 
-        gl->GenBuffers(1, &buffer.vertex);
-        aven_gl_check_error(gl);
-        gl->BindBuffer(GL_ARRAY_BUFFER, buffer.vertex);
-        aven_gl_check_error(gl);
+        aven_gl_GenBuffers(gl, 1, &buffer.vertex);
+        aven_gl_BindBuffer(gl, GL_ARRAY_BUFFER, buffer.vertex);
 
-        gl->BufferData(
+        aven_gl_BufferData(
+            gl,
             GL_ARRAY_BUFFER,
             (GLsizeiptr)(buffer.vertex_cap * sizeof(*geometry->vertices.ptr)),
             geometry->vertices.ptr,
             (GLenum)buffer_usage
         );
-        aven_gl_check_error(gl);
 
-        gl->VertexAttribPointer(
+        aven_gl_VertexAttribPointer(
+            gl,
             ctx->vpos_location,
             4,
             GL_FLOAT,
@@ -352,30 +396,23 @@
             sizeof(AvenGlTextureVertex),
             (void *)offsetof(AvenGlTextureVertex, pos)
         );
-        aven_gl_check_error(gl);
-        gl->EnableVertexAttribArray(ctx->vpos_location);
-        aven_gl_check_error(gl);
+        aven_gl_EnableVertexAttribArray(gl, ctx->vpos_location);
 
-        gl->BindBuffer(GL_ARRAY_BUFFER, 0);
-        aven_gl_check_error(gl);
+        aven_gl_BindBuffer(gl, GL_ARRAY_BUFFER, 0);
 
-        gl->BindVertexArray(0);
-        aven_gl_check_error(gl);
+        aven_gl_BindVertexArray(gl, 0);
 
-        gl->GenBuffers(1, &buffer.index);
-        aven_gl_check_error(gl);
-        gl->BindBuffer(GL_ELEMENT_ARRAY_BUFFER, buffer.index);
-        aven_gl_check_error(gl);
-        gl->BufferData(
+        aven_gl_GenBuffers(gl, 1, &buffer.index);
+        aven_gl_BindBuffer(gl, GL_ELEMENT_ARRAY_BUFFER, buffer.index);
+        aven_gl_BufferData(
+            gl,
             GL_ELEMENT_ARRAY_BUFFER,
             (GLsizeiptr)(buffer.index_cap * sizeof(*geometry->indices.ptr)),
             geometry->indices.ptr,
             (GLenum)buffer_usage
         );
-        aven_gl_check_error(gl);
 
-        gl->BindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-        aven_gl_check_error(gl);
+        aven_gl_BindBuffer(gl, GL_ELEMENT_ARRAY_BUFFER, 0);
 
         return buffer;
     }
@@ -384,9 +421,9 @@
         AvenGl *gl,
         AvenGlTextureBuffer *buffer
     ) {
-        gl->DeleteBuffers(1, &buffer->index);
-        gl->DeleteVertexArrays(1, &buffer->vao);
-        gl->DeleteBuffers(1, &buffer->vertex);
+        aven_gl_DeleteBuffers(gl, 1, &buffer->index);
+        aven_gl_DeleteVertexArrays(gl, 1, &buffer->vao);
+        aven_gl_DeleteBuffers(gl, 1, &buffer->vertex);
         *buffer = (AvenGlTextureBuffer){ 0 };
     }
 
@@ -399,10 +436,10 @@
         assert(geometry->vertices.len <= buffer->vertex_cap);
         assert(geometry->indices.len <= buffer->index_cap);
 
-        gl->BindBuffer(GL_ARRAY_BUFFER, buffer->vertex);
-        aven_gl_check_error(gl);
+        aven_gl_BindBuffer(gl, GL_ARRAY_BUFFER, buffer->vertex);
 
-        gl->BufferSubData(
+        aven_gl_BufferSubData(
+            gl,
             GL_ARRAY_BUFFER,
             0,
             (GLsizeiptr)(
@@ -410,25 +447,21 @@
             ),
             geometry->vertices.ptr
         );
-        aven_gl_check_error(gl);
 
-        gl->BindBuffer(GL_ARRAY_BUFFER, 0);
-        aven_gl_check_error(gl);
+        aven_gl_BindBuffer(gl, GL_ARRAY_BUFFER, 0);
 
-        gl->BindBuffer(GL_ELEMENT_ARRAY_BUFFER, buffer->index);
-        aven_gl_check_error(gl);
-        gl->BufferSubData(
+        aven_gl_BindBuffer(gl, GL_ELEMENT_ARRAY_BUFFER, buffer->index);
+        aven_gl_BufferSubData(
+            gl,
             GL_ELEMENT_ARRAY_BUFFER,
             0,
             (GLsizeiptr)(geometry->indices.len * sizeof(*geometry->indices.ptr)),
             geometry->indices.ptr
         );
-        aven_gl_check_error(gl);
 
         buffer->index_len = geometry->indices.len;
 
-        gl->BindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-        aven_gl_check_error(gl);
+        aven_gl_BindBuffer(gl, GL_ELEMENT_ARRAY_BUFFER, 0);
     }
 
     static inline void aven_gl_texture_draw_range(
@@ -442,53 +475,45 @@
         assert(start < end);
         assert(end <= buffer->index_len);
 
-        gl->UseProgram(ctx->program);
-        aven_gl_check_error(gl);
+        aven_gl_UseProgram(gl, ctx->program);
 
-        gl->BindVertexArray(buffer->vao);
-        aven_gl_check_error(gl);
-        gl->BindBuffer(GL_ARRAY_BUFFER, buffer->vertex);
-        aven_gl_check_error(gl);
-        gl->BindBuffer(GL_ELEMENT_ARRAY_BUFFER, buffer->index);
-        aven_gl_check_error(gl);
+        aven_gl_BindVertexArray(gl, buffer->vao);
+        aven_gl_BindBuffer(gl, GL_ARRAY_BUFFER, buffer->vertex);
+        aven_gl_BindBuffer(gl, GL_ELEMENT_ARRAY_BUFFER, buffer->index);
 
-        gl->Enable(GL_BLEND);
-        aven_gl_check_error(gl);
-        gl->BlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-        aven_gl_check_error(gl);
-        gl->BindTexture(GL_TEXTURE_2D, ctx->texture_id);
-        aven_gl_check_error(gl);
+        aven_gl_Enable(gl, GL_BLEND);
+        aven_gl_BlendFunc(gl, GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+        aven_gl_BindTexture(gl, GL_TEXTURE_2D, ctx->texture_id);
 
-        gl->UniformMatrix2fv(
+        aven_gl_UniformMatrix2fv(
+            gl,
             (GLint)ctx->utrans_location,
             1,
             GL_FALSE,
             (GLfloat *)cam_trans
         );
-        aven_gl_check_error(gl);
-        gl->Uniform2fv((GLint)ctx->upos_location, 1, (GLfloat *)cam_trans[2]);
-        aven_gl_check_error(gl);
+        aven_gl_Uniform2fv(
+            gl,
+            (GLint)ctx->upos_location,
+            1,
+            (GLfloat *)cam_trans[2]
+        );
 
-        gl->DrawElements(
+        aven_gl_DrawElements(
+            gl,
             GL_TRIANGLES,
             (GLsizei)(end - start),
             GL_UNSIGNED_SHORT,
             (void *)start
         );
-        aven_gl_check_error(gl);
 
-        gl->BindTexture(GL_TEXTURE_2D, 0);
-        aven_gl_check_error(gl);
+        aven_gl_BindTexture(gl, GL_TEXTURE_2D, 0);
 
-        gl->Disable(GL_BLEND);
-        aven_gl_check_error(gl);
+        aven_gl_Disable(gl, GL_BLEND);
 
-        gl->BindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-        aven_gl_check_error(gl);
-        gl->BindBuffer(GL_ARRAY_BUFFER, 0);
-        aven_gl_check_error(gl);
-        gl->BindVertexArray(0);
-        aven_gl_check_error(gl);
+        aven_gl_BindBuffer(gl, GL_ELEMENT_ARRAY_BUFFER, 0);
+        aven_gl_BindBuffer(gl, GL_ARRAY_BUFFER, 0);
+        aven_gl_BindVertexArray(gl, 0);
     }
 
     static inline void aven_gl_texture_draw(

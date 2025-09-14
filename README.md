@@ -18,7 +18,7 @@ I've tested the project on `x86_64` machines running Windows, Linux
 and FreeBSD (X11 or Wayland). Theoretically, it should run on
 other architectures as well. Apple operating systems are not
 supported at the moment as I don't have an Apple device to test on.
-Web GL 2 is supported with Emscripten.
+WebGL 2 is supported with Emscripten.
 
 ## Testing the loader
 

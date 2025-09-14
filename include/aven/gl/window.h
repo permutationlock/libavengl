@@ -331,7 +331,7 @@
             AvenStr msg_str = { .ptr = (char *)message, .len = (size_t)length };
 
             aven_io_perrf(
-                "GL DEBUG {} {} {} ({}): {}\n",
+                "GL {} {} {} ({}): {}\n",
                 aven_fmt_str(src_str),
                 aven_fmt_str(type_str),
                 aven_fmt_uint(id),
