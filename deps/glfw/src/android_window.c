@@ -51,8 +51,17 @@ static void moveNativeWindowToBackground(ANativeActivity* nativeActivity)
     (*env)->CallBooleanMethod(env, nativeActivity->clazz, moveTaskToBackMethod, JNI_TRUE);
 }
 
+static int translateAndroidKey(uint32_t scancode)
+{
+    if (scancode < sizeof(_glfw.gstate.keycodes) / sizeof(_glfw.gstate.keycodes[0]))
+        return _glfw.gstate.keycodes[scancode];
+
+    return GLFW_KEY_UNKNOWN;
+}
+
 static int32_t handleInput(struct android_app* app, AInputEvent* event)
 {
+    __android_log_print(ANDROID_LOG_INFO, "GLFW", "input event: %d", AInputEvent_getType(event));
     if (AInputEvent_getType(event) == AINPUT_EVENT_TYPE_MOTION)
     {
         size_t pointerCount = AMotionEvent_getPointerCount(event);
@@ -90,7 +99,12 @@ static int32_t handleInput(struct android_app* app, AInputEvent* event)
     }
     else if (AInputEvent_getType(event) == AINPUT_EVENT_TYPE_KEY)
     {
-        _glfwInputKey(_glfw.windowListHead, 0 , AKeyEvent_getKeyCode(event), GLFW_PRESS, 0);
+        __android_log_print(ANDROID_LOG_INFO, "GLFW", "input key: %d", AKeyEvent_getKeyCode(event));
+        int key = translateAndroidKey(AKeyEvent_getKeyCode(event));
+        if (key == GLFW_KEY_UNKNOWN) {
+            return 0;
+        }
+        _glfwInputKey(_glfw.windowListHead, 0 , key, GLFW_PRESS, 0);
 
         return 1;
     }
@@ -301,7 +315,7 @@ void _glfwGetWindowContentScaleAndroid(_GLFWwindow* window, float* xscale, float
 
 void _glfwIconifyWindowAndroid(_GLFWwindow* window)
 {
-    moveNativeWindowToBackground(window->android->activity);
+    // moveNativeWindowToBackground(window->android->activity);
 }
 
 void _glfwRestoreWindowAndroid(_GLFWwindow* window)

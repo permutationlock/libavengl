@@ -44,6 +44,8 @@ typedef struct android_gstate
 {
     struct android_app* app; 
     GLFWbool suspended;
+    short int keycodes[256];
+    short int scancodes[GLFW_KEY_LAST + 1];
 } android_gstate;
 
 typedef VkFlags VkAndroidSurfaceCreateFlagsKHR;

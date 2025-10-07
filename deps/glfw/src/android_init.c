@@ -28,6 +28,7 @@
 #include <assert.h>
 
 #include <android_native_app_glue.h>
+#include <android/keycodes.h>
 #include <android/native_window.h>
 #include <android/log.h>
 #include <jni.h>
@@ -246,8 +247,128 @@ GLFWbool _glfwConnectAndroid(int platformID, _GLFWplatform *platform) {
     return GLFW_TRUE;
 }
 
+// Create key code translation tables
+//
+static void createAndroidKeyTables(void)
+{
+    memset(_glfw.gstate.keycodes, -1, sizeof(_glfw.gstate.keycodes));
+    memset(_glfw.gstate.scancodes, -1, sizeof(_glfw.gstate.scancodes));
+
+    _glfw.gstate.keycodes[AKEYCODE_GRAVE]      = GLFW_KEY_GRAVE_ACCENT;
+    _glfw.gstate.keycodes[AKEYCODE_1]          = GLFW_KEY_1;
+    _glfw.gstate.keycodes[AKEYCODE_2]          = GLFW_KEY_2;
+    _glfw.gstate.keycodes[AKEYCODE_3]          = GLFW_KEY_3;
+    _glfw.gstate.keycodes[AKEYCODE_4]          = GLFW_KEY_4;
+    _glfw.gstate.keycodes[AKEYCODE_5]          = GLFW_KEY_5;
+    _glfw.gstate.keycodes[AKEYCODE_6]          = GLFW_KEY_6;
+    _glfw.gstate.keycodes[AKEYCODE_7]          = GLFW_KEY_7;
+    _glfw.gstate.keycodes[AKEYCODE_8]          = GLFW_KEY_8;
+    _glfw.gstate.keycodes[AKEYCODE_9]          = GLFW_KEY_9;
+    _glfw.gstate.keycodes[AKEYCODE_0]          = GLFW_KEY_0;
+    _glfw.gstate.keycodes[AKEYCODE_SPACE]      = GLFW_KEY_SPACE;
+    _glfw.gstate.keycodes[AKEYCODE_MINUS]      = GLFW_KEY_MINUS;
+    _glfw.gstate.keycodes[AKEYCODE_EQUALS]      = GLFW_KEY_EQUAL;
+    _glfw.gstate.keycodes[AKEYCODE_Q]          = GLFW_KEY_Q;
+    _glfw.gstate.keycodes[AKEYCODE_W]          = GLFW_KEY_W;
+    _glfw.gstate.keycodes[AKEYCODE_E]          = GLFW_KEY_E;
+    _glfw.gstate.keycodes[AKEYCODE_R]          = GLFW_KEY_R;
+    _glfw.gstate.keycodes[AKEYCODE_T]          = GLFW_KEY_T;
+    _glfw.gstate.keycodes[AKEYCODE_Y]          = GLFW_KEY_Y;
+    _glfw.gstate.keycodes[AKEYCODE_U]          = GLFW_KEY_U;
+    _glfw.gstate.keycodes[AKEYCODE_I]          = GLFW_KEY_I;
+    _glfw.gstate.keycodes[AKEYCODE_O]          = GLFW_KEY_O;
+    _glfw.gstate.keycodes[AKEYCODE_P]          = GLFW_KEY_P;
+    _glfw.gstate.keycodes[AKEYCODE_LEFT_BRACKET]  = GLFW_KEY_LEFT_BRACKET;
+    _glfw.gstate.keycodes[AKEYCODE_RIGHT_BRACKET] = GLFW_KEY_RIGHT_BRACKET;
+    _glfw.gstate.keycodes[AKEYCODE_A]          = GLFW_KEY_A;
+    _glfw.gstate.keycodes[AKEYCODE_S]          = GLFW_KEY_S;
+    _glfw.gstate.keycodes[AKEYCODE_D]          = GLFW_KEY_D;
+    _glfw.gstate.keycodes[AKEYCODE_F]          = GLFW_KEY_F;
+    _glfw.gstate.keycodes[AKEYCODE_G]          = GLFW_KEY_G;
+    _glfw.gstate.keycodes[AKEYCODE_H]          = GLFW_KEY_H;
+    _glfw.gstate.keycodes[AKEYCODE_J]          = GLFW_KEY_J;
+    _glfw.gstate.keycodes[AKEYCODE_K]          = GLFW_KEY_K;
+    _glfw.gstate.keycodes[AKEYCODE_L]          = GLFW_KEY_L;
+    _glfw.gstate.keycodes[AKEYCODE_SEMICOLON]  = GLFW_KEY_SEMICOLON;
+    _glfw.gstate.keycodes[AKEYCODE_APOSTROPHE] = GLFW_KEY_APOSTROPHE;
+    _glfw.gstate.keycodes[AKEYCODE_Z]          = GLFW_KEY_Z;
+    _glfw.gstate.keycodes[AKEYCODE_X]          = GLFW_KEY_X;
+    _glfw.gstate.keycodes[AKEYCODE_C]          = GLFW_KEY_C;
+    _glfw.gstate.keycodes[AKEYCODE_V]          = GLFW_KEY_V;
+    _glfw.gstate.keycodes[AKEYCODE_B]          = GLFW_KEY_B;
+    _glfw.gstate.keycodes[AKEYCODE_N]          = GLFW_KEY_N;
+    _glfw.gstate.keycodes[AKEYCODE_M]          = GLFW_KEY_M;
+    _glfw.gstate.keycodes[AKEYCODE_COMMA]      = GLFW_KEY_COMMA;
+    _glfw.gstate.keycodes[AKEYCODE_PERIOD]        = GLFW_KEY_PERIOD;
+    _glfw.gstate.keycodes[AKEYCODE_SLASH]      = GLFW_KEY_SLASH;
+    _glfw.gstate.keycodes[AKEYCODE_BACKSLASH]  = GLFW_KEY_BACKSLASH;
+    _glfw.gstate.keycodes[AKEYCODE_ESCAPE]        = GLFW_KEY_ESCAPE;
+    _glfw.gstate.keycodes[AKEYCODE_TAB]        = GLFW_KEY_TAB;
+    _glfw.gstate.keycodes[AKEYCODE_SHIFT_LEFT]  = GLFW_KEY_LEFT_SHIFT;
+    _glfw.gstate.keycodes[AKEYCODE_SHIFT_RIGHT] = GLFW_KEY_RIGHT_SHIFT;
+    _glfw.gstate.keycodes[AKEYCODE_CTRL_LEFT]   = GLFW_KEY_LEFT_CONTROL;
+    _glfw.gstate.keycodes[AKEYCODE_CTRL_RIGHT]  = GLFW_KEY_RIGHT_CONTROL;
+    _glfw.gstate.keycodes[AKEYCODE_ALT_LEFT]    = GLFW_KEY_LEFT_ALT;
+    _glfw.gstate.keycodes[AKEYCODE_ALT_RIGHT]   = GLFW_KEY_RIGHT_ALT;
+    _glfw.gstate.keycodes[AKEYCODE_META_LEFT]   = GLFW_KEY_LEFT_SUPER;
+    _glfw.gstate.keycodes[AKEYCODE_META_RIGHT]  = GLFW_KEY_RIGHT_SUPER;
+    _glfw.gstate.keycodes[AKEYCODE_MENU]    = GLFW_KEY_MENU;
+    _glfw.gstate.keycodes[AKEYCODE_NUM_LOCK]    = GLFW_KEY_NUM_LOCK;
+    _glfw.gstate.keycodes[AKEYCODE_CAPS_LOCK]   = GLFW_KEY_CAPS_LOCK;
+    _glfw.gstate.keycodes[AKEYCODE_SCROLL_LOCK] = GLFW_KEY_SCROLL_LOCK;
+    _glfw.gstate.keycodes[AKEYCODE_FORWARD_DEL]     = GLFW_KEY_DELETE;
+    _glfw.gstate.keycodes[AKEYCODE_DEL]  = GLFW_KEY_BACKSPACE;
+    _glfw.gstate.keycodes[AKEYCODE_ENTER]      = GLFW_KEY_ENTER;
+    _glfw.gstate.keycodes[AKEYCODE_MOVE_HOME]       = GLFW_KEY_HOME;
+    _glfw.gstate.keycodes[AKEYCODE_MOVE_END]        = GLFW_KEY_END;
+    _glfw.gstate.keycodes[AKEYCODE_PAGE_UP]     = GLFW_KEY_PAGE_UP;
+    _glfw.gstate.keycodes[AKEYCODE_PAGE_DOWN]   = GLFW_KEY_PAGE_DOWN;
+    _glfw.gstate.keycodes[AKEYCODE_INSERT]     = GLFW_KEY_INSERT;
+    _glfw.gstate.keycodes[AKEYCODE_DPAD_LEFT]  = GLFW_KEY_LEFT;
+    _glfw.gstate.keycodes[AKEYCODE_DPAD_RIGHT] = GLFW_KEY_RIGHT;
+    _glfw.gstate.keycodes[AKEYCODE_DPAD_DOWN]  = GLFW_KEY_DOWN;
+    _glfw.gstate.keycodes[AKEYCODE_DPAD_UP]    = GLFW_KEY_UP;
+    _glfw.gstate.keycodes[AKEYCODE_F1]         = GLFW_KEY_F1;
+    _glfw.gstate.keycodes[AKEYCODE_F2]         = GLFW_KEY_F2;
+    _glfw.gstate.keycodes[AKEYCODE_F3]         = GLFW_KEY_F3;
+    _glfw.gstate.keycodes[AKEYCODE_F4]         = GLFW_KEY_F4;
+    _glfw.gstate.keycodes[AKEYCODE_F5]         = GLFW_KEY_F5;
+    _glfw.gstate.keycodes[AKEYCODE_F6]         = GLFW_KEY_F6;
+    _glfw.gstate.keycodes[AKEYCODE_F7]         = GLFW_KEY_F7;
+    _glfw.gstate.keycodes[AKEYCODE_F8]         = GLFW_KEY_F8;
+    _glfw.gstate.keycodes[AKEYCODE_F9]         = GLFW_KEY_F9;
+    _glfw.gstate.keycodes[AKEYCODE_F10]        = GLFW_KEY_F10;
+    _glfw.gstate.keycodes[AKEYCODE_F11]        = GLFW_KEY_F11;
+    _glfw.gstate.keycodes[AKEYCODE_F12]        = GLFW_KEY_F12;
+    _glfw.gstate.keycodes[AKEYCODE_NUMPAD_DIVIDE]    = GLFW_KEY_KP_DIVIDE;
+    _glfw.gstate.keycodes[AKEYCODE_NUMPAD_MULTIPLY] = GLFW_KEY_KP_MULTIPLY;
+    _glfw.gstate.keycodes[AKEYCODE_NUMPAD_SUBTRACT]    = GLFW_KEY_KP_SUBTRACT;
+    _glfw.gstate.keycodes[AKEYCODE_NUMPAD_ADD]     = GLFW_KEY_KP_ADD;
+    _glfw.gstate.keycodes[AKEYCODE_NUMPAD_0]        = GLFW_KEY_KP_0;
+    _glfw.gstate.keycodes[AKEYCODE_NUMPAD_1]        = GLFW_KEY_KP_1;
+    _glfw.gstate.keycodes[AKEYCODE_NUMPAD_2]        = GLFW_KEY_KP_2;
+    _glfw.gstate.keycodes[AKEYCODE_NUMPAD_3]        = GLFW_KEY_KP_3;
+    _glfw.gstate.keycodes[AKEYCODE_NUMPAD_4]        = GLFW_KEY_KP_4;
+    _glfw.gstate.keycodes[AKEYCODE_NUMPAD_5]        = GLFW_KEY_KP_5;
+    _glfw.gstate.keycodes[AKEYCODE_NUMPAD_6]        = GLFW_KEY_KP_6;
+    _glfw.gstate.keycodes[AKEYCODE_NUMPAD_7]        = GLFW_KEY_KP_7;
+    _glfw.gstate.keycodes[AKEYCODE_NUMPAD_8]        = GLFW_KEY_KP_8;
+    _glfw.gstate.keycodes[AKEYCODE_NUMPAD_9]        = GLFW_KEY_KP_9;
+    _glfw.gstate.keycodes[AKEYCODE_NUMPAD_DOT]      = GLFW_KEY_KP_DECIMAL;
+    _glfw.gstate.keycodes[AKEYCODE_NUMPAD_EQUALS]    = GLFW_KEY_KP_EQUAL;
+    _glfw.gstate.keycodes[AKEYCODE_NUMPAD_ENTER]    = GLFW_KEY_KP_ENTER;
+
+    for (int scancode = 0;  scancode < 256;  scancode++)
+    {
+        if (_glfw.gstate.keycodes[scancode] > 0)
+            _glfw.gstate.scancodes[_glfw.gstate.keycodes[scancode]] = scancode;
+    }
+}
+
 int _glfwInitAndroid(void) {
     _glfw.gstate.app = _globalAndroidApp;
+
+    createAndroidKeyTables();
 
     return GLFW_TRUE;
 }
