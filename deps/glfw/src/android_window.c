@@ -61,7 +61,6 @@ static int translateAndroidKey(uint32_t scancode)
 
 static int32_t handleInput(struct android_app* app, AInputEvent* event)
 {
-    __android_log_print(ANDROID_LOG_INFO, "GLFW", "input event: %d", AInputEvent_getType(event));
     if (AInputEvent_getType(event) == AINPUT_EVENT_TYPE_MOTION)
     {
         size_t pointerCount = AMotionEvent_getPointerCount(event);
@@ -99,7 +98,6 @@ static int32_t handleInput(struct android_app* app, AInputEvent* event)
     }
     else if (AInputEvent_getType(event) == AINPUT_EVENT_TYPE_KEY)
     {
-        __android_log_print(ANDROID_LOG_INFO, "GLFW", "input key: %d", AKeyEvent_getKeyCode(event));
         int key = translateAndroidKey(AKeyEvent_getKeyCode(event));
         if (key == GLFW_KEY_UNKNOWN) {
             return 0;
