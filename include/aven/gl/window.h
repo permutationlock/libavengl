@@ -1,7 +1,6 @@
 #ifndef AVEN_GL_WINDOW_H
     #define AVEN_GL_WINDOW_H
 
-    #include <GLES3/gl32.h>
     #include <aven.h>
     #include <aven/math.h>
     #include <aven/time.h>
