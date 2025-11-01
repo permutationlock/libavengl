@@ -162,7 +162,7 @@
         win->now = aven_time_now();
         switch (win->vtable.update(win)) {
             case AVEN_GL_WINDOW_ACTION_NONE:
-                aven_time_sleep_ms(AVEN_TIME_NSEC_PER_SEC / 30);
+                aven_time_sleep_ms(AVEN_TIME_MSEC_PER_SEC / 30);
                 break;
             case AVEN_GL_WINDOW_ACTION_SWAP:
                 glfwSwapBuffers(win->window);
