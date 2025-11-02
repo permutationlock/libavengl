@@ -28,7 +28,6 @@
 
     typedef struct AvenGlWindow AvenGlWindow;
     typedef void AvenGlWindowInitFn(AvenGlWindow *win);
-    typedef void AvenGlWindowDeinitFn(AvenGlWindow *win);
     typedef AvenGlWindowAction AvenGlWindowUpdateFn(AvenGlWindow *win);
     typedef void AvenGlWindowDamageFn(AvenGlWindow *win);
     typedef void AvenGlWindowMouseClickFn(
@@ -50,7 +49,9 @@
 
     typedef struct {
         AvenGlWindowInitFn *init;
-        AvenGlWindowDeinitFn *deinit;
+        AvenGlWindowInitFn *hide;
+        AvenGlWindowInitFn *show;
+        AvenGlWindowInitFn *deinit;
         AvenGlWindowUpdateFn *update;
         OptPtr(AvenGlWindowDamageFn) damage;
         OptPtr(AvenGlWindowMouseClickFn) mouse_click;
@@ -138,10 +139,10 @@
             (void)window;
             AvenGlWindow *win = &aven_gl_window_ctx;
             if (iconified) {
-                win->vtable.deinit(win);
+                win->vtable.hide(win);
                 win->minimized = true;
             } else {
-                win->vtable.init(win);
+                win->vtable.show(win);
                 win->minimized = false;
             }
         }
