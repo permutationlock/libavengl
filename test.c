@@ -74,61 +74,59 @@ typedef struct {
 #define NINDICES 12
 #define TSIZE 2
 
-static uint32_t texture_data[TSIZE * TSIZE] = {
-    0xffffffff,
-    0xff0000ff,
-    0xff0000ff,
-    0xffffffff,
-};
-static Slice(uint32_t) texture = slice_array(texture_data);
-
-static AvenArena test_arena;
-static TestAvenGl app;
+typedef struct {
+    Slice(uint32_t) texture;
+    AvenArena arena;
+    TestAvenGl app;
+} TestCtx;
 
 static void test_aven_gl_shape_init(AvenGlWindow *win) {
-    AvenArena temp_arena = test_arena;
-    app.state = TEST_AVEN_GL_SHAPE;
-    app.data.shape.ctx = aven_gl_shape_ctx_init(&win->gl);
-    app.data.shape.geometry = aven_gl_shape_geometry_init(
+    TestCtx *ctx = win->ctx;
+    AvenArena temp_arena = ctx->arena;
+    ctx->app.state = TEST_AVEN_GL_SHAPE;
+    ctx->app.data.shape.ctx = aven_gl_shape_ctx_init(&win->gl);
+    ctx->app.data.shape.geometry = aven_gl_shape_geometry_init(
         NVERTICES,
         NINDICES,
         &temp_arena
     );
-    app.data.shape.buffer = aven_gl_shape_buffer_init(
+    ctx->app.data.shape.buffer = aven_gl_shape_buffer_init(
         &win->gl,
-        &app.data.shape.ctx,
-        &app.data.shape.geometry,
+        &ctx->app.data.shape.ctx,
+        &ctx->app.data.shape.geometry,
         AVEN_GL_BUFFER_USAGE_DYNAMIC
     );
 }
 
 static void test_aven_gl_shape_update(AvenGlWindow *win, float t) {
     (void)t;
+    TestCtx *ctx = win->ctx;
+
     Aff2 trans;
     aff2_identity(trans);
     Aff2 camera;
     aff2_camera_position(camera, (Vec2){ 0.0f, 0.0f }, (Vec2){ 1.25f, 1.25f });
 
-    aven_gl_shape_geometry_clear(&app.data.shape.geometry);
+    aven_gl_shape_geometry_clear(&ctx->app.data.shape.geometry);
     aven_gl_shape_geometry_push_square(
-        &app.data.shape.geometry,
+        &ctx->app.data.shape.geometry,
         trans,
         (Vec4){ 1.0f, 0.0f, 0.0f, 1.0f }
     );
     aven_gl_shape_geometry_push_triangle_isoceles(
-        &app.data.shape.geometry,
+        &ctx->app.data.shape.geometry,
         trans,
         (Vec4){ 0.0f, 1.0f, 0.0f, 1.0f }
     );
     aven_gl_shape_geometry_push_triangle_right(
-        &app.data.shape.geometry,
+        &ctx->app.data.shape.geometry,
         trans,
         (Vec4){ 0.0f, 0.0f, 1.0f, 1.0f }
     );
     aven_gl_shape_buffer_update(
         &win->gl,
-        &app.data.shape.buffer,
-        &app.data.shape.geometry
+        &ctx->app.data.shape.buffer,
+        &ctx->app.data.shape.geometry
     );
 
     int width;
@@ -139,111 +137,122 @@ static void test_aven_gl_shape_update(AvenGlWindow *win, float t) {
     aven_gl_Clear(&win->gl, GL_COLOR_BUFFER_BIT);
     aven_gl_shape_draw(
         &win->gl,
-        &app.data.shape.ctx,
-        &app.data.shape.buffer,
+        &ctx->app.data.shape.ctx,
+        &ctx->app.data.shape.buffer,
         camera
     );
 }
 
 static void test_aven_gl_shape_deinit(AvenGlWindow *win) {
-    aven_gl_shape_buffer_deinit(&win->gl, &app.data.shape.buffer);
-    aven_gl_shape_geometry_deinit(&app.data.shape.geometry);
-    aven_gl_shape_ctx_deinit(&win->gl, &app.data.shape.ctx);
+    TestCtx *ctx = win->ctx;
+    aven_gl_shape_buffer_deinit(&win->gl, &ctx->app.data.shape.buffer);
+    aven_gl_shape_geometry_deinit(&ctx->app.data.shape.geometry);
+    aven_gl_shape_ctx_deinit(&win->gl, &ctx->app.data.shape.ctx);
 }
 
 static void test_aven_gl_shape_rounded_init(AvenGlWindow *win) {
-    AvenArena temp_arena = test_arena;
-    app.state = TEST_AVEN_GL_ROUNDED;
-    app.data.rounded.ctx = aven_gl_shape_rounded_ctx_init(&win->gl);
-    app.data.rounded.geometry = aven_gl_shape_rounded_geometry_init(
+    TestCtx *ctx = win->ctx;
+    AvenArena temp_arena = ctx->arena;
+    ctx->app.state = TEST_AVEN_GL_ROUNDED;
+    ctx->app.data.rounded.ctx = aven_gl_shape_rounded_ctx_init(&win->gl);
+    ctx->app.data.rounded.geometry = aven_gl_shape_rounded_geometry_init(
         NVERTICES,
         NINDICES,
         &temp_arena
     );
-    app.data.rounded.buffer = aven_gl_shape_rounded_buffer_init(
+    ctx->app.data.rounded.buffer = aven_gl_shape_rounded_buffer_init(
         &win->gl,
-        &app.data.rounded.ctx,
-        &app.data.rounded.geometry,
+        &ctx->app.data.rounded.ctx,
+        &ctx->app.data.rounded.geometry,
         AVEN_GL_BUFFER_USAGE_DYNAMIC
     );
 }
 
 static void test_aven_gl_shape_rounded_update(AvenGlWindow *win, float t) {
+    TestCtx *ctx = win->ctx;
+
     Aff2 trans;
     aff2_identity(trans);
     Aff2 camera;
     aff2_camera_position(camera, (Vec2){ 0.0f, 0.0f }, (Vec2){ 1.25f, 1.25f });
 
     float rounded = min(1.0f, 1.33f * t);
-    aven_gl_shape_rounded_geometry_clear(&app.data.rounded.geometry);
+    aven_gl_shape_rounded_geometry_clear(&ctx->app.data.rounded.geometry);
     aven_gl_shape_rounded_geometry_push_square(
-        &app.data.rounded.geometry,
+        &ctx->app.data.rounded.geometry,
         trans,
         rounded,
         (Vec4){ 1.0f, 0.0f, 0.0f, 1.0f }
     );
     aven_gl_shape_rounded_geometry_push_triangle_isoceles(
-        &app.data.rounded.geometry,
+        &ctx->app.data.rounded.geometry,
         trans,
         rounded,
         (Vec4){ 0.0f, 1.0f, 0.0f, 1.0f }
     );
     aven_gl_shape_rounded_geometry_push_triangle_right(
-        &app.data.rounded.geometry,
+        &ctx->app.data.rounded.geometry,
         trans,
         rounded,
         (Vec4){ 0.0f, 0.0f, 1.0f, 1.0f }
     );
     aven_gl_shape_rounded_buffer_update(
         &win->gl,
-        &app.data.rounded.buffer,
-        &app.data.rounded.geometry
+        &ctx->app.data.rounded.buffer,
+        &ctx->app.data.rounded.geometry
     );
 
     int width;
     int height;
     glfwGetFramebufferSize(win->window, &width, &height);
-    aven_gl_Viewport(&win->gl, 0, 0, width, height);\
+    aven_gl_Viewport(&win->gl, 0, 0, width, height);
     aven_gl_ClearColor(&win->gl, 0.75f, 0.75f, 0.75f, 1.0f);
     aven_gl_Clear(&win->gl, GL_COLOR_BUFFER_BIT);
     aven_gl_shape_rounded_draw(
         &win->gl,
-        &app.data.rounded.ctx,
-        &app.data.rounded.buffer,
+        &ctx->app.data.rounded.ctx,
+        &ctx->app.data.rounded.buffer,
         2.0f / (float)height,
         camera
     );
 }
 
 static void test_aven_gl_shape_rounded_deinit(AvenGlWindow *win) {
-    aven_gl_shape_rounded_buffer_deinit(&win->gl, &app.data.rounded.buffer);
-    aven_gl_shape_rounded_geometry_deinit(&app.data.rounded.geometry);
-    aven_gl_shape_rounded_ctx_deinit(&win->gl, &app.data.rounded.ctx);
+    TestCtx *ctx = win->ctx;
+    aven_gl_shape_rounded_buffer_deinit(&win->gl, &ctx->app.data.rounded.buffer);
+    aven_gl_shape_rounded_geometry_deinit(&ctx->app.data.rounded.geometry);
+    aven_gl_shape_rounded_ctx_deinit(&win->gl, &ctx->app.data.rounded.ctx);
 }
 
 static void test_aven_gl_shape_join_init(AvenGlWindow *win) {
-    AvenArena temp_arena = test_arena;
-    app.state = TEST_AVEN_GL_JOIN;
-    app.data.join.ctx = aven_gl_shape_join_ctx_init(&win->gl);
-    app.data.join.geometry = aven_gl_shape_join_geometry_init(2, &temp_arena);
-    app.data.join.buffer = aven_gl_shape_join_buffer_init(
+    TestCtx *ctx = win->ctx;
+    AvenArena temp_arena = ctx->arena;
+    ctx->app.state = TEST_AVEN_GL_JOIN;
+    ctx->app.data.join.ctx = aven_gl_shape_join_ctx_init(&win->gl);
+    ctx->app.data.join.geometry = aven_gl_shape_join_geometry_init(
+        2,
+        &temp_arena
+    );
+    ctx->app.data.join.buffer = aven_gl_shape_join_buffer_init(
         &win->gl,
-        &app.data.join.ctx,
-        &app.data.join.geometry,
+        &ctx->app.data.join.ctx,
+        &ctx->app.data.join.geometry,
         AVEN_GL_BUFFER_USAGE_DYNAMIC
     );
 }
 
 static void test_aven_gl_shape_join_update(AvenGlWindow *win, float t) {
+    TestCtx *ctx = win->ctx;
+
     Aff2 trans;
     aff2_identity(trans);
     aff2_stretch(trans, (Vec2){ 0.3f + 0.5f * t, 0.5f }, trans);
     Aff2 camera;
     aff2_camera_position(camera, (Vec2){ 0.0f, 0.0f }, (Vec2){ 1.0f, 1.0f });
 
-    aven_gl_shape_join_geometry_clear(&app.data.join.geometry);
+    aven_gl_shape_join_geometry_clear(&ctx->app.data.join.geometry);
     aven_gl_shape_join_geometry_push_square(
-        &app.data.join.geometry,
+        &ctx->app.data.join.geometry,
         trans,
         (Vec2){ 1.0f, 0.5f },
         (Vec2){ 0.5f - 2.0f * t, 0.5f - 2.0f * t },
@@ -251,8 +260,8 @@ static void test_aven_gl_shape_join_update(AvenGlWindow *win, float t) {
     );
     aven_gl_shape_join_buffer_update(
         &win->gl,
-        &app.data.join.buffer,
-        &app.data.join.geometry
+        &ctx->app.data.join.buffer,
+        &ctx->app.data.join.geometry
     );
 
     int width;
@@ -263,57 +272,64 @@ static void test_aven_gl_shape_join_update(AvenGlWindow *win, float t) {
     aven_gl_Clear(&win->gl, GL_COLOR_BUFFER_BIT);
     aven_gl_shape_join_draw(
         &win->gl,
-        &app.data.join.ctx,
-        &app.data.join.buffer,
+        &ctx->app.data.join.ctx,
+        &ctx->app.data.join.buffer,
         2.0f / (float)height,
         camera
     );
 }
 
 static void test_aven_gl_shape_join_deinit(AvenGlWindow *win) {
-    aven_gl_shape_join_buffer_deinit(&win->gl, &app.data.join.buffer);
-    aven_gl_shape_join_geometry_deinit(&app.data.join.geometry);
-    aven_gl_shape_join_ctx_deinit(&win->gl, &app.data.join.ctx);
+    TestCtx *ctx = win->ctx;
+    aven_gl_shape_join_buffer_deinit(&win->gl, &ctx->app.data.join.buffer);
+    aven_gl_shape_join_geometry_deinit(&ctx->app.data.join.geometry);
+    aven_gl_shape_join_ctx_deinit(&win->gl, &ctx->app.data.join.ctx);
 }
 
 static void test_aven_gl_texture_init(AvenGlWindow *win) {
-    AvenArena temp_arena = test_arena;
-    app.state = TEST_AVEN_GL_TEXTURE;
-    app.data.texture.ctx = aven_gl_texture_ctx_init(
+    TestCtx *ctx = win->ctx;
+    AvenArena temp_arena = ctx->arena;
+    ctx->app.state = TEST_AVEN_GL_TEXTURE;
+    ctx->app.data.texture.ctx = aven_gl_texture_ctx_init(
         &win->gl,
         TSIZE,
         TSIZE,
         (AvenGlTextureBytesOptional){
             .valid = true,
-            .value = slice_as_bytes(texture),
+            .value = slice_as_bytes(ctx->texture),
         }
     );
-    app.data.texture.geometry = aven_gl_texture_geometry_init(1, &temp_arena);
-    app.data.texture.buffer = aven_gl_texture_buffer_init(
+    ctx->app.data.texture.geometry = aven_gl_texture_geometry_init(
+        1,
+        &temp_arena
+    );
+    ctx->app.data.texture.buffer = aven_gl_texture_buffer_init(
         &win->gl,
-        &app.data.texture.ctx,
-        &app.data.texture.geometry,
+        &ctx->app.data.texture.ctx,
+        &ctx->app.data.texture.geometry,
         AVEN_GL_BUFFER_USAGE_DYNAMIC
     );
 }
 
 static void test_aven_gl_texture_update(AvenGlWindow *win, float t) {
     (void)t;
+    TestCtx *ctx = win->ctx;
+
     Aff2 trans;
     aff2_identity(trans);
     Aff2 camera;
     aff2_camera_position(camera, (Vec2){ 0.0f, 0.0f }, (Vec2){ 1.25f, 1.25f });
 
-    aven_gl_texture_geometry_clear(&app.data.texture.geometry);
+    aven_gl_texture_geometry_clear(&ctx->app.data.texture.geometry);
     aven_gl_texture_geometry_push_square(
-        &app.data.texture.geometry,
+        &ctx->app.data.texture.geometry,
         trans,
         trans
     );
     aven_gl_texture_buffer_update(
         &win->gl,
-        &app.data.texture.buffer,
-        &app.data.texture.geometry
+        &ctx->app.data.texture.buffer,
+        &ctx->app.data.texture.geometry
     );
 
     int width;
@@ -324,43 +340,48 @@ static void test_aven_gl_texture_update(AvenGlWindow *win, float t) {
     aven_gl_Clear(&win->gl, GL_COLOR_BUFFER_BIT);
     aven_gl_texture_draw(
         &win->gl,
-        &app.data.texture.ctx,
-        &app.data.texture.buffer,
+        &ctx->app.data.texture.ctx,
+        &ctx->app.data.texture.buffer,
         camera
     );
 }
 
 static void test_aven_gl_texture_deinit(AvenGlWindow *win) {
-    aven_gl_texture_buffer_deinit(&win->gl, &app.data.texture.buffer);
-    aven_gl_texture_geometry_deinit(&app.data.texture.geometry);
-    aven_gl_texture_ctx_deinit(&win->gl, &app.data.texture.ctx);
+    TestCtx *ctx = win->ctx;
+    aven_gl_texture_buffer_deinit(&win->gl, &ctx->app.data.texture.buffer);
+    aven_gl_texture_geometry_deinit(&ctx->app.data.texture.geometry);
+    aven_gl_texture_ctx_deinit(&win->gl, &ctx->app.data.texture.ctx);
 }
 
 static void test_aven_gl_text_init(AvenGlWindow *win) {
-    AvenArena temp_arena = test_arena;
+    TestCtx *ctx = win->ctx;
+    AvenArena temp_arena = ctx->arena;
 
     AvenStr msg = aven_str("Hello, OpenGL!");
-    app.state = TEST_AVEN_GL_TEXT;
+    ctx->app.state = TEST_AVEN_GL_TEXT;
     ByteSlice font_bytes = {
         .ptr = (unsigned char *)game_font_opensans_ttf,
         .len = sizeof(game_font_opensans_ttf),
     };
-    app.data.text.font = aven_gl_text_font_init(
+    ctx->app.data.text.font = aven_gl_text_font_init(
         &win->gl,
         font_bytes,
         48,
-        test_arena
+        ctx->arena
     );
-    app.data.text.ctx = aven_gl_text_ctx_init(&win->gl);
-    app.data.text.geometry = aven_gl_text_geometry_init(msg.len, &temp_arena);
-    app.data.text.buffer = aven_gl_text_buffer_init(
+    ctx->app.data.text.ctx = aven_gl_text_ctx_init(&win->gl);
+    ctx->app.data.text.geometry = aven_gl_text_geometry_init(
+        msg.len,
+        &temp_arena
+    );
+    ctx->app.data.text.buffer = aven_gl_text_buffer_init(
         &win->gl,
-        &app.data.text.ctx,
-        &app.data.text.geometry,
+        &ctx->app.data.text.ctx,
+        &ctx->app.data.text.geometry,
         AVEN_GL_BUFFER_USAGE_DYNAMIC
     );
-    app.data.text.line = aven_gl_text_line(
-        &app.data.text.font,
+    ctx->app.data.text.line = aven_gl_text_line(
+        &ctx->app.data.text.font,
         msg,
         &temp_arena
     );
@@ -368,6 +389,8 @@ static void test_aven_gl_text_init(AvenGlWindow *win) {
 
 static void test_aven_gl_text_update(AvenGlWindow *win, float t) {
     (void)t;
+    TestCtx *ctx = win->ctx;
+
     Aff2 trans;
     aff2_identity(trans);
 
@@ -393,18 +416,18 @@ static void test_aven_gl_text_update(AvenGlWindow *win, float t) {
         (Vec2){ norm_width, norm_height }
     );
 
-    aven_gl_text_geometry_clear(&app.data.text.geometry);
+    aven_gl_text_geometry_clear(&ctx->app.data.text.geometry);
     aven_gl_text_geometry_push_line(
-        &app.data.text.geometry,
-        &app.data.text.line,
+        &ctx->app.data.text.geometry,
+        &ctx->app.data.text.line,
         trans,
         pixel_size,
         (Vec4){ 0.25f, 0.25f, 0.25f, 1.0f }
     );
     aven_gl_text_buffer_update(
         &win->gl,
-        &app.data.text.buffer,
-        &app.data.text.geometry
+        &ctx->app.data.text.buffer,
+        &ctx->app.data.text.geometry
     );
 
     aven_gl_Viewport(&win->gl, 0, 0, width, height);
@@ -412,23 +435,25 @@ static void test_aven_gl_text_update(AvenGlWindow *win, float t) {
     aven_gl_Clear(&win->gl, GL_COLOR_BUFFER_BIT);
     aven_gl_text_draw(
         &win->gl,
-        &app.data.text.ctx,
-        &app.data.text.buffer,
-        &app.data.text.font,
+        &ctx->app.data.text.ctx,
+        &ctx->app.data.text.buffer,
+        &ctx->app.data.text.font,
         camera
     );
 }
 
 static void test_aven_gl_text_deinit(AvenGlWindow *win) {
-    aven_gl_text_buffer_deinit(&win->gl, &app.data.text.buffer);
-    aven_gl_text_geometry_deinit(&app.data.text.geometry);
-    aven_gl_text_ctx_deinit(&win->gl, &app.data.text.ctx);
+    TestCtx *ctx = win->ctx;
+    aven_gl_text_buffer_deinit(&win->gl, &ctx->app.data.text.buffer);
+    aven_gl_text_geometry_deinit(&ctx->app.data.text.geometry);
+    aven_gl_text_ctx_deinit(&win->gl, &ctx->app.data.text.ctx);
 }
 
 static AvenGlWindowAction update(AvenGlWindow *win) {
-    int64_t elapsed = aven_time_since(win->now, app.start);
+    TestCtx *ctx = win->ctx;
+    int64_t elapsed = aven_time_since(win->now, ctx->app.start);
     if (elapsed >= INTERVAL_NS) {
-        switch (app.state) {
+        switch (ctx->app.state) {
             case TEST_AVEN_GL_NONE:
                 return AVEN_GL_WINDOW_ACTION_CLOSE;
                 break;
@@ -453,10 +478,10 @@ static AvenGlWindowAction update(AvenGlWindow *win) {
                 test_aven_gl_shape_init(win);
                 break;
         }
-        app.start = win->now;
+        ctx->app.start = win->now;
     } else {
         float t = (float)elapsed / (float)INTERVAL_NS;
-        switch (app.state) {
+        switch (ctx->app.state) {
             case TEST_AVEN_GL_NONE:
                 return AVEN_GL_WINDOW_ACTION_CLOSE;
                 break;
@@ -482,6 +507,7 @@ static AvenGlWindowAction update(AvenGlWindow *win) {
 }
 
 static void load(AvenGlWindow *win) {
+    TestCtx *ctx = win->ctx;
     bool fail = false;
 
     if (win->gl.ActiveTexture == NULL) {
@@ -1076,11 +1102,12 @@ static void load(AvenGlWindow *win) {
     if (!fail) {
         test_aven_gl_text_init(win);
     }
-    app.start = aven_time_now();
+    ctx->app.start = aven_time_now();
 }
 
 static void init(AvenGlWindow *win) {
-    switch (app.state) {
+    TestCtx *ctx = win->ctx;
+    switch (ctx->app.state) {
         case TEST_AVEN_GL_NONE:
             load(win);
             break;
@@ -1103,7 +1130,8 @@ static void init(AvenGlWindow *win) {
 }
 
 static void deinit(AvenGlWindow *win) {
-    switch (app.state) {
+    TestCtx *ctx = win->ctx;
+    switch (ctx->app.state) {
         case TEST_AVEN_GL_NONE:
             break;
         case TEST_AVEN_GL_SHAPE:
@@ -1173,13 +1201,23 @@ void mouse_enter(AvenGlWindow *win, bool entered) {
     }
 }
 
+static uint32_t texture[TSIZE * TSIZE] = {
+    0xffffffff,
+    0xff0000ff,
+    0xff0000ff,
+    0xffffffff,
+};
+static AvenArena arena;
+static TestCtx ctx;
+
 int main(void) {
     void *mem = malloc(ARENA_SIZE);
     if (mem == NULL) {
         aven_panic("malloc failed");
     }
 
-    test_arena = aven_arena_init(mem, ARENA_SIZE);
+    arena = aven_arena_init(mem, ARENA_SIZE);
+    ctx = (TestCtx){ .texture = slice_array(texture), .arena = arena };
 
     AvenGlWindowCode rcode = aven_gl_window(
         INIT_WIDTH,
@@ -1196,7 +1234,8 @@ int main(void) {
             .mouse_click = { .value = mouse_click },
             .mouse_move = { .value = mouse_move },
             .mouse_enter = { .value = mouse_enter },
-        }
+        },
+        &ctx
     );
 
     return (int)rcode;

@@ -50,6 +50,7 @@
     struct AvenGlWindow {
         AvenGl gl;
         void *window;
+        void *ctx;
         AvenGlWindowVtable vtable;
         AvenTimeInst last;
         AvenTimeInst now;
@@ -354,9 +355,11 @@
             int width,
             int height,
             const char *title,
-            AvenGlWindowVtable vtable
+            AvenGlWindowVtable vtable,
+            void *ctx
         ) {
             aven_gl_window_ctx = (AvenGlWindow){
+                .ctx = ctx,
                 .width = width,
                 .height = height,
                 .vtable = vtable,
