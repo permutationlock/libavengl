@@ -12,6 +12,7 @@
 #include <aven/gl/texture.h>
 #include <aven/gl/ui.h>
 #include <aven/gl/window.h>
+#include <aven/gl/window/impl.h>
 #include <aven/io.h>
 #include <aven/math.h>
 #include <aven/time.h>
@@ -1219,7 +1220,7 @@ int main(void) {
     arena = aven_arena_init(mem, ARENA_SIZE);
     ctx = (TestCtx){ .texture = slice_array(texture), .arena = arena };
 
-    AvenGlWindowCode rcode = aven_gl_window(
+    AvenGlWindowCode rcode = aven_gl_window_impl(
         INIT_WIDTH,
         INIT_HEIGHT,
         "AvenGL Test",
