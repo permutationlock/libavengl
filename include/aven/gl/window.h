@@ -7,6 +7,14 @@
 
     #include "../gl.h"
 
+    #ifndef GLFW_INCLUDE_NONE
+        #define GLFW_INCLUDE_NONE
+        #include <GLFW/glfw3.h>
+        #undef GLFW_INCLUDE_NONE
+    #else
+        #include <GLFW/glfw3.h>
+    #endif
+
     typedef enum {
         AVEN_GL_WINDOW_ACTION_NONE = 0,
         AVEN_GL_WINDOW_ACTION_SWAP,
@@ -14,9 +22,8 @@
     } AvenGlWindowAction;
 
     typedef struct AvenGlWindow AvenGlWindow;
-    typedef void AvenGlWindowInitFn(AvenGlWindow *win);
+    typedef void AvenGlWindowVoidFn(AvenGlWindow *win);
     typedef AvenGlWindowAction AvenGlWindowUpdateFn(AvenGlWindow *win);
-    typedef void AvenGlWindowDamageFn(AvenGlWindow *win);
     typedef void AvenGlWindowMouseClickFn(
         AvenGlWindow *win,
         Vec2 pos,
@@ -35,12 +42,12 @@
     );
 
     typedef struct {
-        AvenGlWindowInitFn *init;
-        AvenGlWindowInitFn *pause;
-        AvenGlWindowInitFn *resume;
-        AvenGlWindowInitFn *deinit;
+        AvenGlWindowVoidFn *init;
+        AvenGlWindowVoidFn *pause;
+        AvenGlWindowVoidFn *resume;
+        AvenGlWindowVoidFn *deinit;
         AvenGlWindowUpdateFn *update;
-        OptPtr(AvenGlWindowDamageFn) damage;
+        OptPtr(AvenGlWindowVoidFn) damage;
         OptPtr(AvenGlWindowMouseClickFn) mouse_click;
         OptPtr(AvenGlWindowMouseMoveFn) mouse_move;
         OptPtr(AvenGlWindowMouseEnterFn) mouse_enter;
@@ -49,7 +56,7 @@
 
     struct AvenGlWindow {
         AvenGl gl;
-        void *window;
+        GLFWwindow *window;
         void *ctx;
         AvenGlWindowVtable vtable;
         AvenTimeInst last;

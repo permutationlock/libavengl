@@ -8,7 +8,13 @@
     #include "../../gl.h"
     #include "../window.h"
 
-    #include <GLFW/glfw3.h>
+    #ifndef GLFW_INCLUDE_NONE
+        #define GLFW_INCLUDE_NONE
+        #include <GLFW/glfw3.h>
+        #undef GLFW_INCLUDE_NONE
+    #else
+        #include <GLFW/glfw3.h>
+    #endif
 
     #if defined(AVEN_GL_NDEBUG) and !defined(AVEN_GL_WINDOW_NDEBUG)
         #define AVEN_GL_WINDOW_NDEBUG
