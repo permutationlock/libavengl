@@ -43,8 +43,6 @@
 
     typedef struct {
         AvenGlWindowVoidFn *init;
-        AvenGlWindowVoidFn *pause;
-        AvenGlWindowVoidFn *resume;
         AvenGlWindowVoidFn *deinit;
         AvenGlWindowUpdateFn *update;
         OptPtr(AvenGlWindowVoidFn) damage;

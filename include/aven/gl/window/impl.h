@@ -95,10 +95,10 @@
             (void)window;
             AvenGlWindow *win = &aven_gl_window_impl_ctx;
             if (iconified) {
-                win->vtable.pause(win);
+                win->vtable.deinit(win);
                 win->minimized = true;
             } else {
-                win->vtable.resume(win);
+                win->vtable.init(win);
                 win->minimized = false;
             }
         }

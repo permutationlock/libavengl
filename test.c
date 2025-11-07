@@ -1226,8 +1226,6 @@ int main(void) {
         "AvenGL Test",
         (AvenGlWindowVtable){
             .init = init,
-            .pause = deinit,
-            .resume = init,
             .deinit = deinit,
             .update = update,
             .damage = { .value = damage },
