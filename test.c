@@ -130,10 +130,7 @@ static void test_aven_gl_shape_update(AvenGlWindow *win, float t) {
         &ctx->app.data.shape.geometry
     );
 
-    int width;
-    int height;
-    glfwGetFramebufferSize(win->window, &width, &height);
-    aven_gl_Viewport(&win->gl, 0, 0, width, height);
+    aven_gl_Viewport(&win->gl, 0, 0, win->width, win->height);
     aven_gl_ClearColor(&win->gl, 0.75f, 0.75f, 0.75f, 1.0f);
     aven_gl_Clear(&win->gl, GL_COLOR_BUFFER_BIT);
     aven_gl_shape_draw(
@@ -203,17 +200,14 @@ static void test_aven_gl_shape_rounded_update(AvenGlWindow *win, float t) {
         &ctx->app.data.rounded.geometry
     );
 
-    int width;
-    int height;
-    glfwGetFramebufferSize(win->window, &width, &height);
-    aven_gl_Viewport(&win->gl, 0, 0, width, height);
+    aven_gl_Viewport(&win->gl, 0, 0, win->width, win->height);
     aven_gl_ClearColor(&win->gl, 0.75f, 0.75f, 0.75f, 1.0f);
     aven_gl_Clear(&win->gl, GL_COLOR_BUFFER_BIT);
     aven_gl_shape_rounded_draw(
         &win->gl,
         &ctx->app.data.rounded.ctx,
         &ctx->app.data.rounded.buffer,
-        2.0f / (float)height,
+        2.0f / (float)win->height,
         camera
     );
 }
@@ -265,17 +259,14 @@ static void test_aven_gl_shape_join_update(AvenGlWindow *win, float t) {
         &ctx->app.data.join.geometry
     );
 
-    int width;
-    int height;
-    glfwGetFramebufferSize(win->window, &width, &height);
-    aven_gl_Viewport(&win->gl, 0, 0, width, height);
+    aven_gl_Viewport(&win->gl, 0, 0, win->width, win->height);
     aven_gl_ClearColor(&win->gl, 0.75f, 0.75f, 0.75f, 1.0f);
     aven_gl_Clear(&win->gl, GL_COLOR_BUFFER_BIT);
     aven_gl_shape_join_draw(
         &win->gl,
         &ctx->app.data.join.ctx,
         &ctx->app.data.join.buffer,
-        2.0f / (float)height,
+        2.0f / (float)win->height,
         camera
     );
 }
@@ -333,10 +324,7 @@ static void test_aven_gl_texture_update(AvenGlWindow *win, float t) {
         &ctx->app.data.texture.geometry
     );
 
-    int width;
-    int height;
-    glfwGetFramebufferSize(win->window, &width, &height);
-    aven_gl_Viewport(&win->gl, 0, 0, width, height);
+    aven_gl_Viewport(&win->gl, 0, 0, win->width, win->height);
     aven_gl_ClearColor(&win->gl, 0.75f, 0.75f, 0.75f, 1.0f);
     aven_gl_Clear(&win->gl, GL_COLOR_BUFFER_BIT);
     aven_gl_texture_draw(
@@ -395,20 +383,16 @@ static void test_aven_gl_text_update(AvenGlWindow *win, float t) {
     Aff2 trans;
     aff2_identity(trans);
 
-    int width;
-    int height;
-    glfwGetFramebufferSize(win->window, &width, &height);
-
-    float screen_ratio = (float)width / (float)height;
+    float screen_ratio = (float)win->width / (float)win->height;
     float norm_height = 1.0f;
     float norm_width = screen_ratio;
-    float pixel_size = 2.0f / (float)height;
+    float pixel_size = 2.0f / (float)win->height;
 
     if (screen_ratio < 1.0f) {
         norm_height = 1.0f / screen_ratio;
         norm_width = 1.0f;
         screen_ratio = 1.0f / screen_ratio;
-        pixel_size = 2.0f / (float)width;
+        pixel_size = 2.0f / (float)win->width;
     }
     Aff2 camera;
     aff2_camera_position(
@@ -431,7 +415,7 @@ static void test_aven_gl_text_update(AvenGlWindow *win, float t) {
         &ctx->app.data.text.geometry
     );
 
-    aven_gl_Viewport(&win->gl, 0, 0, width, height);
+    aven_gl_Viewport(&win->gl, 0, 0, win->width, win->height);
     aven_gl_ClearColor(&win->gl, 0.75f, 0.75f, 0.75f, 1.0f);
     aven_gl_Clear(&win->gl, GL_COLOR_BUFFER_BIT);
     aven_gl_text_draw(
@@ -1161,26 +1145,38 @@ void damage(AvenGlWindow *win) {
     );
 }
 
-void key(AvenGlWindow *win, int key, int scancode, int action, int modes) {
+void key(
+    AvenGlWindow *win,
+    AvenGlWindowKey key,
+    uint32_t scancode,
+    AvenGlWindowPress action,
+    uint32_t mods
+) {
     (void)win;
     aven_io_printf(
         "key: ({}, {}, {}, {})\n",
-        aven_fmt_int(key),
-        aven_fmt_int(scancode),
-        aven_fmt_int(action),
-        aven_fmt_int(modes)
+        aven_fmt_int((int32_t)key),
+        aven_fmt_uint(scancode),
+        aven_fmt_int((int32_t)action),
+        aven_fmt_uint(mods)
     );
 }
 
-void mouse_click(AvenGlWindow *win, Vec2 pos, int button, int action, int modes) {
+void mouse_click(
+    AvenGlWindow *win,
+    Vec2 pos,
+    AvenGlWindowMouse button,
+    AvenGlWindowPress action,
+    uint32_t mods
+) {
     (void)win;
     aven_io_printf(
         "click: (({}, {}), {}, {}, {})\n",
         aven_fmt_int((int)pos[0]),
         aven_fmt_int((int)pos[1]),
-        aven_fmt_int(button),
-        aven_fmt_int(action),
-        aven_fmt_int(modes)
+        aven_fmt_int((int32_t)button),
+        aven_fmt_int((int32_t)action),
+        aven_fmt_uint(mods)
     );
 }
 
