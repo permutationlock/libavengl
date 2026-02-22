@@ -41,18 +41,24 @@
         int key,
         int scancode,
         int action,
-        int modes
+        int mods
     ) {
         (void)window;
         AvenGlWindow *win = &aven_gl_window_impl_ctx;
-        unwrap(win->vtable.key)(win, key, scancode, action, modes);
+        unwrap(win->vtable.key)(
+            win,
+            key,
+            (uint32_t)scancode,
+            action,
+            (uint32_t)mods
+        );
     }
 
     static void aven_gl_window_impl_mouse_click_internal(
         GLFWwindow *window,
         int button,
         int action,
-        int modes
+        int mods
     ) {
         (void)window;
         AvenGlWindow *win = &aven_gl_window_impl_ctx;
@@ -64,7 +70,7 @@
             (Vec2){ (float)x, (float)y },
             button,
             action,
-            modes
+            (uint32_t)mods
         );
     }
 
