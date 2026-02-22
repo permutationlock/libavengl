@@ -416,6 +416,7 @@
         gl->ActiveTexture(texture);
         aven_gl_check_error(gl);
     }
+
     static inline void aven_gl_AttachShader(
         AvenGl *gl,
         GLuint program,
@@ -424,6 +425,7 @@
         gl->AttachShader(program, shader);
         aven_gl_check_error(gl);
     }
+
     static inline void aven_gl_BindAttribLocation(
         AvenGl *gl,
         GLuint program,
@@ -433,6 +435,7 @@
         gl->BindAttribLocation(program, index, name);
         aven_gl_check_error(gl);
     }
+
     static inline void aven_gl_BindBuffer(
         AvenGl *gl,
         GLenum target,
@@ -441,6 +444,7 @@
         gl->BindBuffer(target, buffer);
         aven_gl_check_error(gl);
     }
+
     static inline void aven_gl_BindFramebuffer(
         AvenGl *gl,
         GLenum target,
@@ -449,6 +453,7 @@
         gl->BindFramebuffer(target, framebuffer);
         aven_gl_check_error(gl);
     }
+
     static inline void aven_gl_BindRenderbuffer(
         AvenGl *gl,
         GLenum target,
@@ -457,6 +462,7 @@
         gl->BindRenderbuffer(target, renderbuffer);
         aven_gl_check_error(gl);
     }
+
     static inline void aven_gl_BindTexture(
         AvenGl *gl,
         GLenum target,
@@ -465,6 +471,7 @@
         gl->BindTexture(target, texture);
         aven_gl_check_error(gl);
     }
+
     static inline void aven_gl_BlendColor(
         AvenGl *gl,
         GLfloat red,
@@ -475,10 +482,12 @@
         gl->BlendColor(red, green, blue, alpha);
         aven_gl_check_error(gl);
     }
+
     static inline void aven_gl_BlendEquation(AvenGl *gl, GLenum mode) {
         gl->BlendEquation(mode);
         aven_gl_check_error(gl);
     }
+
     static inline void aven_gl_BlendEquationSeparate(
         AvenGl *gl,
         GLenum modeRGB,
@@ -487,6 +496,7 @@
         gl->BlendEquationSeparate(modeRGB, modeAlpha);
         aven_gl_check_error(gl);
     }
+
     static inline void aven_gl_BlendFunc(
         AvenGl *gl,
         GLenum sfactor,
@@ -495,6 +505,7 @@
         gl->BlendFunc(sfactor, dfactor);
         aven_gl_check_error(gl);
     }
+
     static inline void aven_gl_BlendFuncSeparate(
         AvenGl *gl,
         GLenum sfactorRGB,
@@ -510,6 +521,7 @@
         );
         aven_gl_check_error(gl);
     }
+
     static inline void aven_gl_BufferData(
         AvenGl *gl,
         GLenum target,
@@ -520,6 +532,7 @@
         gl->BufferData(target, size, data, usage);
         aven_gl_check_error(gl);
     }
+
     static inline void aven_gl_BufferSubData(
         AvenGl *gl,
         GLenum target,
@@ -530,6 +543,7 @@
         gl->BufferSubData(target, offset, size, data);
         aven_gl_check_error(gl);
     }
+
     static inline GLenum aven_gl_CheckFramebufferStatus(
         AvenGl *gl,
         GLenum target
@@ -538,10 +552,12 @@
         aven_gl_check_error(gl);
         return res;
     }
+
     static inline void aven_gl_Clear(AvenGl *gl, GLbitfield mask) {
         gl->Clear(mask);
         aven_gl_check_error(gl);
     }
+
     static inline void aven_gl_ClearColor(
         AvenGl *gl,
         GLfloat red,
@@ -552,14 +568,17 @@
         gl->ClearColor(red, green, blue, alpha);
         aven_gl_check_error(gl);
     }
+
     static inline void aven_gl_ClearDepthf(AvenGl *gl, GLfloat d) {
         gl->ClearDepthf(d);
         aven_gl_check_error(gl);
     }
+
     static inline void aven_gl_ClearStencil(AvenGl *gl, GLint s) {
         gl->ClearStencil(s);
         aven_gl_check_error(gl);
     }
+
     static inline void aven_gl_ColorMask(
         AvenGl *gl,
         GLboolean red,
@@ -570,6 +589,7 @@
         gl->ColorMask(red, green, blue, alpha);
         aven_gl_check_error(gl);
     }
+
     static inline void aven_gl_CompileShader(AvenGl *gl, GLuint shader) {
         gl->CompileShader(shader);
         GLint vertex_compiled = 0;
@@ -592,6 +612,7 @@
         }
         aven_gl_check_error(gl);
     }
+
     static inline void aven_gl_CompressedTexImage2D(
         AvenGl *gl,
         GLenum target,
@@ -615,6 +636,7 @@
         );
         aven_gl_check_error(gl);
     }
+
     static inline void aven_gl_CompressedTexSubImage2D(
         AvenGl *gl,
         GLenum target,
@@ -640,6 +662,7 @@
         );
         aven_gl_check_error(gl);
     }
+
     static inline void aven_gl_CopyTexImage2D(
         AvenGl *gl,
         GLenum target,
@@ -663,6 +686,7 @@
         );
         aven_gl_check_error(gl);
     }
+
     static inline void aven_gl_CopyTexSubImage2D(
         AvenGl *gl,
         GLenum target,
@@ -686,20 +710,24 @@
         );
         aven_gl_check_error(gl);
     }
+
     static inline GLuint aven_gl_CreateProgram(AvenGl *gl) {
         GLuint res = gl->CreateProgram();
         aven_gl_check_error(gl);
         return res;
     }
+
     static inline GLuint aven_gl_CreateShader(AvenGl *gl, GLenum type) {
         GLuint res = gl->CreateShader(type);
         aven_gl_check_error(gl);
         return res;
     }
+
     static inline void aven_gl_CullFace(AvenGl *gl, GLenum mode) {
         gl->CullFace(mode);
         aven_gl_check_error(gl);
     }
+
     static inline void aven_gl_DeleteBuffers(
         AvenGl *gl,
         GLsizei n,
@@ -708,6 +736,7 @@
         gl->DeleteBuffers(n, buffers);
         aven_gl_check_error(gl);
     }
+
     static inline void aven_gl_DeleteFramebuffers(
         AvenGl *gl,
         GLsizei n,
@@ -716,10 +745,12 @@
         gl->DeleteFramebuffers(n, framebuffers);
         aven_gl_check_error(gl);
     }
+
     static inline void aven_gl_DeleteProgram(AvenGl *gl, GLuint program) {
         gl->DeleteProgram(program);
         aven_gl_check_error(gl);
     }
+
     static inline void aven_gl_DeleteRenderbuffers(
         AvenGl *gl,
         GLsizei n,
@@ -728,10 +759,12 @@
         gl->DeleteRenderbuffers(n, renderbuffers);
         aven_gl_check_error(gl);
     }
+
     static inline void aven_gl_DeleteShader(AvenGl *gl, GLuint shader) {
         gl->DeleteShader(shader);
         aven_gl_check_error(gl);
     }
+
     static inline void aven_gl_DeleteTextures(
         AvenGl *gl,
         GLsizei n,
@@ -740,18 +773,22 @@
         gl->DeleteTextures(n, textures);
         aven_gl_check_error(gl);
     }
+
     static inline void aven_gl_DepthFunc(AvenGl *gl, GLenum func) {
         gl->DepthFunc(func);
         aven_gl_check_error(gl);
     }
+
     static inline void aven_gl_DepthMask(AvenGl *gl, GLboolean flag) {
         gl->DepthMask(flag);
         aven_gl_check_error(gl);
     }
+
     static inline void aven_gl_DepthRangef(AvenGl *gl, GLfloat n, GLfloat f) {
         gl->DepthRangef(n, f);
         aven_gl_check_error(gl);
     }
+
     static inline void aven_gl_DetachShader(
         AvenGl *gl,
         GLuint program,
@@ -760,10 +797,12 @@
         gl->DetachShader(program, shader);
         aven_gl_check_error(gl);
     }
+
     static inline void aven_gl_Disable(AvenGl *gl, GLenum cap) {
         gl->Disable(cap);
         aven_gl_check_error(gl);
     }
+
     static inline void aven_gl_DisableVertexAttribArray(
         AvenGl *gl,
         GLuint index
@@ -771,6 +810,7 @@
         gl->DisableVertexAttribArray(index);
         aven_gl_check_error(gl);
     }
+
     static inline void aven_gl_DrawArrays(
         AvenGl *gl,
         GLenum mode,
@@ -780,6 +820,7 @@
         gl->DrawArrays(mode, first, count);
         aven_gl_check_error(gl);
     }
+
     static inline void aven_gl_DrawElements(
         AvenGl *gl,
         GLenum mode,
@@ -790,22 +831,27 @@
         gl->DrawElements(mode, count, type, indices);
         aven_gl_check_error(gl);
     }
+
     static inline void aven_gl_Enable(AvenGl *gl, GLenum cap) {
         gl->Enable(cap);
         aven_gl_check_error(gl);
     }
+
     static inline void aven_gl_EnableVertexAttribArray(AvenGl *gl, GLuint index) {
         gl->EnableVertexAttribArray(index);
         aven_gl_check_error(gl);
     }
+
     static inline void aven_gl_Finish(AvenGl *gl) {
         gl->Finish();
         aven_gl_check_error(gl);
     }
+
     static inline void aven_gl_Flush(AvenGl *gl) {
         gl->Flush();
         aven_gl_check_error(gl);
     }
+
     static inline void aven_gl_FramebufferRenderbuffer(
         AvenGl *gl,
         GLenum target,
@@ -821,6 +867,7 @@
         );
         aven_gl_check_error(gl);
     }
+
     static inline void aven_gl_FramebufferTexture2D(
         AvenGl *gl,
         GLenum target,
@@ -832,10 +879,12 @@
         gl->FramebufferTexture2D(target, attachment, textarget, texture, level);
         aven_gl_check_error(gl);
     }
+
     static inline void aven_gl_FrontFace(AvenGl *gl, GLenum mode) {
         gl->FrontFace(mode);
         aven_gl_check_error(gl);
     }
+
     static inline void aven_gl_GenBuffers(
         AvenGl *gl,
         GLsizei n,
@@ -844,10 +893,12 @@
         gl->GenBuffers(n, buffers);
         aven_gl_check_error(gl);
     }
+
     static inline void aven_gl_GenerateMipmap(AvenGl *gl, GLenum target) {
         gl->GenerateMipmap(target);
         aven_gl_check_error(gl);
     }
+
     static inline void aven_gl_GenFramebuffers(
         AvenGl *gl,
         GLsizei n,
@@ -856,6 +907,7 @@
         gl->GenFramebuffers(n, framebuffers);
         aven_gl_check_error(gl);
     }
+
     static inline void aven_gl_GenRenderbuffers(
         AvenGl *gl,
         GLsizei n,
@@ -864,6 +916,7 @@
         gl->GenRenderbuffers(n, renderbuffers);
         aven_gl_check_error(gl);
     }
+
     static inline void aven_gl_GenTextures(
         AvenGl *gl,
         GLsizei n,
@@ -872,6 +925,7 @@
         gl->GenTextures(n, textures);
         aven_gl_check_error(gl);
     }
+
     static inline void aven_gl_GetActiveAttrib(
         AvenGl *gl,
         GLuint program,
@@ -885,6 +939,7 @@
         gl->GetActiveAttrib(program, index, bufSize, length, size, type, name);
         aven_gl_check_error(gl);
     }
+
     static inline void aven_gl_GetActiveUniform(
         AvenGl *gl,
         GLuint program,
@@ -898,6 +953,7 @@
         gl->GetActiveUniform(program, index, bufSize, length, size, type, name);
         aven_gl_check_error(gl);
     }
+
     static inline void aven_gl_GetAttachedShaders(
         AvenGl *gl,
         GLuint program,
@@ -908,6 +964,7 @@
         gl->GetAttachedShaders(program, maxCount, count, shaders);
         aven_gl_check_error(gl);
     }
+
     static inline GLint aven_gl_GetAttribLocation(
         AvenGl *gl,
         GLuint program,
@@ -917,6 +974,7 @@
         aven_gl_check_error(gl);
         return res;
     }
+
     static inline void aven_gl_GetBooleanv(
         AvenGl *gl,
         GLenum pname,
@@ -925,6 +983,7 @@
         gl->GetBooleanv(pname, data);
         aven_gl_check_error(gl);
     }
+
     static inline void aven_gl_GetBufferParameteriv(
         AvenGl *gl,
         GLenum target,
@@ -934,6 +993,7 @@
         gl->GetBufferParameteriv(target, pname, params);
         aven_gl_check_error(gl);
     }
+
     static inline void aven_gl_GetFloatv(
         AvenGl *gl,
         GLenum pname,
@@ -942,6 +1002,7 @@
         gl->GetFloatv(pname, data);
         aven_gl_check_error(gl);
     }
+
     static inline void aven_gl_GetFramebufferAttachmentParameteriv(
         AvenGl *gl,
         GLenum target,
@@ -957,6 +1018,7 @@
         );
         aven_gl_check_error(gl);
     }
+
     static inline void aven_gl_GetIntegerv(
         AvenGl *gl,
         GLenum pname,
@@ -965,6 +1027,7 @@
         gl->GetIntegerv(pname, data);
         aven_gl_check_error(gl);
     }
+
     static inline void aven_gl_GetProgramiv(
         AvenGl *gl,
         GLuint program,
@@ -974,6 +1037,7 @@
         gl->GetProgramiv(program, pname, params);
         aven_gl_check_error(gl);
     }
+
     static inline void aven_gl_GetProgramInfoLog(
         AvenGl *gl,
         GLuint program,
@@ -984,6 +1048,7 @@
         gl->GetProgramInfoLog(program, bufSize, length, infoLog);
         aven_gl_check_error(gl);
     }
+
     static inline void aven_gl_GetRenderbufferParameteriv(
         AvenGl *gl,
         GLenum target,
@@ -993,6 +1058,7 @@
         gl->GetRenderbufferParameteriv(target, pname, params);
         aven_gl_check_error(gl);
     }
+
     static inline void aven_gl_GetShaderiv(
         AvenGl *gl,
         GLuint shader,
@@ -1002,6 +1068,7 @@
         gl->GetShaderiv(shader, pname, params);
         aven_gl_check_error(gl);
     }
+
     static inline void aven_gl_GetShaderInfoLog(
         AvenGl *gl,
         GLuint shader,
@@ -1012,6 +1079,7 @@
         gl->GetShaderInfoLog(shader, bufSize, length, infoLog);
         aven_gl_check_error(gl);
     }
+
     static inline void aven_gl_GetShaderPrecisionFormat(
         AvenGl *gl,
         GLenum shadertype,
@@ -1027,6 +1095,7 @@
         );
         aven_gl_check_error(gl);
     }
+
     static inline void aven_gl_GetShaderSource(
         AvenGl *gl,
         GLuint shader,
@@ -1037,11 +1106,13 @@
         gl->GetShaderSource(shader, bufSize, length, source);
         aven_gl_check_error(gl);
     }
+
     static inline const GLubyte *aven_glGetString(AvenGl *gl, GLenum name) {
         const GLubyte *res = gl->GetString(name);
         aven_gl_check_error(gl);
         return res;
     }
+
     static inline void aven_gl_GetTexParameterfv(
         AvenGl *gl,
         GLenum target,
@@ -1051,6 +1122,7 @@
         gl->GetTexParameterfv(target, pname, params);
         aven_gl_check_error(gl);
     }
+
     static inline void aven_gl_GetTexParameteriv(
         AvenGl *gl,
         GLenum target,
@@ -1060,6 +1132,7 @@
         gl->GetTexParameteriv(target, pname, params);
         aven_gl_check_error(gl);
     }
+
     static inline void aven_gl_GetUniformfv(
         AvenGl *gl,
         GLuint program,
@@ -1069,6 +1142,7 @@
         gl->GetUniformfv(program, location, params);
         aven_gl_check_error(gl);
     }
+
     static inline void aven_gl_GetUniformiv(
         AvenGl *gl,
         GLuint program,
@@ -1078,6 +1152,7 @@
         gl->GetUniformiv(program, location, params);
         aven_gl_check_error(gl);
     }
+
     static inline GLint aven_gl_GetUniformLocation(
         AvenGl *gl,
         GLuint program,
@@ -1087,6 +1162,7 @@
         aven_gl_check_error(gl);
         return res;
     }
+
     static inline void aven_gl_GetVertexAttribfv(
         AvenGl *gl,
         GLuint index,
@@ -1096,6 +1172,7 @@
         gl->GetVertexAttribfv(index, pname, params);
         aven_gl_check_error(gl);
     }
+
     static inline void aven_gl_GetVertexAttribiv(
         AvenGl *gl,
         GLuint index,
@@ -1105,6 +1182,7 @@
         gl->GetVertexAttribiv(index, pname, params);
         aven_gl_check_error(gl);
     }
+
     static inline void aven_gl_GetVertexAttribPointerv(
         AvenGl *gl,
         GLuint index,
@@ -1114,20 +1192,24 @@
         gl->GetVertexAttribPointerv(index, pname, pointer);
         aven_gl_check_error(gl);
     }
+
     static inline void aven_gl_Hint(AvenGl *gl, GLenum target, GLenum mode) {
         gl->Hint(target, mode);
         aven_gl_check_error(gl);
     }
+
     static inline GLboolean aven_gl_IsBuffer(AvenGl *gl, GLuint buffer) {
         GLboolean res = gl->IsBuffer(buffer);
         aven_gl_check_error(gl);
         return res;
     }
+
     static inline GLboolean aven_gl_IsEnabled(AvenGl *gl, GLenum cap) {
         GLboolean res = gl->IsEnabled(cap);
         aven_gl_check_error(gl);
         return res;
     }
+
     static inline GLboolean aven_gl_IsFramebuffer(
         AvenGl *gl,
         GLuint framebuffer
@@ -1136,11 +1218,13 @@
         aven_gl_check_error(gl);
         return res;
     }
+
     static inline GLboolean aven_gl_IsProgram(AvenGl *gl, GLuint program) {
         GLboolean res = gl->IsProgram(program);
         aven_gl_check_error(gl);
         return res;
     }
+
     static inline GLboolean aven_gl_IsRenderbuffer(
         AvenGl *gl,
         GLuint renderbuffer
@@ -1149,20 +1233,24 @@
         aven_gl_check_error(gl);
         return res;
     }
+
     static inline GLboolean aven_gl_IsShader(AvenGl *gl, GLuint shader) {
         GLboolean res = gl->IsShader(shader);
         aven_gl_check_error(gl);
         return res;
     }
+
     static inline GLboolean aven_gl_IsTexture(AvenGl *gl, GLuint texture) {
         GLboolean res = gl->IsTexture(texture);
         aven_gl_check_error(gl);
         return res;
     }
+
     static inline void aven_gl_LineWidth(AvenGl *gl, GLfloat width) {
         gl->LineWidth(width);
         aven_gl_check_error(gl);
     }
+
     static inline void aven_gl_LinkProgram(AvenGl *gl, GLuint program) {
         gl->LinkProgram(program);
         GLint linked = 0;
@@ -1182,6 +1270,7 @@
         }
         aven_gl_check_error(gl);
     }
+
     static inline void aven_gl_PixelStorei(
         AvenGl *gl,
         GLenum pname,
@@ -1190,6 +1279,7 @@
         gl->PixelStorei(pname, param);
         aven_gl_check_error(gl);
     }
+
     static inline void aven_gl_PolygonOffset(
         AvenGl *gl,
         GLfloat factor,
@@ -1198,6 +1288,7 @@
         gl->PolygonOffset(factor, units);
         aven_gl_check_error(gl);
     }
+
     static inline void aven_gl_ReadPixels(
         AvenGl *gl,
         GLint x,
@@ -1211,10 +1302,12 @@
         gl->ReadPixels(x, y, width, height, format, type, pixels);
         aven_gl_check_error(gl);
     }
+
     static inline void aven_gl_ReleaseShaderCompiler(AvenGl *gl) {
         gl->ReleaseShaderCompiler();
         aven_gl_check_error(gl);
     }
+
     static inline void aven_gl_RenderbufferStorage(
         AvenGl *gl,
         GLenum target,
@@ -1225,6 +1318,7 @@
         gl->RenderbufferStorage(target, internalformat, width, height);
         aven_gl_check_error(gl);
     }
+
     static inline void aven_gl_SampleCoverage(
         AvenGl *gl,
         GLfloat value,
@@ -1233,6 +1327,7 @@
         gl->SampleCoverage(value, invert);
         aven_gl_check_error(gl);
     }
+
     static inline void aven_gl_Scissor(
         AvenGl *gl,
         GLint x,
@@ -1243,6 +1338,7 @@
         gl->Scissor(x, y, width, height);
         aven_gl_check_error(gl);
     }
+
     static inline void aven_gl_ShaderBinary(
         AvenGl *gl,
         GLsizei count,
@@ -1254,6 +1350,7 @@
         gl->ShaderBinary(count, shaders, binaryformat, binary, length);
         aven_gl_check_error(gl);
     }
+
     static inline void aven_gl_ShaderSource(
         AvenGl *gl,
         GLuint shader,
@@ -1264,6 +1361,7 @@
         gl->ShaderSource(shader, count, string, length);
         aven_gl_check_error(gl);
     }
+
     static inline void aven_gl_StencilFunc(
         AvenGl *gl,
         GLenum func,
@@ -1273,6 +1371,7 @@
         gl->StencilFunc(func, ref, mask);
         aven_gl_check_error(gl);
     }
+
     static inline void aven_gl_StencilFuncSeparate(
         AvenGl *gl,
         GLenum face,
@@ -1283,10 +1382,12 @@
         gl->StencilFuncSeparate(face, func, ref, mask);
         aven_gl_check_error(gl);
     }
+
     static inline void aven_gl_StencilMask(AvenGl *gl, GLuint mask) {
         gl->StencilMask(mask);
         aven_gl_check_error(gl);
     }
+
     static inline void aven_gl_StencilMaskSeparate(
         AvenGl *gl,
         GLenum face,
@@ -1295,6 +1396,7 @@
         gl->StencilMaskSeparate(face, mask);
         aven_gl_check_error(gl);
     }
+
     static inline void aven_gl_StencilOp(
         AvenGl *gl,
         GLenum fail,
@@ -1304,6 +1406,7 @@
         gl->StencilOp(fail, zfail, zpass);
         aven_gl_check_error(gl);
     }
+
     static inline void aven_gl_StencilOpSeparate(
         AvenGl *gl,
         GLenum face,
@@ -1314,6 +1417,7 @@
         gl->StencilOpSeparate(face, sfail, dpfail, dppass);
         aven_gl_check_error(gl);
     }
+
     static inline void aven_gl_TexImage2D(
         AvenGl *gl,
         GLenum target,
@@ -1339,6 +1443,7 @@
         );
         aven_gl_check_error(gl);
     }
+
     static inline void aven_gl_TexParameterf(
         AvenGl *gl,
         GLenum target,
@@ -1348,6 +1453,7 @@
         gl->TexParameterf(target, pname, param);
         aven_gl_check_error(gl);
     }
+
     static inline void aven_gl_TexParameterfv(
         AvenGl *gl,
         GLenum target,
@@ -1357,6 +1463,7 @@
         gl->TexParameterfv(target, pname, params);
         aven_gl_check_error(gl);
     }
+
     static inline void aven_gl_TexParameteri(
         AvenGl *gl,
         GLenum target,
@@ -1366,6 +1473,7 @@
         gl->TexParameteri(target, pname, param);
         aven_gl_check_error(gl);
     }
+
     static inline void aven_gl_TexParameteriv(
         AvenGl *gl,
         GLenum target,
@@ -1375,6 +1483,7 @@
         gl->TexParameteriv(target, pname, params);
         aven_gl_check_error(gl);
     }
+
     static inline void aven_gl_TexSubImage2D(
         AvenGl *gl,
         GLenum target,
@@ -1400,10 +1509,12 @@
         );
         aven_gl_check_error(gl);
     }
+
     static inline void aven_gl_Uniform1f(AvenGl *gl, GLint location, GLfloat v0) {
         gl->Uniform1f(location, v0);
         aven_gl_check_error(gl);
     }
+
     static inline void aven_gl_Uniform1fv(
         AvenGl *gl,
         GLint location,
@@ -1413,10 +1524,12 @@
         gl->Uniform1fv(location, count, value);
         aven_gl_check_error(gl);
     }
+
     static inline void aven_gl_Uniform1i(AvenGl *gl, GLint location, GLint v0) {
         gl->Uniform1i(location, v0);
         aven_gl_check_error(gl);
     }
+
     static inline void aven_gl_Uniform1iv(
         AvenGl *gl,
         GLint location,
@@ -1426,6 +1539,7 @@
         gl->Uniform1iv(location, count, value);
         aven_gl_check_error(gl);
     }
+
     static inline void aven_gl_Uniform2f(
         AvenGl *gl,
         GLint location,
@@ -1435,6 +1549,7 @@
         gl->Uniform2f(location, v0, v1);
         aven_gl_check_error(gl);
     }
+
     static inline void aven_gl_Uniform2fv(
         AvenGl *gl,
         GLint location,
@@ -1444,6 +1559,7 @@
         gl->Uniform2fv(location, count, value);
         aven_gl_check_error(gl);
     }
+
     static inline void aven_gl_Uniform2i(
         AvenGl *gl,
         GLint location,
@@ -1453,6 +1569,7 @@
         gl->Uniform2i(location, v0, v1);
         aven_gl_check_error(gl);
     }
+
     static inline void aven_gl_Uniform2iv(
         AvenGl *gl,
         GLint location,
@@ -1462,6 +1579,7 @@
         gl->Uniform2iv(location, count, value);
         aven_gl_check_error(gl);
     }
+
     static inline void aven_gl_Uniform3f(
         AvenGl *gl,
         GLint location,
@@ -1472,6 +1590,7 @@
         gl->Uniform3f(location, v0, v1, v2);
         aven_gl_check_error(gl);
     }
+
     static inline void aven_gl_Uniform3fv(
         AvenGl *gl,
         GLint location,
@@ -1481,6 +1600,7 @@
         gl->Uniform3fv(location, count, value);
         aven_gl_check_error(gl);
     }
+
     static inline void aven_gl_Uniform3i(
         AvenGl *gl,
         GLint location,
@@ -1491,6 +1611,7 @@
         gl->Uniform3i(location, v0, v1, v2);
         aven_gl_check_error(gl);
     }
+
     static inline void aven_gl_Uniform3iv(
         AvenGl *gl,
         GLint location,
@@ -1500,6 +1621,7 @@
         gl->Uniform3iv(location, count, value);
         aven_gl_check_error(gl);
     }
+
     static inline void aven_gl_Uniform4f(
         AvenGl *gl,
         GLint location,
@@ -1511,6 +1633,7 @@
         gl->Uniform4f(location, v0, v1, v2, v3);
         aven_gl_check_error(gl);
     }
+
     static inline void aven_gl_Uniform4fv(
         AvenGl *gl,
         GLint location,
@@ -1520,6 +1643,7 @@
         gl->Uniform4fv(location, count, value);
         aven_gl_check_error(gl);
     }
+
     static inline void aven_gl_Uniform4i(
         AvenGl *gl,
         GLint location,
@@ -1531,6 +1655,7 @@
         gl->Uniform4i(location, v0, v1, v2, v3);
         aven_gl_check_error(gl);
     }
+
     static inline void aven_gl_Uniform4iv(
         AvenGl *gl,
         GLint location,
@@ -1540,6 +1665,7 @@
         gl->Uniform4iv(location, count, value);
         aven_gl_check_error(gl);
     }
+
     static inline void aven_gl_UniformMatrix2fv(
         AvenGl *gl,
         GLint location,
@@ -1550,6 +1676,7 @@
         gl->UniformMatrix2fv(location, count, transpose, value);
         aven_gl_check_error(gl);
     }
+
     static inline void aven_gl_UniformMatrix3fv(
         AvenGl *gl,
         GLint location,
@@ -1560,6 +1687,7 @@
         gl->UniformMatrix3fv(location, count, transpose, value);
         aven_gl_check_error(gl);
     }
+
     static inline void aven_gl_UniformMatrix4fv(
         AvenGl *gl,
         GLint location,
@@ -1570,14 +1698,17 @@
         gl->UniformMatrix4fv(location, count, transpose, value);
         aven_gl_check_error(gl);
     }
+
     static inline void aven_gl_UseProgram(AvenGl *gl, GLuint program) {
         gl->UseProgram(program);
         aven_gl_check_error(gl);
     }
+
     static inline void aven_gl_ValidateProgram(AvenGl *gl, GLuint program) {
         gl->ValidateProgram(program);
         aven_gl_check_error(gl);
     }
+
     static inline void aven_gl_VertexAttrib1f(
         AvenGl *gl,
         GLuint index,
@@ -1586,6 +1717,7 @@
         gl->VertexAttrib1f(index, x);
         aven_gl_check_error(gl);
     }
+
     static inline void aven_gl_VertexAttrib1fv(
         AvenGl *gl,
         GLuint index,
@@ -1594,6 +1726,7 @@
         gl->VertexAttrib1fv(index, v);
         aven_gl_check_error(gl);
     }
+
     static inline void aven_gl_VertexAttrib2f(
         AvenGl *gl,
         GLuint index,
@@ -1603,6 +1736,7 @@
         gl->VertexAttrib2f(index, x, y);
         aven_gl_check_error(gl);
     }
+
     static inline void aven_gl_VertexAttrib2fv(
         AvenGl *gl,
         GLuint index,
@@ -1611,6 +1745,7 @@
         gl->VertexAttrib2fv(index, v);
         aven_gl_check_error(gl);
     }
+
     static inline void aven_gl_VertexAttrib3f(
         AvenGl *gl,
         GLuint index,
@@ -1621,6 +1756,7 @@
         gl->VertexAttrib3f(index, x, y, z);
         aven_gl_check_error(gl);
     }
+
     static inline void aven_gl_VertexAttrib3fv(
         AvenGl *gl,
         GLuint index,
@@ -1629,6 +1765,7 @@
         gl->VertexAttrib3fv(index, v);
         aven_gl_check_error(gl);
     }
+
     static inline void aven_gl_VertexAttrib4f(
         AvenGl *gl,
         GLuint index,
@@ -1640,6 +1777,7 @@
         gl->VertexAttrib4f(index, x, y, z, w);
         aven_gl_check_error(gl);
     }
+
     static inline void aven_gl_VertexAttrib4fv(
         AvenGl *gl,
         GLuint index,
@@ -1648,6 +1786,7 @@
         gl->VertexAttrib4fv(index, v);
         aven_gl_check_error(gl);
     }
+
     static inline void aven_gl_VertexAttribPointer(
         AvenGl *gl,
         GLuint index,
@@ -1660,6 +1799,7 @@
         gl->VertexAttribPointer(index, size, type, normalized, stride, pointer);
         aven_gl_check_error(gl);
     }
+
     static inline void aven_gl_Viewport(
         AvenGl *gl,
         GLint x,
@@ -1670,10 +1810,12 @@
         gl->Viewport(x, y, width, height);
         aven_gl_check_error(gl);
     }
+
     static inline void aven_gl_BindVertexArray(AvenGl *gl, GLuint array) {
         gl->BindVertexArray(array);
         aven_gl_check_error(gl);
     }
+
     static inline void aven_gl_GenVertexArrays(
         AvenGl *gl,
         GLsizei n,
@@ -1682,6 +1824,7 @@
         gl->GenVertexArrays(n, arrays);
         aven_gl_check_error(gl);
     }
+
     static inline void aven_gl_DeleteVertexArrays(
         AvenGl *gl,
         GLsizei n,
@@ -1690,11 +1833,13 @@
         gl->DeleteVertexArrays(n, arrays);
         aven_gl_check_error(gl);
     }
+
     static inline GLboolean aven_gl_IsVertexArray(AvenGl *gl, GLuint array) {
         GLboolean res = gl->IsVertexArray(array);
         aven_gl_check_error(gl);
         return res;
     }
+
     static inline void aven_gl_DebugMessageCallback(
         AvenGl *gl,
         GLDEBUGPROC callback,
