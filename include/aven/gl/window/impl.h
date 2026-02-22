@@ -47,9 +47,9 @@
         AvenGlWindow *win = &aven_gl_window_impl_ctx;
         unwrap(win->vtable.key)(
             win,
-            key,
+            (AvenGlWindowKey)key,
             (uint32_t)scancode,
-            action,
+            (AvenGlWindowPress)action,
             (uint32_t)mods
         );
     }
@@ -68,8 +68,8 @@
         unwrap(win->vtable.mouse_click)(
             win,
             (Vec2){ (float)x, (float)y },
-            button,
-            action,
+            (AvenGlWindowMouse)button,
+            (AvenGlWindowPress)action,
             (uint32_t)mods
         );
     }
