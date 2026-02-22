@@ -16,6 +16,7 @@
         GLuint utrans_location;
         GLuint upos_location;
         GLuint vpos_location;
+        Optional(GLuint) framebuffer;
     } AvenGlTextureCtx;
 
     typedef struct {
@@ -261,6 +262,9 @@
         AvenGl *gl,
         AvenGlTextureCtx *ctx
     ) {
+        if (ctx->framebuffer.valid) {
+            aven_gl_DeleteFramebuffers(gl, 1, &ctx->framebuffer.value);
+        }
         aven_gl_DeleteProgram(gl, ctx->program);
         aven_gl_DeleteShader(gl, ctx->fragment_shader);
         aven_gl_DeleteShader(gl, ctx->vertex_shader);
@@ -530,5 +534,29 @@
             0,
             buffer->index_len
         );
+    }
+
+    static inline void aven_gl_texture_framebuffer_enable(
+        AvenGl *gl,
+        AvenGlTextureCtx *ctx
+    ) {
+        if (!ctx->framebuffer.valid) {
+            aven_gl_GenFramebuffers(gl, 1, &ctx->framebuffer.value);
+            ctx->framebuffer.valid = true;
+        }
+
+        aven_gl_BindFramebuffer(gl, GL_FRAMEBUFFER, unwrap(ctx->framebuffer));
+        aven_gl_FramebufferTexture2D(
+            gl,
+            GL_FRAMEBUFFER,
+            GL_COLOR_ATTACHMENT0,
+            GL_TEXTURE_2D,
+            ctx->texture_id,
+            0
+        );
+    }
+
+    static inline void aven_gl_texture_framebuffer_disable(AvenGl *gl) {
+        aven_gl_BindFramebuffer(gl, GL_FRAMEBUFFER, 0);
     }
 #endif // AVEN_GL_TEXTURE_H

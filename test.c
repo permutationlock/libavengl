@@ -7,6 +7,7 @@
 #include <aven/arena.h>
 #include <aven/fs.h>
 #include <aven/gl.h>
+#include <aven/gl/shadow.h>
 #include <aven/gl/shape.h>
 #include <aven/gl/text.h>
 #include <aven/gl/texture.h>
@@ -24,7 +25,7 @@
 #define INIT_WIDTH 480
 #define INIT_HEIGHT 480
 #define ARENA_SIZE (4096 * 2048)
-#define INTERVAL_NS (2 * AVEN_TIME_NSEC_PER_SEC)
+#define INTERVAL_NS (3 * AVEN_TIME_NSEC_PER_SEC)
 
 typedef enum {
     TEST_AVEN_GL_NONE = 0,
@@ -33,6 +34,7 @@ typedef enum {
     TEST_AVEN_GL_TEXTURE,
     TEST_AVEN_GL_TEXT,
     TEST_AVEN_GL_JOIN,
+    TEST_AVEN_GL_SHADOW_HARD,
 } TestAvenGlState;
 
 typedef union {
@@ -63,6 +65,15 @@ typedef union {
         AvenGlTextBuffer buffer;
         AvenGlTextLine line;
     } text;
+    struct {
+        AvenGlTextureCtx tex_ctx;
+        AvenGlTextureGeometry tex_geometry;
+        AvenGlTextureBuffer tex_buffer;
+        AvenGlShadowHardCtx ctx;
+        AvenGlShadowHardGeometry geometry;
+        AvenGlShadowHardBuffer buffer;
+        float rotation;
+    } shadow_hard;
 } TestAvenGlData;
 
 typedef struct {
@@ -73,6 +84,8 @@ typedef struct {
 
 #define NVERTICES 10
 #define NINDICES 12
+#define NSHADOWVERTICES 32
+#define NSHADOWINDICES 48
 #define TSIZE 2
 
 typedef struct {
@@ -130,10 +143,8 @@ static void test_aven_gl_shape_update(AvenGlWindow *win, float t) {
         &ctx->app.data.shape.geometry
     );
 
-    int width;
-    int height;
-    glfwGetFramebufferSize(win->window, &width, &height);
-    aven_gl_Viewport(&win->gl, 0, 0, width, height);
+    glfwGetFramebufferSize(win->window, &win->width, &win->height);
+    aven_gl_Viewport(&win->gl, 0, 0, win->width, win->height);
     aven_gl_ClearColor(&win->gl, 0.75f, 0.75f, 0.75f, 1.0f);
     aven_gl_Clear(&win->gl, GL_COLOR_BUFFER_BIT);
     aven_gl_shape_draw(
@@ -203,17 +214,15 @@ static void test_aven_gl_shape_rounded_update(AvenGlWindow *win, float t) {
         &ctx->app.data.rounded.geometry
     );
 
-    int width;
-    int height;
-    glfwGetFramebufferSize(win->window, &width, &height);
-    aven_gl_Viewport(&win->gl, 0, 0, width, height);
+    glfwGetFramebufferSize(win->window, &win->width, &win->height);
+    aven_gl_Viewport(&win->gl, 0, 0, win->width, win->height);
     aven_gl_ClearColor(&win->gl, 0.75f, 0.75f, 0.75f, 1.0f);
     aven_gl_Clear(&win->gl, GL_COLOR_BUFFER_BIT);
     aven_gl_shape_rounded_draw(
         &win->gl,
         &ctx->app.data.rounded.ctx,
         &ctx->app.data.rounded.buffer,
-        2.0f / (float)height,
+        2.0f / (float)win->height,
         camera
     );
 }
@@ -265,17 +274,15 @@ static void test_aven_gl_shape_join_update(AvenGlWindow *win, float t) {
         &ctx->app.data.join.geometry
     );
 
-    int width;
-    int height;
-    glfwGetFramebufferSize(win->window, &width, &height);
-    aven_gl_Viewport(&win->gl, 0, 0, width, height);
+    glfwGetFramebufferSize(win->window, &win->width, &win->height);
+    aven_gl_Viewport(&win->gl, 0, 0, win->width, win->height);
     aven_gl_ClearColor(&win->gl, 0.75f, 0.75f, 0.75f, 1.0f);
     aven_gl_Clear(&win->gl, GL_COLOR_BUFFER_BIT);
     aven_gl_shape_join_draw(
         &win->gl,
         &ctx->app.data.join.ctx,
         &ctx->app.data.join.buffer,
-        2.0f / (float)height,
+        2.0f / (float)win->height,
         camera
     );
 }
@@ -333,10 +340,8 @@ static void test_aven_gl_texture_update(AvenGlWindow *win, float t) {
         &ctx->app.data.texture.geometry
     );
 
-    int width;
-    int height;
-    glfwGetFramebufferSize(win->window, &width, &height);
-    aven_gl_Viewport(&win->gl, 0, 0, width, height);
+    glfwGetFramebufferSize(win->window, &win->width, &win->height);
+    aven_gl_Viewport(&win->gl, 0, 0, win->width, win->height);
     aven_gl_ClearColor(&win->gl, 0.75f, 0.75f, 0.75f, 1.0f);
     aven_gl_Clear(&win->gl, GL_COLOR_BUFFER_BIT);
     aven_gl_texture_draw(
@@ -395,20 +400,16 @@ static void test_aven_gl_text_update(AvenGlWindow *win, float t) {
     Aff2 trans;
     aff2_identity(trans);
 
-    int width;
-    int height;
-    glfwGetFramebufferSize(win->window, &width, &height);
-
-    float screen_ratio = (float)width / (float)height;
+    float screen_ratio = (float)win->width / (float)win->height;
     float norm_height = 1.0f;
     float norm_width = screen_ratio;
-    float pixel_size = 2.0f / (float)height;
+    float pixel_size = 2.0f / (float)win->height;
 
     if (screen_ratio < 1.0f) {
         norm_height = 1.0f / screen_ratio;
         norm_width = 1.0f;
         screen_ratio = 1.0f / screen_ratio;
-        pixel_size = 2.0f / (float)width;
+        pixel_size = 2.0f / (float)win->width;
     }
     Aff2 camera;
     aff2_camera_position(
@@ -431,7 +432,7 @@ static void test_aven_gl_text_update(AvenGlWindow *win, float t) {
         &ctx->app.data.text.geometry
     );
 
-    aven_gl_Viewport(&win->gl, 0, 0, width, height);
+    aven_gl_Viewport(&win->gl, 0, 0, win->width, win->height);
     aven_gl_ClearColor(&win->gl, 0.75f, 0.75f, 0.75f, 1.0f);
     aven_gl_Clear(&win->gl, GL_COLOR_BUFFER_BIT);
     aven_gl_text_draw(
@@ -448,6 +449,157 @@ static void test_aven_gl_text_deinit(AvenGlWindow *win) {
     aven_gl_text_buffer_deinit(&win->gl, &ctx->app.data.text.buffer);
     aven_gl_text_geometry_deinit(&ctx->app.data.text.geometry);
     aven_gl_text_ctx_deinit(&win->gl, &ctx->app.data.text.ctx);
+}
+
+static void test_aven_gl_shadow_hard_init(AvenGlWindow *win) {
+    TestCtx *ctx = win->ctx;
+    AvenArena temp_arena = ctx->arena;
+    ctx->app.state = TEST_AVEN_GL_SHADOW_HARD;
+    ctx->app.data.shadow_hard.tex_ctx = aven_gl_texture_ctx_init(
+        &win->gl,
+        (size_t)win->width,
+        (size_t)win->height,
+        (AvenGlTextureBytesOptional){ .valid = false }
+    );
+    ctx->app.data.shadow_hard.tex_geometry = aven_gl_texture_geometry_init(
+        1,
+        &temp_arena
+    );
+    ctx->app.data.shadow_hard.tex_buffer = aven_gl_texture_buffer_init(
+        &win->gl,
+        &ctx->app.data.shadow_hard.tex_ctx,
+        &ctx->app.data.shadow_hard.tex_geometry,
+        AVEN_GL_BUFFER_USAGE_DYNAMIC
+    );
+    ctx->app.data.shadow_hard.ctx = aven_gl_shadow_hard_ctx_init(&win->gl);
+    ctx->app.data.shadow_hard.geometry = aven_gl_shadow_hard_geometry_init(
+        NSHADOWVERTICES,
+        NSHADOWINDICES,
+        &temp_arena
+    );
+    ctx->app.data.shadow_hard.buffer = aven_gl_shadow_hard_buffer_init(
+        &win->gl,
+        &ctx->app.data.shadow_hard.ctx,
+        &ctx->app.data.shadow_hard.geometry,
+        AVEN_GL_BUFFER_USAGE_DYNAMIC
+    );
+}
+
+static void test_aven_gl_shadow_hard_damage(AvenGlWindow *win) {
+    TestCtx *ctx = win->ctx;
+    aven_gl_texture_ctx_update(
+        &win->gl,
+        &ctx->app.data.shadow_hard.tex_ctx,
+        (size_t)win->width,
+        (size_t)win->height,
+        (AvenGlTextureBytesOptional){ .valid = false }
+    );
+}
+
+static void test_aven_gl_shadow_hard_update(AvenGlWindow *win, float t) {
+    (void)t;
+    TestCtx *ctx = win->ctx;
+
+    Aff2 trans1;
+    aff2_position_rangle(
+        trans1,
+        (Vec2){ -0.5f, -0.5f },
+        (Vec2){ 0.15f, 0.15f },
+        1.5f * t
+    );
+    Aff2 trans2;
+    aff2_position_rangle(
+        trans2,
+        (Vec2){ 0.25f, 0.75f },
+        (Vec2){ 0.10f, 0.10f },
+        AVEN_MATH_PI_F / 2.0f + 3.0f * t
+    );
+
+    float screen_ratio = (float)win->width / (float)win->height;
+    float norm_height = 1.0f;
+    float norm_width = screen_ratio;
+
+    if (screen_ratio < 1.0f) {
+        norm_height = 1.0f / screen_ratio;
+        norm_width = 1.0f;
+        screen_ratio = 1.0f / screen_ratio;
+    }
+    Aff2 camera;
+    aff2_camera_position(
+        camera,
+        (Vec2){ 0.0f, 0.0f },
+        (Vec2){ norm_width, norm_height }
+    );
+
+    Vec2 light = { 0.0f, 0.0f };
+    aven_gl_shadow_hard_geometry_clear(&ctx->app.data.shadow_hard.geometry);
+    aven_gl_shadow_hard_geometry_push_square(
+        &ctx->app.data.shadow_hard.geometry,
+        light,
+        trans1
+    );
+    aven_gl_shadow_hard_geometry_push_triangle_isoceles(
+        &ctx->app.data.shadow_hard.geometry,
+        light,
+        trans2
+    );
+    aven_gl_shadow_hard_buffer_update(
+        &win->gl,
+        &ctx->app.data.shadow_hard.buffer,
+        &ctx->app.data.shadow_hard.geometry
+    );
+
+    aven_gl_texture_framebuffer_enable(
+        &win->gl,
+        &ctx->app.data.shadow_hard.tex_ctx
+    );
+    aven_gl_Viewport(&win->gl, 0, 0, win->width, win->height);
+    aven_gl_ClearColor(&win->gl, 0.0f, 0.0f, 0.0f, 0.0f);
+    aven_gl_Clear(&win->gl, GL_COLOR_BUFFER_BIT);
+    aven_gl_shadow_hard_draw(
+        &win->gl,
+        &ctx->app.data.shadow_hard.ctx,
+        &ctx->app.data.shadow_hard.buffer,
+        camera
+    );
+    aven_gl_texture_framebuffer_disable(&win->gl);
+
+    Aff2 tex_trans;
+    aff2_identity(tex_trans);
+    Aff2 tex_camera;
+    aff2_camera_position(tex_camera, (Vec2){ 0.0f, 0.0f }, (Vec2){ 1.0f, 1.0f });
+
+    aven_gl_texture_geometry_clear(&ctx->app.data.shadow_hard.tex_geometry);
+    aven_gl_texture_geometry_push_square(
+        &ctx->app.data.shadow_hard.tex_geometry,
+        tex_trans,
+        tex_trans
+    );
+    aven_gl_texture_buffer_update(
+        &win->gl,
+        &ctx->app.data.shadow_hard.tex_buffer,
+        &ctx->app.data.shadow_hard.tex_geometry
+    );
+
+    aven_gl_Viewport(&win->gl, 0, 0, win->width, win->height);
+    aven_gl_ClearColor(&win->gl, 0.75f, 0.75f, 0.75f, 1.0f);
+    aven_gl_Clear(&win->gl, GL_COLOR_BUFFER_BIT);
+    aven_gl_texture_draw(
+        &win->gl,
+        &ctx->app.data.shadow_hard.tex_ctx,
+        &ctx->app.data.shadow_hard.tex_buffer,
+        tex_camera
+    );
+}
+
+static void test_aven_gl_shadow_hard_deinit(AvenGlWindow *win) {
+    TestCtx *ctx = win->ctx;
+    aven_gl_shadow_hard_buffer_deinit(
+        &win->gl,
+        &ctx->app.data.shadow_hard.buffer
+    );
+    aven_gl_shadow_hard_geometry_deinit(&ctx->app.data.shadow_hard.geometry);
+    aven_gl_shadow_hard_ctx_deinit(&win->gl, &ctx->app.data.shadow_hard.ctx);
 }
 
 static AvenGlWindowAction update(AvenGlWindow *win) {
@@ -476,6 +628,10 @@ static AvenGlWindowAction update(AvenGlWindow *win) {
                 break;
             case TEST_AVEN_GL_TEXT:
                 test_aven_gl_text_deinit(win);
+                test_aven_gl_shadow_hard_init(win);
+                break;
+            case TEST_AVEN_GL_SHADOW_HARD:
+                test_aven_gl_shadow_hard_deinit(win);
                 test_aven_gl_shape_init(win);
                 break;
         }
@@ -500,6 +656,9 @@ static AvenGlWindowAction update(AvenGlWindow *win) {
                 break;
             case TEST_AVEN_GL_TEXT:
                 test_aven_gl_text_update(win, t);
+                break;
+            case TEST_AVEN_GL_SHADOW_HARD:
+                test_aven_gl_shadow_hard_update(win, t);
                 break;
         }
     }
@@ -1101,7 +1260,7 @@ static void load(AvenGlWindow *win) {
     }
 
     if (!fail) {
-        test_aven_gl_text_init(win);
+        test_aven_gl_shadow_hard_init(win);
     }
     ctx->app.start = aven_time_now();
 }
@@ -1127,6 +1286,9 @@ static void init(AvenGlWindow *win) {
         case TEST_AVEN_GL_TEXT:
             test_aven_gl_text_init(win);
             break;
+        case TEST_AVEN_GL_SHADOW_HARD:
+            test_aven_gl_shadow_hard_init(win);
+            break;
     }
 }
 
@@ -1150,15 +1312,22 @@ static void deinit(AvenGlWindow *win) {
         case TEST_AVEN_GL_TEXT:
             test_aven_gl_text_deinit(win);
             break;
+        case TEST_AVEN_GL_SHADOW_HARD:
+            test_aven_gl_shadow_hard_deinit(win);
+            break;
     }
 }
 
 void damage(AvenGlWindow *win) {
+    TestCtx *ctx = win->ctx;
     aven_io_printf(
         "damage: ({}, {})\n",
         aven_fmt_int(win->width),
         aven_fmt_int(win->height)
     );
+    if (ctx->app.state == TEST_AVEN_GL_SHADOW_HARD) {
+        test_aven_gl_shadow_hard_damage(win);
+    }
 }
 
 void key(AvenGlWindow *win, int key, int scancode, int action, int modes) {
