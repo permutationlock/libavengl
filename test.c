@@ -66,6 +66,9 @@ typedef union {
         AvenGlTextLine line;
     } text;
     struct {
+        AvenGlShapeCtx shape_ctx;
+        AvenGlShapeGeometry shape_geometry;
+        AvenGlShapeBuffer shape_buffer;
         AvenGlTextureCtx tex_ctx;
         AvenGlTextureGeometry tex_geometry;
         AvenGlTextureBuffer tex_buffer;
@@ -451,6 +454,18 @@ static void test_aven_gl_shadow_hard_init(AvenGlWindow *win) {
     TestCtx *ctx = win->ctx;
     AvenArena temp_arena = ctx->arena;
     ctx->app.state = TEST_AVEN_GL_SHADOW_HARD;
+    ctx->app.data.shadow_hard.shape_ctx = aven_gl_shape_ctx_init(&win->gl);
+    ctx->app.data.shadow_hard.shape_geometry = aven_gl_shape_geometry_init(
+        NVERTICES,
+        NINDICES,
+        &temp_arena
+    );
+    ctx->app.data.shadow_hard.shape_buffer = aven_gl_shape_buffer_init(
+        &win->gl,
+        &ctx->app.data.shadow_hard.shape_ctx,
+        &ctx->app.data.shadow_hard.shape_geometry,
+        AVEN_GL_BUFFER_USAGE_DYNAMIC
+    );
     ctx->app.data.shadow_hard.tex_ctx = aven_gl_texture_ctx_init(
         &win->gl,
         (size_t)win->width,
@@ -499,17 +514,25 @@ static void test_aven_gl_shadow_hard_update(AvenGlWindow *win, float t) {
     Aff2 trans1;
     aff2_position_rangle(
         trans1,
-        (Vec2){ -0.5f, -0.5f },
-        (Vec2){ 0.15f, 0.15f },
+        (Vec2){ 0.0f, -0.15f },
+        (Vec2){ 0.14f, 0.14f },
         1.5f * t
     );
     Aff2 trans2;
     aff2_position_rangle(
         trans2,
-        (Vec2){ 0.25f, 0.75f },
-        (Vec2){ 0.10f, 0.10f },
+        (Vec2){ 0.35f, 0.65f },
+        (Vec2){ 0.17f, 0.17f },
         AVEN_MATH_PI_F / 2.0f + 3.0f * t
     );
+
+    Aff2 trans1_shade;
+    aff2_copy(trans1_shade, trans1);
+    mat2_scale(trans1_shade, 0.98f, trans1_shade);
+
+    Aff2 trans2_shade;
+    aff2_copy(trans2_shade, trans2);
+    mat2_scale(trans2_shade, 0.98f, trans2_shade);
 
     float screen_ratio = (float)win->width / (float)win->height;
     float norm_height = 1.0f;
@@ -527,17 +550,17 @@ static void test_aven_gl_shadow_hard_update(AvenGlWindow *win, float t) {
         (Vec2){ norm_width, norm_height }
     );
 
-    Vec2 light = { 0.0f, 0.0f };
+    Vec2 light = { -1.0f, -1.0f };
     aven_gl_shadow_hard_geometry_clear(&ctx->app.data.shadow_hard.geometry);
     aven_gl_shadow_hard_geometry_push_square(
         &ctx->app.data.shadow_hard.geometry,
         light,
-        trans1
+        trans2_shade
     );
     aven_gl_shadow_hard_geometry_push_triangle_isoceles(
         &ctx->app.data.shadow_hard.geometry,
         light,
-        trans2
+        trans1_shade
     );
     aven_gl_shadow_hard_buffer_update(
         &win->gl,
@@ -566,6 +589,22 @@ static void test_aven_gl_shadow_hard_update(AvenGlWindow *win, float t) {
     aff2_camera_position(tex_camera, (Vec2){ 0.0f, 0.0f }, (Vec2){ 1.0f, 1.0f });
 
     aven_gl_texture_geometry_clear(&ctx->app.data.shadow_hard.tex_geometry);
+    aven_gl_shape_geometry_clear(&ctx->app.data.shadow_hard.shape_geometry);
+    aven_gl_shape_geometry_push_square(
+        &ctx->app.data.shadow_hard.shape_geometry,
+        trans2,
+        (Vec4){ 0.0f, 0.0f, 1.0f, 1.0f }
+    );
+    aven_gl_shape_geometry_push_triangle_isoceles(
+        &ctx->app.data.shadow_hard.shape_geometry,
+        trans1,
+        (Vec4){ 1.0f, 0.0f, 0.0f, 1.0f }
+    );
+    aven_gl_shape_buffer_update(
+        &win->gl,
+        &ctx->app.data.shadow_hard.shape_buffer,
+        &ctx->app.data.shadow_hard.shape_geometry
+    );
     aven_gl_texture_geometry_push_square(
         &ctx->app.data.shadow_hard.tex_geometry,
         tex_trans,
@@ -580,6 +619,12 @@ static void test_aven_gl_shadow_hard_update(AvenGlWindow *win, float t) {
     aven_gl_Viewport(&win->gl, 0, 0, win->width, win->height);
     aven_gl_ClearColor(&win->gl, 0.75f, 0.75f, 0.75f, 1.0f);
     aven_gl_Clear(&win->gl, GL_COLOR_BUFFER_BIT);
+    aven_gl_shape_draw(
+        &win->gl,
+        &ctx->app.data.shadow_hard.shape_ctx,
+        &ctx->app.data.shadow_hard.shape_buffer,
+        camera
+    );
     aven_gl_texture_draw(
         &win->gl,
         &ctx->app.data.shadow_hard.tex_ctx,
@@ -596,6 +641,18 @@ static void test_aven_gl_shadow_hard_deinit(AvenGlWindow *win) {
     );
     aven_gl_shadow_hard_geometry_deinit(&ctx->app.data.shadow_hard.geometry);
     aven_gl_shadow_hard_ctx_deinit(&win->gl, &ctx->app.data.shadow_hard.ctx);
+    aven_gl_texture_buffer_deinit(
+        &win->gl,
+        &ctx->app.data.shadow_hard.tex_buffer
+    );
+    aven_gl_texture_geometry_deinit(&ctx->app.data.shadow_hard.tex_geometry);
+    aven_gl_texture_ctx_deinit(&win->gl, &ctx->app.data.shadow_hard.tex_ctx);
+    aven_gl_shape_buffer_deinit(
+        &win->gl,
+        &ctx->app.data.shadow_hard.shape_buffer
+    );
+    aven_gl_shape_geometry_deinit(&ctx->app.data.shadow_hard.shape_geometry);
+    aven_gl_shape_ctx_deinit(&win->gl, &ctx->app.data.shadow_hard.shape_ctx);
 }
 
 static AvenGlWindowAction update(AvenGlWindow *win) {
