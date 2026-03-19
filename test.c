@@ -1335,11 +1335,40 @@ void key(
 ) {
     (void)win;
     aven_io_printf(
-        "key: ({}, {}, {}, {})\n",
-        aven_fmt_int((int32_t)key),
-        aven_fmt_uint(scancode),
-        aven_fmt_int((int32_t)action),
-        aven_fmt_uint(mods)
+        "key: ({}{}{}{}{}{}{}, {}, {})\n",
+        aven_fmt_str(
+            aven_gl_window_mod_name(
+                (AvenGlWindowModBit)(mods & AVEN_GL_WINDOW_MOD_SHFT)
+            )
+        ),
+        aven_fmt_str(
+            aven_gl_window_mod_name(
+                (AvenGlWindowModBit)(mods & AVEN_GL_WINDOW_MOD_CTRL)
+            )
+        ),
+        aven_fmt_str(
+            aven_gl_window_mod_name(
+                (AvenGlWindowModBit)(mods & AVEN_GL_WINDOW_MOD_ALT)
+            )
+        ),
+        aven_fmt_str(
+            aven_gl_window_mod_name(
+                (AvenGlWindowModBit)(mods & AVEN_GL_WINDOW_MOD_SUP)
+            )
+        ),
+        aven_fmt_str(
+            aven_gl_window_mod_name(
+                (AvenGlWindowModBit)(mods & AVEN_GL_WINDOW_MOD_CAP)
+            )
+        ),
+        aven_fmt_str(
+            aven_gl_window_mod_name(
+                (AvenGlWindowModBit)(mods & AVEN_GL_WINDOW_MOD_NUM)
+            )
+        ),
+        aven_fmt_str(aven_gl_window_key_name(key)),
+        aven_fmt_str(aven_gl_window_press_name(action)),
+        aven_fmt_uint(scancode)
     );
 }
 
