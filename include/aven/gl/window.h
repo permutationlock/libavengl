@@ -138,6 +138,15 @@
         AVEN_GL_WINDOW_KEY_MAX,
     } AvenGlWindowKey;
 
+    typedef struct {
+        AvenGlWindowKey key;
+        uint32_t scancode;
+        AvenStr name;
+    } AvenGlWindowKeyInfo;
+
+    AvenGlWindowKeyInfo aven_gl_window_get_key_info(AvenGlWindowKey key);
+    AvenGlWindowKeyInfo aven_gl_window_get_key_unknown_info(uint32_t scancode);
+
     typedef enum {
         AVEN_GL_WINDOW_PRESS_UP = 0,
         AVEN_GL_WINDOW_PRESS_DOWN,

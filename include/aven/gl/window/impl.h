@@ -3,6 +3,7 @@
 
     #include <aven.h>
     #include <aven/math.h>
+    #include <aven/str.h>
     #include <aven/time.h>
 
     #include "../../gl.h"
@@ -26,6 +27,44 @@
             #define AVEN_GL_WINDOW_NDEBUG
         #endif
     #endif
+
+    AvenGlWindowKeyInfo aven_gl_window_get_key_info(AvenGlWindowKey key) {
+        int scancode = glfwGetKeyScancode(key);
+
+        char *res = (char *)glfwGetKeyName(
+            AVEN_GL_WINDOW_KEY_NONE,
+            (int)scancode
+        );
+        if (res == NULL) {
+            res = "";
+        }
+
+        AvenStr name = aven_str_cstr(res);
+
+        return (AvenGlWindowKeyInfo){
+            .key = key,
+            .scancode = (uint32_t)scancode,
+            .name = name,
+        };
+    }
+
+    AvenGlWindowKeyInfo aven_gl_window_get_key_unknown_info(uint32_t scancode) {
+        char *res = (char *)glfwGetKeyName(
+            AVEN_GL_WINDOW_KEY_NONE,
+            (int)scancode
+        );
+        if (res == NULL) {
+            res = "";
+        }
+
+        AvenStr name = aven_str_cstr(res);
+
+        return (AvenGlWindowKeyInfo){
+            .key = AVEN_GL_WINDOW_KEY_NONE,
+            .scancode = (uint32_t)scancode,
+            .name = name,
+        };
+    }
 
     static AvenGlWindow aven_gl_window_impl_ctx;
 
