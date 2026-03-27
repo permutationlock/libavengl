@@ -138,13 +138,173 @@
         AVEN_GL_WINDOW_KEY_MAX,
     } AvenGlWindowKey;
 
+    AvenStr aven_gl_window_key_names_data[] = {
+        [AVEN_GL_WINDOW_KEY_SPACE] = aven_str_init("SPACE"),
+        [AVEN_GL_WINDOW_KEY_APOSTROPHE] = aven_str_init("APOSTROPHE"),
+        [AVEN_GL_WINDOW_KEY_COMMA] = aven_str_init("COMMA"),
+        [AVEN_GL_WINDOW_KEY_MINUS] = aven_str_init("MINUS"),
+        [AVEN_GL_WINDOW_KEY_PERIOD] = aven_str_init("PERIOD"),
+        [AVEN_GL_WINDOW_KEY_SLASH] = aven_str_init("SLASH"),
+        [AVEN_GL_WINDOW_KEY_0] = aven_str_init("0"),
+        [AVEN_GL_WINDOW_KEY_1] = aven_str_init("1"),
+        [AVEN_GL_WINDOW_KEY_2] = aven_str_init("2"),
+        [AVEN_GL_WINDOW_KEY_3] = aven_str_init("3"),
+        [AVEN_GL_WINDOW_KEY_4] = aven_str_init("4"),
+        [AVEN_GL_WINDOW_KEY_5] = aven_str_init("5"),
+        [AVEN_GL_WINDOW_KEY_6] = aven_str_init("6"),
+        [AVEN_GL_WINDOW_KEY_7] = aven_str_init("7"),
+        [AVEN_GL_WINDOW_KEY_8] = aven_str_init("8"),
+        [AVEN_GL_WINDOW_KEY_9] = aven_str_init("9"),
+        [AVEN_GL_WINDOW_KEY_SEMICOLON] = aven_str_init("SEMICOLON"),
+        [AVEN_GL_WINDOW_KEY_EQUAL] = aven_str_init("EQUAL"),
+        [AVEN_GL_WINDOW_KEY_A] = aven_str_init("A"),
+        [AVEN_GL_WINDOW_KEY_B] = aven_str_init("B"),
+        [AVEN_GL_WINDOW_KEY_C] = aven_str_init("C"),
+        [AVEN_GL_WINDOW_KEY_D] = aven_str_init("D"),
+        [AVEN_GL_WINDOW_KEY_E] = aven_str_init("E"),
+        [AVEN_GL_WINDOW_KEY_F] = aven_str_init("F"),
+        [AVEN_GL_WINDOW_KEY_G] = aven_str_init("G"),
+        [AVEN_GL_WINDOW_KEY_H] = aven_str_init("H"),
+        [AVEN_GL_WINDOW_KEY_I] = aven_str_init("I"),
+        [AVEN_GL_WINDOW_KEY_J] = aven_str_init("J"),
+        [AVEN_GL_WINDOW_KEY_K] = aven_str_init("K"),
+        [AVEN_GL_WINDOW_KEY_L] = aven_str_init("L"),
+        [AVEN_GL_WINDOW_KEY_M] = aven_str_init("M"),
+        [AVEN_GL_WINDOW_KEY_N] = aven_str_init("N"),
+        [AVEN_GL_WINDOW_KEY_O] = aven_str_init("O"),
+        [AVEN_GL_WINDOW_KEY_P] = aven_str_init("P"),
+        [AVEN_GL_WINDOW_KEY_Q] = aven_str_init("Q"),
+        [AVEN_GL_WINDOW_KEY_R] = aven_str_init("R"),
+        [AVEN_GL_WINDOW_KEY_S] = aven_str_init("S"),
+        [AVEN_GL_WINDOW_KEY_T] = aven_str_init("T"),
+        [AVEN_GL_WINDOW_KEY_U] = aven_str_init("U"),
+        [AVEN_GL_WINDOW_KEY_V] = aven_str_init("V"),
+        [AVEN_GL_WINDOW_KEY_W] = aven_str_init("W"),
+        [AVEN_GL_WINDOW_KEY_X] = aven_str_init("X"),
+        [AVEN_GL_WINDOW_KEY_Y] = aven_str_init("Y"),
+        [AVEN_GL_WINDOW_KEY_Z] = aven_str_init("Z"),
+        [AVEN_GL_WINDOW_KEY_LEFT_BRACKET] = aven_str_init("LEFT_BRACKET"),
+        [AVEN_GL_WINDOW_KEY_BACKSLASH] = aven_str_init("BACKSLASH"),
+        [AVEN_GL_WINDOW_KEY_RIGHT_BRACKET] = aven_str_init("RIGHT_BRACKET"),
+        [AVEN_GL_WINDOW_KEY_GRAVE_ACCENT] = aven_str_init("GRAVE_ACCENT"),
+        [AVEN_GL_WINDOW_KEY_WORLD_1] = aven_str_init("WORLD_1"),
+        [AVEN_GL_WINDOW_KEY_WORLD_2] = aven_str_init("WORLD_2"),
+        [AVEN_GL_WINDOW_KEY_ESCAPE] = aven_str_init("ESCAPE"),
+        [AVEN_GL_WINDOW_KEY_ENTER] = aven_str_init("ENTER"),
+        [AVEN_GL_WINDOW_KEY_TAB] = aven_str_init("TAB"),
+        [AVEN_GL_WINDOW_KEY_BACKSPACE] = aven_str_init("BACKSPACE"),
+        [AVEN_GL_WINDOW_KEY_INSERT] = aven_str_init("INSERT"),
+        [AVEN_GL_WINDOW_KEY_DELETE] = aven_str_init("DELETE"),
+        [AVEN_GL_WINDOW_KEY_RIGHT] = aven_str_init("RIGHT"),
+        [AVEN_GL_WINDOW_KEY_LEFT] = aven_str_init("LEFT"),
+        [AVEN_GL_WINDOW_KEY_DOWN] = aven_str_init("DOWN"),
+        [AVEN_GL_WINDOW_KEY_UP] = aven_str_init("UP"),
+        [AVEN_GL_WINDOW_KEY_PAGE_UP] = aven_str_init("PAGE_UP"),
+        [AVEN_GL_WINDOW_KEY_PAGE_DOWN] = aven_str_init("PAGE_DOWN"),
+        [AVEN_GL_WINDOW_KEY_HOME] = aven_str_init("HOME"),
+        [AVEN_GL_WINDOW_KEY_END] = aven_str_init("END"),
+        [AVEN_GL_WINDOW_KEY_CAPS_LOCK] = aven_str_init("CAPS_LOCK"),
+        [AVEN_GL_WINDOW_KEY_SCROLL_LOCK] = aven_str_init("SCROLL_LOCK"),
+        [AVEN_GL_WINDOW_KEY_NUM_LOCK] = aven_str_init("NUM_LOCK"),
+        [AVEN_GL_WINDOW_KEY_PRINT_SCREEN] = aven_str_init("PRINT_SCREEN"),
+        [AVEN_GL_WINDOW_KEY_PAUSE] = aven_str_init("PAUSE"),
+        [AVEN_GL_WINDOW_KEY_F1] = aven_str_init("F1"),
+        [AVEN_GL_WINDOW_KEY_F2] = aven_str_init("F2"),
+        [AVEN_GL_WINDOW_KEY_F3] = aven_str_init("F3"),
+        [AVEN_GL_WINDOW_KEY_F4] = aven_str_init("F4"),
+        [AVEN_GL_WINDOW_KEY_F5] = aven_str_init("F5"),
+        [AVEN_GL_WINDOW_KEY_F6] = aven_str_init("F6"),
+        [AVEN_GL_WINDOW_KEY_F7] = aven_str_init("F7"),
+        [AVEN_GL_WINDOW_KEY_F8] = aven_str_init("F8"),
+        [AVEN_GL_WINDOW_KEY_F9] = aven_str_init("F9"),
+        [AVEN_GL_WINDOW_KEY_F10] = aven_str_init("F10"),
+        [AVEN_GL_WINDOW_KEY_F11] = aven_str_init("F11"),
+        [AVEN_GL_WINDOW_KEY_F12] = aven_str_init("F12"),
+        [AVEN_GL_WINDOW_KEY_F13] = aven_str_init("F13"),
+        [AVEN_GL_WINDOW_KEY_F14] = aven_str_init("F14"),
+        [AVEN_GL_WINDOW_KEY_F15] = aven_str_init("F15"),
+        [AVEN_GL_WINDOW_KEY_F16] = aven_str_init("F16"),
+        [AVEN_GL_WINDOW_KEY_F17] = aven_str_init("F17"),
+        [AVEN_GL_WINDOW_KEY_F18] = aven_str_init("F18"),
+        [AVEN_GL_WINDOW_KEY_F19] = aven_str_init("F19"),
+        [AVEN_GL_WINDOW_KEY_F20] = aven_str_init("F20"),
+        [AVEN_GL_WINDOW_KEY_F21] = aven_str_init("F21"),
+        [AVEN_GL_WINDOW_KEY_F22] = aven_str_init("F22"),
+        [AVEN_GL_WINDOW_KEY_F23] = aven_str_init("F23"),
+        [AVEN_GL_WINDOW_KEY_F24] = aven_str_init("F24"),
+        [AVEN_GL_WINDOW_KEY_F25] = aven_str_init("F25"),
+        [AVEN_GL_WINDOW_KEY_KP_0] = aven_str_init("KP_0"),
+        [AVEN_GL_WINDOW_KEY_KP_1] = aven_str_init("KP_1"),
+        [AVEN_GL_WINDOW_KEY_KP_2] = aven_str_init("KP_2"),
+        [AVEN_GL_WINDOW_KEY_KP_3] = aven_str_init("KP_3"),
+        [AVEN_GL_WINDOW_KEY_KP_4] = aven_str_init("KP_4"),
+        [AVEN_GL_WINDOW_KEY_KP_5] = aven_str_init("KP_5"),
+        [AVEN_GL_WINDOW_KEY_KP_6] = aven_str_init("KP_6"),
+        [AVEN_GL_WINDOW_KEY_KP_7] = aven_str_init("KP_7"),
+        [AVEN_GL_WINDOW_KEY_KP_8] = aven_str_init("KP_8"),
+        [AVEN_GL_WINDOW_KEY_KP_9] = aven_str_init("KP_9"),
+        [AVEN_GL_WINDOW_KEY_KP_DECIMAL] = aven_str_init("KP_DECIMAL"),
+        [AVEN_GL_WINDOW_KEY_KP_DIVIDE] = aven_str_init("KP_DIVIDE"),
+        [AVEN_GL_WINDOW_KEY_KP_MULTIPLY] = aven_str_init("KP_MULTIPLY"),
+        [AVEN_GL_WINDOW_KEY_KP_SUBTRACT] = aven_str_init("KP_SUBTRACT"),
+        [AVEN_GL_WINDOW_KEY_KP_ADD] = aven_str_init("KP_ADD"),
+        [AVEN_GL_WINDOW_KEY_KP_ENTER] = aven_str_init("KP_ENTER"),
+        [AVEN_GL_WINDOW_KEY_KP_EQUAL] = aven_str_init("KP_EQUAL"),
+        [AVEN_GL_WINDOW_KEY_LEFT_SHIFT] = aven_str_init("LEFT_SHIFT"),
+        [AVEN_GL_WINDOW_KEY_LEFT_CONTROL] = aven_str_init("LEFT_CONTROL"),
+        [AVEN_GL_WINDOW_KEY_LEFT_ALT] = aven_str_init("LEFT_ALT"),
+        [AVEN_GL_WINDOW_KEY_LEFT_SUPER] = aven_str_init("LEFT_SUPER"),
+        [AVEN_GL_WINDOW_KEY_RIGHT_SHIFT] = aven_str_init("RIGHT_SHIFT"),
+        [AVEN_GL_WINDOW_KEY_RIGHT_CONTROL] = aven_str_init("RIGHT_CONTROL"),
+        [AVEN_GL_WINDOW_KEY_RIGHT_ALT] = aven_str_init("RIGHT_ALT"),
+        [AVEN_GL_WINDOW_KEY_RIGHT_SUPER] = aven_str_init("RIGHT_SUPER"),
+        [AVEN_GL_WINDOW_KEY_MENU] = aven_str_init("MENU"),
+    };
+
+    AvenStrSlice aven_gl_window_key_names = {
+        .ptr = (AvenStr *)aven_gl_window_key_names_data,
+        .len = countof(aven_gl_window_key_names_data),
+    };
+
+    static inline AvenStr aven_gl_window_key_name(AvenGlWindowKey key) {
+        if (key < 0) {
+            return (AvenStr){ 0 };
+        }
+        return get(aven_gl_window_key_names, (size_t)key);
+    }
+
+    typedef struct {
+        AvenGlWindowKey key;
+        uint32_t scancode;
+        AvenStr name;
+    } AvenGlWindowKeyInfo;
+
+    AvenGlWindowKeyInfo aven_gl_window_get_key_info(AvenGlWindowKey key);
+    AvenGlWindowKeyInfo aven_gl_window_get_key_unknown_info(uint32_t scancode);
+
     typedef enum {
         AVEN_GL_WINDOW_PRESS_UP = 0,
         AVEN_GL_WINDOW_PRESS_DOWN,
         AVEN_GL_WINDOW_PRESS_REPEAT,
     } AvenGlWindowPress;
 
+    AvenStr aven_gl_window_press_names_data[] = {
+        [AVEN_GL_WINDOW_PRESS_UP] = aven_str_init("UP"),
+        [AVEN_GL_WINDOW_PRESS_DOWN] = aven_str_init("DOWN"),
+        [AVEN_GL_WINDOW_PRESS_REPEAT] = aven_str_init("REPEAT"),
+    };
+
+    AvenStrSlice aven_gl_window_press_names = {
+        .ptr = (AvenStr *)aven_gl_window_press_names_data,
+        .len = countof(aven_gl_window_press_names_data),
+    };
+
+    static inline AvenStr aven_gl_window_press_name(AvenGlWindowPress press) {
+        return get(aven_gl_window_press_names, press);
+    }
+
     typedef enum {
+        AVEN_GL_WINDOW_MOD_NONE = 0x0,
         AVEN_GL_WINDOW_MOD_SHFT = 0x1,
         AVEN_GL_WINDOW_MOD_CTRL = 0x2,
         AVEN_GL_WINDOW_MOD_ALT = 0x4,
@@ -152,6 +312,25 @@
         AVEN_GL_WINDOW_MOD_CAP = 0x10,
         AVEN_GL_WINDOW_MOD_NUM = 0x20,
     } AvenGlWindowModBit;
+
+    AvenStr aven_gl_window_mod_names_data[] = {
+        [AVEN_GL_WINDOW_MOD_NONE] = aven_str_init(""),
+        [AVEN_GL_WINDOW_MOD_SHFT] = aven_str_init("<SHFT>"),
+        [AVEN_GL_WINDOW_MOD_CTRL] = aven_str_init("<CTRL>"),
+        [AVEN_GL_WINDOW_MOD_ALT] = aven_str_init("<ALT>"),
+        [AVEN_GL_WINDOW_MOD_SUP] = aven_str_init("<SUP>"),
+        [AVEN_GL_WINDOW_MOD_CAP] = aven_str_init("<CAP>"),
+        [AVEN_GL_WINDOW_MOD_NUM] = aven_str_init("<NUM>"),
+    };
+
+    AvenStrSlice aven_gl_window_mod_names = {
+        .ptr = (AvenStr *)aven_gl_window_mod_names_data,
+        .len = countof(aven_gl_window_mod_names_data),
+    };
+
+    AvenStr aven_gl_window_mod_name(AvenGlWindowModBit mod) {
+        return get(aven_gl_window_mod_names, mod);
+    }
 
     typedef enum {
         AVEN_GL_WINDOW_MOUSE_LEFT = 0,
