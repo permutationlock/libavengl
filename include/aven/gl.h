@@ -157,6 +157,7 @@
         PFNGLDELETEVERTEXARRAYSPROC DeleteVertexArrays;
         PFNGLISVERTEXARRAYPROC IsVertexArray;
         PFNGLDEBUGMESSAGECALLBACKPROC DebugMessageCallback;
+        PFNGLDRAWRANGEELEMENTSPROC DrawRangeElements;
         bool es;
     } AvenGl;
 
@@ -393,6 +394,9 @@
         gl.IsVertexArray = (PFNGLISVERTEXARRAYPROC)load("glIsVertexArray");
         gl.DebugMessageCallback = (PFNGLDEBUGMESSAGECALLBACKPROC)load(
             "glDebugMessageCallback"
+        );
+        gl.DrawRangeElements = (PFNGLDRAWRANGEELEMENTSPROC)load(
+            "glDrawRangeElements"
         );
 
         return gl;
@@ -1846,6 +1850,19 @@
         const void *userParam
     ) {
         gl->DebugMessageCallback(callback, userParam);
+        aven_gl_check_error(gl);
+    }
+
+    static inline void aven_gl_DrawRangeElements(
+        AvenGl *gl,
+        GLenum mode,
+        GLuint start,
+        GLuint end,
+        GLsizei count,
+        GLenum type,
+        const void *indices
+    ) {
+        gl->DrawRangeElements(mode, start, end, count, type, indices);
         aven_gl_check_error(gl);
     }
 

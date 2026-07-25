@@ -1313,7 +1313,7 @@ static void load(AvenGlWindow *win) {
     }
 
     if (!fail) {
-        test_aven_gl_shadow_hard_init(win);
+        test_aven_gl_text_init(win);
     }
     ctx->app.start = aven_time_now();
 }

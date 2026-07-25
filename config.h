@@ -17,14 +17,14 @@
         #define LIBAVENGL_DEFAULT_GLFW_CCFLAGS "-O0 -g3 -Werror -Wall -Wextra " \
                 "-Wstrict-prototypes -Wold-style-definition -Winit-self " \
                 "-Wno-unused-parameter -Wno-sign-compare -Wno-overflow " \
-                "-Wno-missing-field-initializers " \
+                "-Wno-missing-field-initializers -Wno-implicit-fallthrough " \
                 "-fsanitize-trap -fsanitize=unreachable -fsanitize=undefined"
     #endif
     #ifndef LIBAVENGL_DEFAULT_STB_CCFLAGS
         #define LIBAVENGL_DEFAULT_STB_CCFLAGS "-pedantic -O0 -g3 -Werror -Wall -Wextra " \
                 "-Wstrict-prototypes -Wold-style-definition -Winit-self " \
                 "-Wno-unused-parameter -Wno-unused-function -Wno-sign-compare " \
-                "-Wno-missing-field-initializers " \
+                "-Wno-missing-field-initializers -Wno-implicit-fallthrough " \
                 "-fsanitize-trap -fsanitize=unreachable -fsanitize=undefined"
     #endif
 #endif

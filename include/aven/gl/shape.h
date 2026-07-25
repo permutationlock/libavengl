@@ -289,11 +289,13 @@
         aven_gl_BindBuffer(gl, GL_ELEMENT_ARRAY_BUFFER, 0);
     }
 
-    static inline void aven_gl_shape_draw(
+    static inline void aven_gl_shape_draw_range(
         AvenGl *gl,
         AvenGlShapeCtx *ctx,
         AvenGlShapeBuffer *buffer,
-        Aff2 cam_trans
+        Aff2 cam_trans,
+        size_t start_index,
+        size_t count
     ) {
         aven_gl_UseProgram(gl, ctx->program);
 
@@ -321,9 +323,9 @@
         aven_gl_DrawElements(
             gl,
             GL_TRIANGLES,
-            (GLsizei)buffer->index_len,
+            (GLsizei)count,
             GL_UNSIGNED_SHORT,
-            0
+            (void *)(start_index * sizeof(GLushort))
         );
 
         aven_gl_Disable(gl, GL_BLEND);
@@ -331,6 +333,22 @@
         aven_gl_BindBuffer(gl, GL_ELEMENT_ARRAY_BUFFER, 0);
         aven_gl_BindBuffer(gl, GL_ARRAY_BUFFER, 0);
         aven_gl_BindVertexArray(gl, 0);
+    }
+
+    static inline void aven_gl_shape_draw(
+        AvenGl *gl,
+        AvenGlShapeCtx *ctx,
+        AvenGlShapeBuffer *buffer,
+        Aff2 cam_trans
+    ) {
+        aven_gl_shape_draw_range(
+            gl,
+            ctx,
+            buffer,
+            cam_trans,
+            0,
+            buffer->index_len
+        );
     }
 
     static inline void aven_gl_shape_geometry_push_triangle(
@@ -1444,12 +1462,14 @@
         aven_gl_BindBuffer(gl, GL_ELEMENT_ARRAY_BUFFER, 0);
     }
 
-    static inline void aven_gl_shape_join_draw(
+    static inline void aven_gl_shape_join_draw_range(
         AvenGl *gl,
         AvenGlShapeJoinCtx *ctx,
         AvenGlShapeJoinBuffer *buffer,
         float pixel_size,
-        Aff2 cam_trans
+        Aff2 cam_trans,
+        size_t start_index,
+        size_t count
     ) {
         aven_gl_UseProgram(gl, ctx->program);
 
@@ -1483,9 +1503,9 @@
         aven_gl_DrawElements(
             gl,
             GL_TRIANGLES,
-            (GLsizei)buffer->index_len,
+            (GLsizei)count,
             GL_UNSIGNED_SHORT,
-            0
+            (void *)(start_index * sizeof(GLushort))
         );
 
         aven_gl_Disable(gl, GL_BLEND);
@@ -1493,6 +1513,24 @@
         aven_gl_BindBuffer(gl, GL_ELEMENT_ARRAY_BUFFER, 0);
         aven_gl_BindBuffer(gl, GL_ARRAY_BUFFER, 0);
         aven_gl_BindVertexArray(gl, 0);
+    }
+
+    static inline void aven_gl_shape_join_draw(
+        AvenGl *gl,
+        AvenGlShapeJoinCtx *ctx,
+        AvenGlShapeJoinBuffer *buffer,
+        float pixel_size,
+        Aff2 cam_trans
+    ) {
+        aven_gl_shape_join_draw_range(
+            gl,
+            ctx,
+            buffer,
+            pixel_size,
+            cam_trans,
+            0,
+            buffer->index_len
+        );
     }
 
     static inline void aven_gl_shape_join_geometry_push_square(
