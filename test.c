@@ -528,11 +528,9 @@ static void test_aven_gl_shadow_hard_update(AvenGlWindow *win, float t) {
 
     Aff2 trans1_shade;
     aff2_copy(trans1_shade, trans1);
-    mat2_scale(trans1_shade, 0.98f, trans1_shade);
 
     Aff2 trans2_shade;
     aff2_copy(trans2_shade, trans2);
-    mat2_scale(trans2_shade, 0.98f, trans2_shade);
 
     float screen_ratio = (float)win->width / (float)win->height;
     float norm_height = 1.0f;
@@ -617,7 +615,7 @@ static void test_aven_gl_shadow_hard_update(AvenGlWindow *win, float t) {
     );
 
     aven_gl_Viewport(&win->gl, 0, 0, win->width, win->height);
-    aven_gl_ClearColor(&win->gl, 0.75f, 0.75f, 0.75f, 1.0f);
+    aven_gl_ClearColor(&win->gl, 0.2f, 0.2f, 0.2f, 1.0f);
     aven_gl_Clear(&win->gl, GL_COLOR_BUFFER_BIT);
     aven_gl_shape_draw(
         &win->gl,
